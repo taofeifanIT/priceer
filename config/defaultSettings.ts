@@ -12,10 +12,13 @@ const Settings: LayoutSettings & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'RE-PRICEER',
+  title: 'RE-PRICER',
   pwa: false,
   logo: null,
   iconfontUrl: '',
+  headerHeight: 48,
+  splitMenus: false
+
 };
 
 export default Settings;

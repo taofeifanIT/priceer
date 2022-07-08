@@ -13,13 +13,14 @@ import {
   Popconfirm,
   Tag,
 } from 'antd';
+import { PageContainer } from '@ant-design/pro-components';
 import { FormInstance } from 'antd/lib/form';
 import React, { useState, useEffect } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import styles from './style/menuManagement.less';
 import { listRules, addRule, deleteRule, editRule } from '@/services/setting/menuManagement';
 import * as Icons from '@ant-design/icons';
-// console.log(icons)
+
 function getIcons(
   params: number,
 ): Array<{
@@ -364,7 +365,7 @@ function AddModal(props: {
 function TreeData(props: any) {
   const columns = [
     {
-      title: 'Menu management',
+      title: 'name',
       dataIndex: 'name',
       key: 'name',
     },
@@ -382,6 +383,10 @@ function TreeData(props: any) {
       title: 'icon',
       dataIndex: 'icon',
       key: 'icon',
+      render: (iconkey: any) => {
+        let Icon = Icons[iconkey]
+        return <Icon />
+      }
     },
     {
       title: 'Display or not',
@@ -484,11 +489,7 @@ function TreeData(props: any) {
     initData();
   }, []);
   return (
-    <div
-      style={{
-        background: '#fff',
-        padding: '8px',
-      }}
+    <PageContainer
     >
       <Card
         size="small"
@@ -497,14 +498,6 @@ function TreeData(props: any) {
           width: '100%',
         }}
       >
-        <h2
-          style={{
-            display: 'inline-block',
-            fontWeight: 500,
-          }}
-        >
-          Menu Management
-        </h2>
         <Button
           style={{
             float: 'right',
@@ -554,7 +547,7 @@ function TreeData(props: any) {
         onCancel={() => setVisible(false)}
         content={<FromComponet menuData={data} />}
       />
-    </div>
+    </PageContainer>
   );
 }
 

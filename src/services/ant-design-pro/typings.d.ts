@@ -2,6 +2,21 @@
 /* eslint-disable */
 
 declare namespace API {
+
+  type Config = {
+    store: { id: number, name: string }[];
+    company: { id: number, name: string }[];
+    country: { id: number, name: string }[];
+    market: { id: number, name: string }[];
+  }
+
+  type globalParameter = {
+    store?: number;
+    company?: number;
+    country?: number;
+    market?: number;
+  }
+
   type CurrentUser = {
     id: number,
     username: string,

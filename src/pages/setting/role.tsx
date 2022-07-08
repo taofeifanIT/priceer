@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { PageContainer } from '@ant-design/pro-components';
 import { List, Divider, Input, Button, Table, message, Tag, Card, Modal, Popconfirm } from 'antd';
 import { useModel } from 'umi';
 import { PlusOutlined } from '@ant-design/icons';
-import { roleList, addRole, updateRole, deleteRole } from '../../services/setting/roleManagement';
-import { listRules } from '../../services/setting/menuManagement';
+import { roleList, addRole, updateRole, deleteRole } from '@/services/setting/roleManagement';
+import { listRules } from '@/services/setting/menuManagement';
 import styles from './style/role.less';
 
 function DeleteComponent(props: {
@@ -146,12 +147,7 @@ export default (props: any) => {
   };
   const { initialState } = useModel('@@initialState');
   return (
-    <div
-      style={{
-        background: '#fff',
-        padding: '8px',
-        minHeight: `${(initialState as any).pageHeight}px`,
-      }}
+    <PageContainer
     >
       <Modal
         title={(editRecord as any).id ? 'edit' : 'add'}
@@ -179,6 +175,7 @@ export default (props: any) => {
           height: '100%',
           display: 'inline-block',
           verticalAlign: 'top',
+          background: '#fff',
           overflow: 'scroll-Y',
         }}
         header={
@@ -234,7 +231,7 @@ export default (props: any) => {
         style={{ height: `${(initialState as any).pageHeight - 10}px`, verticalAlign: 'top' }}
       />
       <TreeData init={replaceRecord} tableRecord={tableRecord} />
-    </div>
+    </PageContainer>
   );
 };
 

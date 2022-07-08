@@ -59,7 +59,7 @@ export function createDownload(fileName: string, url: any) {
     const elink = document.createElement('a');
     elink.download = fileName;
     elink.style.display = 'none';
-    elink.href = url + '&token=' + localStorage.getItem('token');
+    elink.href = url
     document.body.appendChild(elink);
     elink.click();
     URL.revokeObjectURL(elink.href); // 释放URL 对象

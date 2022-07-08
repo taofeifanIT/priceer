@@ -8,10 +8,15 @@ import { history } from 'umi';
 import defaultSettings from '../config/defaultSettings';
 import type { ResponseError, RequestOptionsInit } from 'umi-request';
 import { currentUser as queryCurrentUser } from './services/user';
+import { getConfig } from '@/services/basePop'
 import { notification } from 'antd';
 import { getToken, removeToken } from './utils/token';
 import { getMenu, throwMenu } from '@/utils/utils'
+import { getGlobalParams } from '@/utils/globalParams'
+
 const loginPath = '/user/login';
+
+const whiteRouter = ['/user/login', '/403', '/404']
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
@@ -24,6 +29,7 @@ export const initialStateConfig = {
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
+  configInfo?: API.Config;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
@@ -51,15 +57,22 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
+  const fetchConfigInfo = async () => {
+    let msg: any = await getConfig()
+    let { data } = msg
+    return data
+  }
   // 如果不是登录页面，执行
   if (!getToken()) {
     history.push(loginPath);
   }
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
+    const configInfo = await fetchConfigInfo()
     return {
       fetchUserInfo,
       currentUser,
+      configInfo,
       settings: defaultSettings,
     };
   }
@@ -81,12 +94,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
-      if (location.pathname !== loginPath) {
+      if (!whiteRouter.includes(location.pathname)) {
+        let jumpPath = location.pathname.replace(/\/$/, '')
         // @ts-ignore
-        let result = throwMenu(initialState.currentUser?.menu, location.pathname)
+        let result = throwMenu(initialState.currentUser?.menu, jumpPath)
         let hasPage: boolean = false
         if (result && result.path) {
-          hasPage = (result?.path === history.location.pathname)
+          hasPage = (result?.path === jumpPath)
         }
         if (!hasPage) {
           history.push('/403');
@@ -103,11 +117,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         userId: initialState?.currentUser?.id,
       },
       request: async () => {
-        // initialState.currentUser 中包含了所有用户信息
-        // const { data } = await fetchMenuData();
-        // const menuData = getMenu(data).sort(
-        //   (a: any, b: any) => a.sort_num - b.sort_num,
-        // );
         // @ts-ignore
         const menuData = initialState?.currentUser.menu
         return menuData;
@@ -118,28 +127,28 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     // @ts-ignore
-    childrenRender: (children, props) => {
-      // if (initialState?.loading) return <PageLoading />;
-      return (
-        <>
-          {children}
-          {!props.location?.pathname?.includes('/login') && (
-            <SettingDrawer
-              disableUrlParams
-              enableDarkTheme
-              settings={initialState?.settings}
-              onSettingChange={(settings) => {
-                // @ts-ignore
-                setInitialState((preInitialState) => ({
-                  ...preInitialState,
-                  settings,
-                }));
-              }}
-            />
-          )}
-        </>
-      );
-    },
+    // childrenRender: (children, props) => {
+    //   // if (initialState?.loading) return <PageLoading />;
+    //   return (
+    //     <>
+    //       {children}
+    //       {!props.location?.pathname?.includes('/login') && (
+    //         <SettingDrawer
+    //           disableUrlParams
+    //           enableDarkTheme
+    //           settings={initialState?.settings}
+    //           onSettingChange={(settings) => {
+    //             // @ts-ignore
+    //             setInitialState((preInitialState) => ({
+    //               ...preInitialState,
+    //               settings,
+    //             }));
+    //           }}
+    //         />
+    //       )}
+    //     </>
+    //   );
+    // },
     ...initialState?.settings,
   };
 };
@@ -193,13 +202,27 @@ const errorHandler = (error: ResponseError) => {
 };
 const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const token: string | undefined = getToken() || '';
-  let authHeader = {};
-  authHeader = { token: token || '' };
+  let authHeader = token ? { token: token } : {}
   let lastUrl = url;
-  lastUrl = `http://n.demo.com${url.replace('/api', '')}`;
+  lastUrl = `http://api-rp.itmars.net${url.replace('/api', '')}`;
+  let additionalData = getGlobalParams()
+  let config = JSON.parse(JSON.stringify(options))
+  let { method } = config
+  if (method === 'post') {
+    config.data = {
+      ...config.data,
+      ...additionalData
+    }
+  }
+  if (method === 'get') {
+    config.params = {
+      ...config.params,
+      ...additionalData
+    }
+  }
   return {
     url: `${lastUrl}`,
-    options: { ...options, interceptors: true, headers: authHeader, timeout: 30 * 1000 },
+    options: { ...config, interceptors: true, headers: authHeader, timeout: 30 * 1000 },
   };
 };
 // https://umijs.org/zh-CN/plugins/plugin-request

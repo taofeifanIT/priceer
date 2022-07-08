@@ -1,17 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { PageContainer } from '@ant-design/pro-components';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, message, Input, Modal, Form, Select, Popconfirm, Tag, Switch } from 'antd';
+import { Button, message, Input, Modal, Form, Select, Popconfirm, Tag } from 'antd';
 import type { FormInstance } from 'antd/lib/form';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { roleList } from '../../services/setting/roleManagement';
 import { addUser, updateUser, deleteUser } from '../../services/setting/userManagement';
-import type { tags } from '../../services/publicKeys';
-import { getKesGroup, getKesValue } from '../../utils/utils';
 import request from 'umi-request';
 import { useModel } from 'umi';
-
-const { Option } = Select;
 
 type role = {
   id: number;
@@ -148,28 +145,6 @@ const OperationModal = (props: {
               })}
             </Select>
           </Form.Item>
-          <Form.Item label="tag permission" name="open_tag_permission" valuePropName="checked">
-            <Switch
-              onChange={(status) => {
-                setShowTag(status);
-              }}
-            />
-          </Form.Item>
-          {showTag && (
-            <Form.Item label="tags" name="tag_ids">
-              <Select mode="multiple" placeholder="Please select" style={{ width: '100%' }} filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }>
-                {getKesGroup('tagsData').map((item: tags) => {
-                  return (
-                    <Option style={{ background: item.is_assigned ? 'gold' : '' }} key={item.id} value={item.id}>
-                      {item.tag_name}
-                    </Option>
-                  );
-                })}
-              </Select>
-            </Form.Item>
-          )}
         </Form>
       </Modal>
     </>
@@ -253,28 +228,6 @@ export default () => {
       },
     },
     {
-      title: 'Tag owned',
-      dataIndex: 'hasTags',
-      render: (
-        hasTags: {
-          id: number;
-          tag_name: string;
-        }[],
-        record: {
-          open_tag_permission: number;
-        },
-      ) => {
-        if (record.open_tag_permission) {
-          return hasTags.map((item, index) => {
-            return <p>{`${index + 1}.${item?.tag_name}`}</p>;
-            // return ''
-          });
-        }
-        return 'All tags';
-
-      },
-    },
-    {
       title: 'status',
       dataIndex: 'status',
       render: (status: any) => {
@@ -325,7 +278,7 @@ export default () => {
     getRoles();
   }, []);
   return (
-    <div style={{ height: `${(initialState as any).pageHeight}px` }}>
+    <PageContainer>
       <ProTable<GithubIssueItem>
         actionRef={ref}
         size={'small'}
@@ -334,22 +287,11 @@ export default () => {
           new Promise((resolve) => {
             request<{
               data: GithubIssueItem[];
-            }>('/api/adminuser/list_adminusers', {
+            }>('/api/admin_user/list_adminusers', {
               params,
             }).then((res: any) => {
-              let resultData = res.data.adminusers.map((item: any) => {
-                return {
-                  ...item,
-                  hasTags: item.tag_ids
-                    ? JSON.parse(item.tag_ids).map((tagId: number) => {
-                      return getKesValue('tagsData', tagId);
-                    })
-                    : [],
-                };
-              });
-              // console.log(resultData)
               resolve({
-                data: resultData,
+                data: res.data.adminusers,
                 // success 请返回 true，
                 // 不然 table 会停止解析数据，即使有数据
                 success: !!res.code,
@@ -364,7 +306,7 @@ export default () => {
         }}
         rowKey="id"
         dateFormatter="string"
-        headerTitle="User management"
+        headerTitle={null}
         search={false}
         toolBarRender={() => [
           <Button
@@ -386,6 +328,6 @@ export default () => {
         roleData={roleData}
         record={record}
       ></OperationModal>
-    </div>
+    </PageContainer>
   );
 };

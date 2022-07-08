@@ -21,48 +21,50 @@
       {
         path: '/dashboard/Anlysis',
         name: 'Anlysis',
-        icon: 'smile',
         component: './dashboard/Anlysis',
-        access: 'normalRouteFilter'
       },
       {
         name: 'Sales',
         path: '/dashboard/Sales',
         component: './dashboard/Sales',
-        access: 'normalRouteFilter'
       },
     ],
   },
   {
     path: '/',
     redirect: '/dashboard/Anlysis',
-    access: 'normalRouteFilter'
   },
   {
     path: '/setting',
     name: 'Setting',
-    icon: 'SettingOutlined',
     access: 'normalRouteFilter',
     routes: [
       {
         path: '/setting/role',
         name: 'Role management',
         component: './setting/role',
-        access: 'normalRouteFilter'
       },
       {
         path: '/setting/userManagement',
         name: 'User management',
         component: './setting/userManagement',
-        access: 'normalRouteFilter'
       },
       {
         path: '/setting/menuManagement',
         name: 'Menu Management',
         component: './setting/menuManagement',
-        access: 'normalRouteFilter'
       },
     ],
+  },
+  {
+    path: '/PreListing',
+    name: 'pre-listing',
+    component: './PreListing',
+  },
+  {
+    path: '/Listed',
+    name: 'Listed Product',
+    component: './Listed',
   },
   {
     path: '/404',
