@@ -57,7 +57,7 @@ const ActionModel = React.forwardRef((props: actionItems, ref) => {
             api(params).then(res => {
                 if (res.code) {
                     message.success("Operation successful!")
-                    setLoading(false)
+                    // setLoading(false)
                     setIsModalVisible(false);
                     setTimeout(() => {
                         props.callback()
@@ -67,9 +67,10 @@ const ActionModel = React.forwardRef((props: actionItems, ref) => {
                     throw res.msg
                 }
             }).catch((e) => {
+                // setLoading(false)
                 message.error(e)
             }).finally(() => {
-                setLoading(true)
+                setLoading(false)
             })
         })
     };
