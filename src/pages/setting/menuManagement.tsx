@@ -177,7 +177,7 @@ function FromComponet(props: any) {
   }, [iconName]);
   useEffect(() => {
     let newRree: any = getNewTree(props.menuData);
-    console.log(newRree)
+    // console.log(newRree)
     setOption(newRree);
   }, [props.menuData]);
 
@@ -297,10 +297,9 @@ function FromComponet(props: any) {
   );
 }
 
-function DeleteComponent(props: { id: number; initData: () => void }) {
+const DeleteComponent = React.memo((props: { id: number; initData: () => void }) => {
   const [visible, setVisible] = React.useState(false);
   const [confirmLoading, setConfirmLoading] = React.useState(false);
-
   const showPopconfirm = () => {
     setVisible(true);
   };
@@ -342,9 +341,16 @@ function DeleteComponent(props: { id: number; initData: () => void }) {
       <a onClick={showPopconfirm}>delete</a>
     </Popconfirm>
   );
-}
+}, (preProps, nextProps) => {
+  if (preProps.id !== nextProps.id) {
+    return false
+  } else {
+    return true
+  }
+})
 
-function AddModal(props: {
+
+const AddModal = React.memo((props: {
   title: string;
   visible: boolean;
   onOk: () => void;
@@ -352,7 +358,8 @@ function AddModal(props: {
   content: object;
   width?: number;
   confirmLoading?: boolean;
-}) {
+}) => {
+  console.log("重新渲染")
   return (
     <>
       <Modal {...props} okText="ok" cancelText="cancel">
@@ -360,7 +367,25 @@ function AddModal(props: {
       </Modal>
     </>
   );
-}
+})
+// const AddModal = (props: {
+//   title: string;
+//   visible: boolean;
+//   onOk: () => void;
+//   onCancel: () => void;
+//   content: object;
+//   width?: number;
+//   confirmLoading?: boolean;
+// }) => {
+//   console.log("重新渲染")
+//   return (
+//     <>
+//       <Modal {...props} okText="ok" cancelText="cancel">
+//         {props.content}
+//       </Modal>
+//     </>
+//   );
+// }
 
 function TreeData(props: any) {
   const columns = [

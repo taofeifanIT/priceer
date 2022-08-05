@@ -59,7 +59,7 @@ const Login: React.FC = () => {
         });
         message.success(defaultLoginSuccessMessage);
         setToken(msg.data.token)
-        console.log(msg)
+        // console.log(msg)
         await fetchUserInfo();
         /** 此方法会跳转到 redirect 参数所在的位置 */
         if (!history) return;

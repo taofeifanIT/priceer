@@ -1,7 +1,7 @@
 import Footer from '@/components/Footer';
 import RightContent from '@/components/RightContent';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { PageLoading, SettingDrawer } from '@ant-design/pro-components';
+import { PageLoading } from '@ant-design/pro-components';
 // @ts-ignore
 import type { RunTimeLayoutConfig, RequestConfig } from 'umi';
 import { history } from 'umi';
@@ -36,7 +36,7 @@ export async function getInitialState(): Promise<{
   const fetchUserInfo = async () => {
     try {
       const msg: any = await queryCurrentUser();
-      if (!msg.code) {
+      if (msg.code !== 1) {
         throw msg.msg
       }
       let userInfo = msg.data
@@ -48,6 +48,7 @@ export async function getInitialState(): Promise<{
       }
       return userInfo
     } catch (error: any) {
+      console.log(error);
       notification.error({
         message: error,
         description: 'Login information has expired. Please log in again',
@@ -188,7 +189,7 @@ const errorHandler = (error: ResponseError) => {
     //   history.push('/user/login');
     // }, 1500)
   }
-
+  // console.log(response)
   if (!response) {
     notification.error({
       description: 'Your network is abnormal and you cannot connect to the server',
@@ -225,8 +226,16 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
     options: { ...config, interceptors: true, headers: authHeader, timeout: 30 * 1000 },
   };
 };
+
+const demoResponseInterceptors = (response: Response, options: RequestConfig) => {
+  // response.headers.append('interceptors', 'yes yo');
+  // console.log(response, options)
+  return response;
+};
+
 // https://umijs.org/zh-CN/plugins/plugin-request
 export const request: RequestConfig = {
   errorHandler,
   requestInterceptors: [authHeaderInterceptor],
+  responseInterceptors: [demoResponseInterceptors],
 };

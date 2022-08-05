@@ -1,4 +1,12 @@
-﻿export default [
+﻿/*
+ * @Author: taofeifanIT 3553447302@qq.com
+ * @Date: 2022-06-21 17:15:45
+ * @LastEditors: taofeifanIT 3553447302@qq.com
+ * @LastEditTime: 2022-08-05 16:10:40
+ * @FilePath: \priceer\config\routes.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+export default [
   {
     path: '/user',
     layout: false,
@@ -62,8 +70,13 @@
     component: './PreListing',
   },
   {
+    path: '/ReportView',
+    name: 'pre-listing',
+    component: './ReportView',
+  },
+  {
     path: '/Listed',
-    name: 'Listed Product',
+    name: 'report view',
     component: './Listed',
   },
   {
