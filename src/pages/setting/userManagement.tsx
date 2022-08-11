@@ -278,7 +278,7 @@ export default () => {
     getRoles();
   }, []);
   return (
-    <PageContainer>
+    <PageContainer waterMarkProps={{ content: '' }}>
       <ProTable<GithubIssueItem>
         actionRef={ref}
         size={'small'}

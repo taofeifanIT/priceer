@@ -148,6 +148,7 @@ export default (props: any) => {
   const { initialState } = useModel('@@initialState');
   return (
     <PageContainer
+      waterMarkProps={{ content: '' }}
     >
       <Modal
         title={(editRecord as any).id ? 'edit' : 'add'}

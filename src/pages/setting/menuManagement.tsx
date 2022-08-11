@@ -515,6 +515,7 @@ function TreeData(props: any) {
   }, []);
   return (
     <PageContainer
+      waterMarkProps={{ content: '' }}
     >
       <Card
         size="small"
