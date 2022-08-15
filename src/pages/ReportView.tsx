@@ -2,7 +2,7 @@
  * @Author: taofeifanIT 3553447302@qq.com
  * @Date: 2022-08-05 16:09:03
  * @LastEditors: taofeifanIT 3553447302@qq.com
- * @LastEditTime: 2022-08-10 17:47:42
+ * @LastEditTime: 2022-08-15 16:55:38
  * @FilePath: \priceer\src\pages\ReportView.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,9 @@ import { createDownload } from '@/utils/utils'
 import moment from 'moment'
 import { useIntl } from 'umi';
 import { VerticalAlignBottomOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons';
+import styles from '../styles/modules/checkTag.less'
 
+const { CheckableTag } = Tag;
 
 
 type QuestItem = {
@@ -38,16 +40,24 @@ type UseItem = {
 const TimelineItem = (props: UseItem) => {
     const [loading, setLoading] = useState(false)
     const { year, week, data, date } = props
+    const [selectedTags, setSelectedTags] = useState<string[]>(data)
     const downloadReport = (year: number, week: number) => {
         setLoading(true)
-        downloadFile({ year, week }).then(res => {
+        downloadFile({ year, week, reportNames: selectedTags }).then(res => {
             let url = window.URL.createObjectURL(new Blob([res]))
+            message.success("Download Complete!")
             createDownload(`${year}-${week}.csv`, url)
         }).finally(() => {
             setLoading(false)
         })
     }
-    return <Timeline.Item>A total of {data.length} reports from <h3 style={{ 'display': 'inline-block' }}>{date.replace("～", " to ")}</h3> are created
+    const handleChange = (tag: string, checked: boolean) => {
+        const nextSelectedTags = checked ? [...selectedTags, tag] : selectedTags.filter(t => t !== tag);
+        // console.log('You are interested in: ', nextSelectedTags);
+        setSelectedTags(nextSelectedTags);
+    };
+    return <Timeline.Item>
+        A total of {data.length} reports from <h3 style={{ 'display': 'inline-block' }}>{date.replace("～", " to ")}</h3> are created
         {loading ? <LoadingOutlined style={{ 'marginLeft': '5px' }} spin /> : (
             <a
                 onClick={() => {
@@ -55,9 +65,17 @@ const TimelineItem = (props: UseItem) => {
                 }}><VerticalAlignBottomOutlined style={{ 'marginLeft': '5px' }} />
             </a>
         )}
-        <p>
+        <p className={styles.tag}>
             {data.map(reportName => {
-                return <Tag style={{ 'marginBottom': '8px' }}>{reportName}</Tag>
+                return <CheckableTag
+
+                    style={{ 'marginBottom': '8px', 'border': '1px solid #c1bcbcd9' }}
+                    key={reportName}
+                    checked={selectedTags.indexOf(reportName) > -1}
+                    onChange={checked => handleChange(reportName, checked)}
+                >
+                    {reportName}
+                </CheckableTag>
             })}
         </p>
     </Timeline.Item>
