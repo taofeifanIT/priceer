@@ -71,8 +71,19 @@ export default [
   },
   {
     path: '/ReportView',
-    name: 'pre-listing',
-    component: './ReportView',
+    name: 'ReportView',
+    routes: [
+      {
+        path: '/ReportView/Operation',
+        name: 'Operation',
+        component: './ReportView/Operation',
+      },
+      {
+        path: '/ReportView/Warehouse',
+        name: 'Warehouse',
+        component: './ReportView/Warehouse',
+      },
+    ],
   },
   {
     path: '/Listed',

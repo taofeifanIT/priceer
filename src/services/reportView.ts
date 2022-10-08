@@ -29,3 +29,17 @@ export async function index() {
         method: 'get'
     });
 }
+
+export async function warehouseDownloadFile(params: { year: number, week: number, reportNames?: string[] }) {
+    return request('/api/dataReport/warehouse_downloadFile', {
+        method: 'post',
+        responseType: 'blob',
+        data: params
+    });
+}
+
+export async function warehouseIndex() {
+    return request('/api/dataReport/warehouse', {
+        method: 'get'
+    });
+}
