@@ -223,7 +223,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   }
   return {
     url: `${lastUrl}`,
-    options: { ...config, interceptors: true, headers: authHeader, timeout: 30 * 1000 },
+    options: { ...config, interceptors: true, headers: authHeader, timeout: 120 * 1000 },
   };
 };
 

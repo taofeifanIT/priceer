@@ -76,7 +76,7 @@ const GlobalHeaderRight: React.FC = () => {
               onFinish={onFinish}
             >
               {Object.keys(configInfo).map(key => {
-                return (<Form.Item name={key} label={key}>
+                return (<Form.Item name={key + '_id'} label={key}>
                   <Select
                     size="small"
                     style={{ width: '150px' }}

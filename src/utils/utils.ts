@@ -1,9 +1,10 @@
 // import { routerConfigs } from '../../config/router.config';
 import * as Icon from '@ant-design/icons';
-import React from 'react';
+import React, { createElement } from 'react';
 import { getPublicKey } from './token';
 // import { exportExcel } from '@/utils/excelHelper';
-import moment from 'moment';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas'
 /* eslint no-useless-escape:0 import/prefer-default-export:0 */
 const reg = /(((^https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(?::\d+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)$/;
 
@@ -36,6 +37,7 @@ export function getMenu(params: Array<any>): any {
       access: 'normalRouteFilter',
       path: item.component.replace(".", ""),
       icon: item.icon && React.createElement(Icon[item.icon.replace(/\s+/g, '')]),
+      auth: [1, 2, 3, 4, 5, 6],         // 1 查看 2 新增 3 编辑 4 删除 5 导出 6 导入
       routes: item.children
         ? getMenu(item.children).sort((a: any, b: any) => a.sort_num - b.sort_num)
         : [],
@@ -155,3 +157,20 @@ export function findIndexPage(arr: any[]) {
   return path;
 }
 
+export const exportPDF = (fnsku: string, quantity: number, el: string) => {
+  let pdf = new jsPDF('l', 'mm', [70, 40]);
+  const div = (document.getElementById(el) as any);
+  div.style.marginTop = '10px';
+  html2canvas((div as any), {
+    allowTaint: true,
+    scale: 2 // 提升画面质量，但是会增加文件大小
+  }).then(function (canvas) {
+    const pageData = canvas.toDataURL('image/jpeg', 1.0);
+    pdf.addImage(pageData, 'JPEG', 5, 5, 60, 23);
+    new Array(quantity).fill('').forEach((item, index) => {
+      pdf.addPage();
+      pdf.addImage(pageData, 'JPEG', 5, 5, 60, 23);
+    })
+    pdf.save(`${fnsku}.pdf`);
+  })
+}

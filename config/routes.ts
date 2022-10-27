@@ -91,6 +91,11 @@ export default [
     component: './Listed',
   },
   {
+    path: '/Shipment',
+    name: 'Shipment',
+    component: './Shipment',
+  },
+  {
     path: '/404',
     name: '404',
     component: './404',
