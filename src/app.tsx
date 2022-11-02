@@ -3,20 +3,20 @@ import RightContent from '@/components/RightContent';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { PageLoading } from '@ant-design/pro-components';
 // @ts-ignore
-import type { RunTimeLayoutConfig, RequestConfig } from 'umi';
-import { history } from 'umi';
-import defaultSettings from '../config/defaultSettings';
-import type { ResponseError, RequestOptionsInit } from 'umi-request';
-import { currentUser as queryCurrentUser } from './services/user';
-import { getConfig } from '@/services/basePop'
+import { getConfig } from '@/services/basePop';
+import { getGlobalParams } from '@/utils/globalParams';
+import { getMenu, throwMenu } from '@/utils/utils';
 import { notification } from 'antd';
+import type { RequestConfig, RunTimeLayoutConfig } from 'umi';
+import { history } from 'umi';
+import type { RequestOptionsInit, ResponseError } from 'umi-request';
+import defaultSettings from '../config/defaultSettings';
+import { currentUser as queryCurrentUser } from './services/user';
 import { getToken, removeToken } from './utils/token';
-import { getMenu, throwMenu } from '@/utils/utils'
-import { getGlobalParams } from '@/utils/globalParams'
 
 const loginPath = '/user/login';
 
-const whiteRouter = ['/user/login', '/403', '/404']
+const whiteRouter = ['/user/login', '/403', '/404'];
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
@@ -37,16 +37,14 @@ export async function getInitialState(): Promise<{
     try {
       const msg: any = await queryCurrentUser();
       if (msg.code !== 1) {
-        throw msg.msg
+        throw msg.msg;
       }
-      let userInfo = msg.data
+      let userInfo = msg.data;
       userInfo = {
         ...userInfo,
-        menu: getMenu(userInfo?.menu).sort(
-          (a: any, b: any) => a.sort_num - b.sort_num,
-        )
-      }
-      return userInfo
+        menu: getMenu(userInfo?.menu).sort((a: any, b: any) => a.sort_num - b.sort_num),
+      };
+      return userInfo;
     } catch (error: any) {
       console.log(error);
       notification.error({
@@ -59,17 +57,17 @@ export async function getInitialState(): Promise<{
     return undefined;
   };
   const fetchConfigInfo = async () => {
-    let msg: any = await getConfig()
-    let { data } = msg
-    return data
-  }
+    let msg: any = await getConfig();
+    let { data } = msg;
+    return data;
+  };
   // 如果不是登录页面，执行
   if (!getToken()) {
     history.push(loginPath);
   }
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
-    const configInfo = await fetchConfigInfo()
+    const configInfo = await fetchConfigInfo();
     return {
       fetchUserInfo,
       currentUser,
@@ -96,12 +94,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     onPageChange: () => {
       const { location } = history;
       if (!whiteRouter.includes(location.pathname)) {
-        let jumpPath = location.pathname.replace(/\/$/, '')
+        let jumpPath = location.pathname.replace(/\/$/, '');
         // @ts-ignore
-        let result = throwMenu(initialState.currentUser?.menu, jumpPath)
-        let hasPage: boolean = false
+        let result = throwMenu(initialState.currentUser?.menu, jumpPath);
+        let hasPage: boolean = false;
         if (result && result.path) {
-          hasPage = (result?.path === jumpPath)
+          hasPage = result?.path === jumpPath;
         }
         if (!hasPage) {
           history.push('/403');
@@ -119,7 +117,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       },
       request: async () => {
         // @ts-ignore
-        const menuData = initialState?.currentUser.menu
+        const menuData = initialState?.currentUser.menu;
         return menuData;
       },
     },
@@ -203,23 +201,23 @@ const errorHandler = (error: ResponseError) => {
 };
 const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const token: string | undefined = getToken() || '';
-  let authHeader = token ? { token: token } : {}
+  let authHeader = token ? { token: token } : {};
   let lastUrl = url;
   lastUrl = `http://api-rp.itmars.net${url.replace('/api', '')}`;
-  let additionalData = getGlobalParams()
-  let config = JSON.parse(JSON.stringify(options))
-  let { method } = config
+  let additionalData = getGlobalParams();
+  let config = JSON.parse(JSON.stringify(options));
+  let { method } = config;
   if (method === 'post') {
     config.data = {
       ...config.data,
-      ...additionalData
-    }
+      ...additionalData,
+    };
   }
   if (method === 'get') {
     config.params = {
       ...config.params,
-      ...additionalData
-    }
+      ...additionalData,
+    };
   }
   return {
     url: `${lastUrl}`,

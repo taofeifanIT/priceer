@@ -1,10 +1,10 @@
+import { getGlobalParams, setGlobalParams } from '@/utils/globalParams';
 import { ControlOutlined } from '@ant-design/icons';
-import { Space, Popover, Form, Select, Button } from 'antd';
+import { Button, Form, Popover, Select, Space } from 'antd';
 import React from 'react';
 import { SelectLang, useModel } from 'umi';
 import Avatar from './AvatarDropdown';
 import styles from './index.less';
-import { setGlobalParams, getGlobalParams } from '@/utils/globalParams'
 
 export type SiderTheme = 'light' | 'dark';
 
@@ -17,7 +17,7 @@ const GlobalHeaderRight: React.FC = () => {
   }
 
   const { navTheme, layout } = initialState.settings;
-  const { configInfo = {} } = initialState
+  const { configInfo = {} } = initialState;
   let className = styles.right;
 
   if ((navTheme === 'dark' && layout === 'top') || layout === 'mix') {
@@ -38,9 +38,9 @@ const GlobalHeaderRight: React.FC = () => {
   };
 
   const onFinish = (fieldsValue: any) => {
-    setGlobalParams(JSON.stringify(fieldsValue))
+    setGlobalParams(JSON.stringify(fieldsValue));
     setVisible(false);
-    history.go(0)
+    history.go(0);
   };
 
   const onReset = () => {
@@ -75,24 +75,28 @@ const GlobalHeaderRight: React.FC = () => {
               {...formItemLayout}
               onFinish={onFinish}
             >
-              {Object.keys(configInfo).map(key => {
-                return (<Form.Item name={key + '_id'} label={key}>
-                  <Select
-                    size="small"
-                    style={{ width: '150px' }}
-                    placeholder={`Select ${key}`}
-                    allowClear
-                  >
-                    <Select.Option key={`option ${key}`} value={0}>
-                      All {key}
-                    </Select.Option>
-                    {configInfo[key].map((item: { id: string; name: string }) => {
-                      return (<Select.Option key={key + item.id} value={item.id}>
-                        {item.name}
-                      </Select.Option>)
-                    })}
-                  </Select>
-                </Form.Item>)
+              {Object.keys(configInfo).map((key) => {
+                return (
+                  <Form.Item name={key + '_id'} label={key}>
+                    <Select
+                      size="small"
+                      style={{ width: '150px' }}
+                      placeholder={`Select ${key}`}
+                      allowClear
+                    >
+                      <Select.Option key={`option ${key}`} value={0}>
+                        All {key}
+                      </Select.Option>
+                      {configInfo[key].map((item: { id: string; name: string }) => {
+                        return (
+                          <Select.Option key={key + item.id} value={item.id}>
+                            {item.name}
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </Form.Item>
+                );
               })}
               <Form.Item
                 wrapperCol={{
@@ -102,7 +106,12 @@ const GlobalHeaderRight: React.FC = () => {
                 <Button type="primary" size="small" htmlType="submit">
                   Submit
                 </Button>
-                <Button style={{ marginLeft: '10px' }} type="default" size="small" onClick={onReset}>
+                <Button
+                  style={{ marginLeft: '10px' }}
+                  type="default"
+                  size="small"
+                  onClick={onReset}
+                >
                   reset
                 </Button>
               </Form.Item>

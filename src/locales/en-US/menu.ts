@@ -5,6 +5,7 @@ export default {
   'menu.Setting.User management': 'User management',
   'menu.Setting.Menu Management': 'Menu Management',
   'menu.Setting': 'Setting',
+  'menu.setting': 'Setting',
   'menu.Dashboard.Sales': 'Sales',
   'menu.Dashboard': 'Dashboard',
   'menu.Dashboard.Anlysis': 'Anlysis',
