@@ -40,7 +40,8 @@ import {
   Tabs,
   Typography,
   Upload,
-  Tag
+  Tag,
+  Result
 } from 'antd';
 import { useRef, useState } from 'react';
 const { Step } = Steps;
@@ -52,6 +53,8 @@ const { Text } = Typography;
 const { Option } = Select;
 
 const { Dragger } = Upload;
+
+const { TabPane } = Tabs;
 
 type listItem = {
   asin: string;
@@ -74,33 +77,13 @@ const steps = [
     title: 'CreateShipment',
     step: '1',
   },
-  // {
-  //     title: 'PutTransportDetails',
-  //     step: '2',
-  // },
   {
     title: 'PutCartonContents',
     step: '2',
   },
   {
-    title: 'PrintpackingList',
-    step: '3',
-  },
-  {
-    title: 'UpdatePackageByFile',
-    step: '4',
-  },
-  {
-    title: 'GetLabels',
-    step: '5',
-  },
-  {
-    title: 'putTransportDetails',
-    step: '6',
-  },
-  {
     title: 'UpdateShipment',
-    step: '7',
+    step: '3',
   },
 ];
 
@@ -138,11 +121,12 @@ const ListTable = () => {
   const [runLoading, setRunLoading] = useState(false);
   const [doneLoading, setDoneLoading] = useState(false);
   const [resMsg, setResMsg] = useState<string[]>(['', '', '', '', '', '']);
-  const [shipmentId, setShipmentId] = useState(''); // FBA15D7H2CH5   FBA16Y2R0PQK
+  const [shipmentId, setShipmentId] = useState('FBA16Y9K1W65'); // FBA15D7H2CH5   FBA16Y2R0PQK
   const [treeForm, setFreeForm] = useState<any>([]);
   const [itemDetail, setItemDetail] = useState<listItem[]>([]);
   const [barcodeObj, setBarcodeObj] = useState<any>([]);
   const [allParams, setAllParams] = useState<any>({});
+  const [tabKey, setTabKey] = useState('1');
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -154,13 +138,17 @@ const ListTable = () => {
   };
   const addCarton = () => {
     let lastItem = treeForm[treeForm.length - 1];
-    if (lastItem && !lastItem.cartonId) {
-      message.error('Please fill in the cartonId');
-      return;
+    let cartonId = 'U000001'
+    if (lastItem) {
+      cartonId = 'U' + String(Number(lastItem.cartonId.slice(1)) + 1).padStart(6, '0');
     }
+    // if (lastItem && !lastItem.cartonId) {
+    //   message.error('Please fill in the cartonId');
+    //   return;
+    // }
     setFreeForm([
       ...treeForm,
-      { cartonId: '', products: [{ sku: '', quantityShipped: '', quantityInCase: '' }] },
+      { cartonId: cartonId, products: [{ sku: '', quantityShipped: '' }] },
     ]);
   };
   const removeCarton = (index: number) => {
@@ -178,12 +166,12 @@ const ListTable = () => {
   const addProduct = (index: number) => {
     let lastItem = treeForm[index].products[treeForm[index].products.length - 1];
     // 校验lastItem属性值是否都有值
-    if (lastItem && (!lastItem.quantityShipped || !lastItem.quantityInCase || !lastItem.sku)) {
+    if (lastItem && (!lastItem.quantityShipped || !lastItem.sku)) {
       message.error('Empty parameters are found. Please fill in the parameter values！');
       return;
     }
     const newTreeForm = [...treeForm];
-    newTreeForm[index].products.push({ sku: '', quantityShipped: '', quantityInCase: '' });
+    newTreeForm[index].products.push({ sku: '', quantityShipped: '' });
     setFreeForm(newTreeForm);
   };
   const changeCartionId = (index: number, value: any) => {
@@ -203,7 +191,7 @@ const ListTable = () => {
         flag = false;
       }
       item.products.forEach((product: any) => {
-        if (!product.quantityShipped || !product.quantityInCase || !product.sku) {
+        if (!product.quantityShipped || !product.sku) {
           flag = false;
         }
       });
@@ -315,10 +303,6 @@ const ListTable = () => {
       setRunLoading(false);
     });
   };
-
-  const getAllFormParams = () => {
-    // 
-  };
   const next = () => {
     setCurrent(current + 1);
   };
@@ -340,7 +324,7 @@ const ListTable = () => {
                   sellerSKU: item.ts_sku,
                   asin: item.asin,
                   quantity: item.quantityForm,
-                  quantityInCase: item.quantityInCaseForm,
+                  quantityInCase: 1,
                 }
               })
             }
@@ -520,17 +504,12 @@ const ListTable = () => {
                     align="center"
                     size={15}
                   >
-                    <span style={{ 'marginLeft': '25px' }}>Sku:</span><Input style={{ 'width': '100px' }} value={field.ts_sku} />
+                    <span style={{ 'marginLeft': '125px' }}>Sku:</span><Input style={{ 'width': '100px' }} value={field.ts_sku} />
                     <span>asin:</span><Input value={field.asin} style={{ 'width': '100px' }} />
                     <span>Quantity:</span><InputNumber value={field.quantityForm} onChange={(val) => {
                       let newDetail: any = [...itemDetail];
                       newDetail[name].quantityForm = val;
                       setItemDetail(newDetail);
-                    }} />
-                    <span>QuantityInCase:</span><InputNumber value={field.quantityInCaseForm} onChange={(val) => {
-                      let newDetail: any = [...itemDetail];
-                      newDetail[name].quantityInCaseForm = val;
-                      setItemDetail(newDetail)
                     }} />
                   </Space>
                   <div style={{ 'padding': '0 16px 0 16px', 'marginBottom': '10px', marginTop: '15px' }}>
@@ -540,7 +519,6 @@ const ListTable = () => {
                     {field.itemName && (<span title={field.itemName} style={{ 'background': '#f9f0ff', 'color': '#991dbe', 'border': '.5px solid #d3adf7' }}>{field.itemName}</span>)}
                   </div>
                 </>))}
-
               </>
             )
           }}
@@ -566,7 +544,7 @@ const ListTable = () => {
                     >
                       <Input />
                     </Form.Item>
-                    {/* <Form.Item
+                    <Form.Item
                       {...restField}
                       label="Dimensions length"
                       name={[name, 'dimensions_length']}
@@ -621,7 +599,7 @@ const ListTable = () => {
                         <Option value="pounds">pounds</Option>
                         <Option value="other">other</Option>
                       </Select>
-                    </Form.Item> */}
+                    </Form.Item>
                     <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                       <Button
                         danger
@@ -648,82 +626,128 @@ const ListTable = () => {
   );
   const putCartonContentsForm: any = (
     <>
-      {treeForm.map((item: any, index: number) => {
-        return (
-          <div style={{ marginTop: index > 0 ? 10 : 0, paddingLeft: '100px' }}>
-            <Space>
-              <span>Carton ID ：</span>
-              <Input
-                value={item.cartonId}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  changeCartionId(index, value);
-                }}
-              />
-              <Button icon={<PlusOutlined />} block onClick={() => addProduct(index)}>
-                Add product
-              </Button>
-              <MinusCircleOutlined
-                onClick={() => {
-                  removeCarton(index);
-                }}
-              />
-            </Space>
-            <div style={{ marginTop: '20px' }}>
-              {item.products.map((product: any, productIndex: number) => {
-                return (
-                  <Space style={{ marginTop: productIndex > 0 ? 10 : 0, width: '600px' }}>
-                    <span style={{ marginLeft: '10px' }}>Sku ：</span>
-                    <Select
-                      style={{ width: '120px' }}
-                      value={product.sku}
-                      onChange={(value) => {
-                        changeProductPop(index, productIndex, value, 'sku');
-                      }}
-                    >
-                      {selectedRowKeys.map(({ ts_sku }) => {
-                        return <Option value={ts_sku}>{ts_sku}</Option>;
-                      })}
-                    </Select>
-                    <span>quantityShipped ：</span>
-                    <InputNumber
-                      style={{ width: '65px' }}
-                      value={product.quantityShipped}
-                      onChange={(value) => {
-                        changeProductPop(index, productIndex, value, 'quantityShipped');
-                      }}
-                    />
-                    <span>quantityInCase ：</span>
-                    <InputNumber
-                      style={{ width: '65px' }}
-                      value={product.quantityInCase}
-                      onChange={(value) => {
-                        changeProductPop(index, productIndex, value, 'quantityInCase');
-                      }}
-                    />
-                    <MinusCircleOutlined
-                      onClick={() => {
-                        removeProduct(index, productIndex);
-                      }}
-                    />
-                  </Space>
-                );
-              })}
+      <Tabs style={{ paddingLeft: '12px' }} defaultActiveKey={tabKey} onChange={(key) => {
+        setTabKey(key);
+      }}>
+        <TabPane tab="Form" key="1" />
+        <TabPane tab="Excel" key="2" />
+      </Tabs>
+      {tabKey === '1' && (<>
+        {treeForm.map((item: any, index: number) => {
+          return (<>
+            {index !== 0 && <Divider />}
+            <span style={{ 'position': 'absolute', 'left': '40px', 'color': '#bdb5b5', 'fontSize': '26px' }}>{item.cartonId}</span>
+            <div style={{ marginTop: index > 0 ? 10 : 0, paddingLeft: '100px' }}>
+              <Space>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Tracking ID ：</span>
+                <Input
+                  value={item.cartonId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    changeCartionId(index, value);
+                  }}
+                />
+                <Button icon={<PlusOutlined />} block onClick={() => addProduct(index)}>
+                  Add product
+                </Button>
+                <MinusCircleOutlined
+                  onClick={() => {
+                    removeCarton(index);
+                  }}
+                />
+              </Space>
+              <Space style={{ 'marginTop': '10px' }}>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Weight ：</span>
+                <InputNumber />
+              </Space>
+              <Space style={{ 'marginTop': '10px' }}>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Weight unit ：</span>
+                <InputNumber />
+              </Space>
+              <Space style={{ 'marginTop': '10px' }}>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Dimensions length ：</span>
+                <InputNumber />
+              </Space>
+              <Space style={{ 'marginTop': '10px' }}>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Dimensions width ：</span>
+                <InputNumber />
+              </Space>
+              <Space style={{ 'marginTop': '10px' }}>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Dimensions height ：</span>
+                <InputNumber />
+              </Space>
+              <Space style={{ 'marginTop': '10px' }}>
+                <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right' }}>Dimensions unit ：</span>
+                <Select allowClear style={{ 'width': '88px' }} defaultValue={'inches'}>
+                  <Option value="inches">inches</Option>
+                  <Option value="other">other</Option>
+                </Select>
+              </Space>
+              <div style={{ marginTop: '20px' }}>
+                {item.products.map((product: any, productIndex: number) => {
+                  return (
+                    <Space style={{ marginTop: productIndex > 0 ? 10 : 0, width: '600px' }}>
+                      <span style={{ marginLeft: '10px' }}>Sku ：</span>
+                      <Select
+                        style={{ width: '120px' }}
+                        value={product.sku}
+                        onChange={(value) => {
+                          changeProductPop(index, productIndex, value, 'sku');
+                        }}
+                      >
+                        {selectedRowKeys.map(({ ts_sku }) => {
+                          return <Option value={ts_sku}>{ts_sku}</Option>;
+                        })}
+                      </Select>
+                      <span>quantityShipped ：</span>
+                      <InputNumber
+                        style={{ width: '65px' }}
+                        value={product.quantityShipped}
+                        onChange={(value) => {
+                          changeProductPop(index, productIndex, value, 'quantityShipped');
+                        }}
+                      />
+                      <MinusCircleOutlined
+                        onClick={() => {
+                          removeProduct(index, productIndex);
+                        }}
+                      />
+                    </Space>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        );
-      })}
-      <div style={{ textAlign: 'center', marginTop: '10px' }}>
-        <Button
-          block
-          icon={<PlusOutlined />}
-          type="dashed"
-          style={{ width: '740px', marginBottom: '10px' }}
-          onClick={() => addCarton()}
-        >
-          add carton
-        </Button>
-      </div>
+          </>);
+        })}
+        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+          <Button
+            block
+            icon={<PlusOutlined />}
+            type="dashed"
+            style={{ width: '740px', marginBottom: '10px' }}
+            onClick={() => addCarton()}
+          >
+            add carton
+          </Button>
+        </div></>)}
+      {tabKey === '2' && (<>
+        <Space style={{ 'marginBottom': '10px' }}>
+          <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right', marginLeft: '100px' }}>Carton numbers</span>
+          <Input.Group compact>
+            <InputNumber style={{ 'width': '140px' }} />
+            <Button type="primary">Download</Button>
+          </Input.Group>
+        </Space>
+        <Dragger {...fileProps}>
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Click or drag file to this area to upload</p>
+          <p className="ant-upload-hint">
+            Support for a single or bulk upload. Strictly prohibit from uploading company data or
+            other band files
+          </p>
+        </Dragger></>)}
     </>
   );
   const updatePackageByFileForm: any = (
@@ -822,15 +846,29 @@ const ListTable = () => {
     </>
   );
   const UpdateShipmentForm: any = (<>
-    <div>
-      <Button onClick={getAllFormParams}>test</Button>
-    </div>
+    {!resMsg[current] ? (<Result
+      title="the final step!"
+      subTitle="After all steps are complete, please change the delivery status."
+      extra={[
+        <Button key="buy" onClick={() => setCurrent(0)}>Restart</Button>,
+      ]}
+    />) : (<Result
+      status="success"
+      title="successfully!"
+      extra={[
+        <Button key="buy" onClick={() => setCurrent(0)}>Restart</Button>,
+      ]}
+    />)}
   </>)
   const columns: ProColumns<listItem>[] = [
     {
-      title: 'Sku',
+      title: 'fn_sku',
+      dataIndex: 'fnsku',
+    },
+    {
+      title: 'conditionType',
       search: false,
-      dataIndex: 'ts_sku',
+      dataIndex: 'conditionType',
     },
     {
       title: 'Sku',
@@ -842,12 +880,8 @@ const ListTable = () => {
       dataIndex: 'asin',
     },
     {
-      title: 'title',
-      dataIndex: 'title',
-    },
-    {
-      title: 'fn_sku',
-      dataIndex: 'fnsku',
+      title: 'productType',
+      dataIndex: 'productType',
     },
     {
       title: 'store_name',
@@ -868,14 +902,14 @@ const ListTable = () => {
         columns={columns}
         actionRef={actionRef}
         request={async (params = {}, sort, filter) => {
-          const { data } = await getSkuList({
+          const { data, code } = await getSkuList({
             ...params,
             page: params.current,
             len: params.pageSize,
           });
           return {
             data: data.data,
-            success: true,
+            success: !!code,
             total: data.total,
           };
         }}
@@ -902,6 +936,8 @@ const ListTable = () => {
         width={800}
         destroyOnClose
         footer={[
+          <Button key="back" style={{ 'display': current === 0 ? 'inline-block' : 'none' }} onClick={handleCancel}>PrintpackingList</Button>,
+          <Button key="back" style={{ 'display': current === 1 ? 'inline-block' : 'none' }} onClick={handleCancel}>GetLables</Button>,
           <Button
             key="back"
             type="primary"
@@ -948,11 +984,7 @@ const ListTable = () => {
           ) : null}
           {steps[current].step === '1' && <div>{createShipmentForm}</div>}
           {steps[current].step === '2' && <div>{putCartonContentsForm}</div>}
-          {steps[current].step === '3' && <div>{printpackingListForm}</div>}
-          {steps[current].step === '4' && <div>{updatePackageByFileForm}</div>}
-          {steps[current].step === '5' && <div>{getLablesForm}</div>}
-          {steps[current].step === '6' && <div>{putTransportDetailsForm}</div>}
-          {steps[current].step === '7' && <div>{UpdateShipmentForm}</div>}
+          {steps[current].step === '3' && <div>{UpdateShipmentForm}</div>}
         </div>
         <div className="steps-action">
           <Collapse
@@ -975,8 +1007,8 @@ const ListTable = () => {
 
 const App: React.FC = () => (
   <div style={{ background: '#fff', padding: '8px' }}>
-    <Tabs style={{ paddingLeft: '12px' }}>
-      <Tabs.TabPane
+    <Tabs style={{ paddingLeft: '12px' }} defaultActiveKey={'1'}>
+      <TabPane
         tab={
           <span>
             <UnorderedListOutlined />
@@ -986,8 +1018,8 @@ const App: React.FC = () => (
         key="1"
       >
         <ListTable />
-      </Tabs.TabPane>
-      <Tabs.TabPane
+      </TabPane>
+      <TabPane
         tab={
           <span>
             <BellOutlined />
@@ -997,7 +1029,7 @@ const App: React.FC = () => (
         key="2"
       >
         Logs
-      </Tabs.TabPane>
+      </TabPane>
     </Tabs>
   </div>
 );
