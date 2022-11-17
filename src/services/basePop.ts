@@ -31,3 +31,10 @@ export async function getConfig() {
         method: 'POST'
     });
 }
+
+// store/getInfo
+export async function getInfo() {
+    return request('/api/store/getInfo', {
+        method: 'POST'
+    });
+}

@@ -1,10 +1,11 @@
 import { getGlobalParams, setGlobalParams } from '@/utils/globalParams';
 import { ControlOutlined } from '@ant-design/icons';
-import { Button, Form, Popover, Select, Space } from 'antd';
+import { Button, Form, Popover, Select, Space, Tag } from 'antd';
 import React from 'react';
 import { SelectLang, useModel } from 'umi';
 import Avatar from './AvatarDropdown';
 import styles from './index.less';
+import { getKesValue } from '@/utils/utils';
 
 export type SiderTheme = 'light' | 'dark';
 
@@ -15,9 +16,10 @@ const GlobalHeaderRight: React.FC = () => {
   if (!initialState || !initialState.settings) {
     return null;
   }
-
   const { navTheme, layout } = initialState.settings;
   const { configInfo = {} } = initialState;
+  let publicParms: any = getGlobalParams();
+  let storeName = configInfo['store'].find((item: any) => item.id === publicParms.store_id)?.name || '';
   let className = styles.right;
 
   if ((navTheme === 'dark' && layout === 'top') || layout === 'mix') {
@@ -47,13 +49,13 @@ const GlobalHeaderRight: React.FC = () => {
     form.resetFields();
   };
   React.useEffect(() => {
-    let publicParms = getGlobalParams();
     if (publicParms && visible) {
       form.setFieldsValue(publicParms);
     }
   }, [visible]);
   return (
     <Space className={className}>
+      {storeName && <Tag color={'#108ee9'}>{storeName}</Tag>}
       <Popover
         id="popPopover"
         placement="bottomRight"

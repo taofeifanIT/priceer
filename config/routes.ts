@@ -93,7 +93,7 @@ export default [
   {
     path: '/Shipment',
     name: 'Shipment',
-    component: './Shipment',
+    component: './shipment/Shipment',
   },
   {
     path: '/404',

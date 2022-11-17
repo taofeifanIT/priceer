@@ -1,10 +1,8 @@
 import { PageContainer } from '@ant-design/pro-components';
 import React from 'react';
-const Anlysis: React.FC = (props) => {
-  console.log(props);
+const Anlysis: React.FC = () => {
   return (
     <PageContainer>
-      <div>123</div>
     </PageContainer>
   );
 };

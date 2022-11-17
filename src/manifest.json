@@ -1,6 +1,6 @@
 {
-  "name": "RE-PRICEER",
-  "short_name": "RE-PRICEER",
+  "name": "RE-PRICER",
+  "short_name": "RE-PRICER",
   "display": "standalone",
   "start_url": "./?utm_source=homescreen",
   "theme_color": "#002140",

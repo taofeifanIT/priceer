@@ -81,3 +81,103 @@ export async function updateShipment(params: { shipment_id: string }) {
     data: params,
   });
 }
+
+
+//  shipment/submitDataByForm
+export async function submitDataByForm(params: any) {
+  return request('/api/shipment/submitDataByForm', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+// shipment/updatePackage
+export async function updatePackage(params: any) {
+  return request('/api/shipment/updatePackage', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+// shipment/getList
+export async function getList(params: any) {
+  return request('/api/shipment/getList', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+//shipment/downloadTemplate
+export async function downloadTemplate(params: any) {
+  return request('/api/shipment/downloadTemplate', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+//shipment/saveInRealTime
+export async function saveInRealTime(params: any) {
+  return request('/api/shipment/saveInRealTime', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+// shipment/getTrackingdetail
+export async function getTrackingdetail(params: { shipment_id: string }) {
+  return request('/api/shipment/getTrackingdetail', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+//store/getInfo
+export async function getInfo() {
+  return request('/api/store/getInfo', {
+    method: 'POST'
+  });
+}
+
+// store/editAddress
+export async function editAddress(params: any) {
+  return request('/api/store/editAddress', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+// /timer/getListingByAmazon
+export async function getListingByAmazon() {
+  return request('/api/timer/getListingByAmazon', {
+    method: 'POST',
+  });
+}
+
+//shipment/estimateTransport
+export async function estimateTransport(params: any) {
+  return request('/api/shipment/estimateTransport', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+//shipment/confirmTransport
+export async function confirmTransport(params: any) {
+  return request('/api/shipment/confirmTransport', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+export interface AddressItem {
+  id: number;
+  store_id: string;
+  name: string;
+  address_line1: string;
+  address_line2: string;
+  district_or_county: string;
+  city: string;
+  state_or_province_code: string;
+  postal_code: string;
+  country_code: string;
+}

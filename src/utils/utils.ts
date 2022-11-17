@@ -1,11 +1,8 @@
-// import { routerConfigs } from '../../config/router.config';
 import * as Icon from '@ant-design/icons';
 import React from 'react';
-import { getPublicKey } from './token';
-// import { exportExcel } from '@/utils/excelHelper';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-/* eslint no-useless-escape:0 import/prefer-default-export:0 */
+import { getGlobalParams } from '@/utils/globalParams';
 const reg =
   /(((^https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(?::\d+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)$/;
 
@@ -93,30 +90,21 @@ export function getKesGroup(
     | 'priceAlgorithmsData'
     | 'listing_sort_field',
 ) {
-  const allKeys = JSON.parse(getPublicKey());
+  const allKeys = getGlobalParams();
   return allKeys[parentKey];
 }
 
 export function getKesValue(
   parentKey:
-    | 'companyData'
-    | 'countryData'
-    | 'marketPlaceData'
-    | 'vendorData'
-    | 'storeData'
-    | 'tagsData'
-    | 'configsData'
-    | 'priceAlgorithmsData'
-    | 'listing_sort_field',
+    | 'company'
+    | 'country'
+    | 'market'
+    | 'store',
   key: string | number,
 ) {
-  const allKeys = JSON.parse(getPublicKey());
-  const group = allKeys[parentKey];
-  if (group instanceof Array) {
-    return group.find((item) => item.id === key);
-  } else {
-    return group[key];
-  }
+  const allKeys = getGlobalParams();
+  console.log(allKeys, parentKey, key);
+  return 1
 }
 
 export function getPageHeight() {
@@ -157,21 +145,26 @@ export function findIndexPage(arr: any[]) {
   return path;
 }
 
-export const exportPDF = (el: string, products: { fnSku: string, printQuantity: number }[]) => {
+export const exportPDF = (el: string, products: { fnSku: string, printQuantity: number }[], size: { width: number, height: number }) => {
+  const { width, height } = size;
   const elChild = (document.getElementById(el) as any).children;
   const oddChild = Array.from(elChild).filter((item: any, index: number) => index % 2 === 1);
-  let pdf = new jsPDF('l', 'mm', [70, 40]);
+  let pdf = new jsPDF('l', 'mm', [width, height]);
   let promises = oddChild.map((item: any) => {
     return html2canvas(item, {
-      scale: 2,
+      scale: 1,
       allowTaint: true,
     })
   });
+  let pdfHeight = height * 0.575;
+  if (height < 30) {
+    pdfHeight = height * 0.6;
+  }
   Promise.all(promises).then((canvas) => {
     canvas.forEach((item, index) => {
       let imgData = item.toDataURL('image/png', 1.0);
       new Array(products[index].printQuantity).fill('').forEach((_, subIndex) => {
-        pdf.addImage(imgData, 'JPEG', 5, 5, 60, 23);
+        pdf.addImage(imgData, 'JPEG', 5, 5, width - 10, pdfHeight);
         if (index !== canvas.length - 1 || subIndex !== products[index].printQuantity - 1) {
           pdf.addPage();
         }

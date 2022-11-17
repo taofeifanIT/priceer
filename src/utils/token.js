@@ -36,21 +36,3 @@ export function removeToken() {
   localStorage.removeItem('token');
 }
 
-export function setPublicParams(value) {
-  localStorage.setItem('publicParams', JSON.stringify(value));
-}
-export function getPublicParams() {
-  const publicParams = localStorage.getItem('publicParams')
-  let params = null
-  if (publicParams) {
-    params = JSON.parse(publicParams)
-  }
-  return params
-}
-
-export function setPublicKeys(value) {
-  localStorage.setItem('publicKeys', JSON.stringify(value));
-}
-export function getPublicKey() {
-  return localStorage.getItem('publicKeys') || "";
-}
