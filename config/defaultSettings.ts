@@ -1,5 +1,4 @@
 import { Settings as LayoutSettings } from '@ant-design/pro-components';
-
 const Settings: LayoutSettings & {
   pwa?: boolean;
   logo?: string;
@@ -12,9 +11,9 @@ const Settings: LayoutSettings & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'RE-PRICER',
+  title: 'ChannelConnector',
   pwa: false,
-  logo: null,
+  logo: '/subLogo.png',
   iconfontUrl: '',
   headerHeight: 48,
   splitMenus: false

@@ -1,5 +1,5 @@
 export default {
-  'pages.layouts.userLayout.title': '致力于成为最好的RE-PRICER ！',
+  'pages.layouts.userLayout.title': '致力于成为最好的ChannelConnector ！',
   'pages.login.accountLogin.tab': '账户密码登录',
   'pages.login.accountLogin.errorMessage': '错误的用户名和密码(admin)',
   'pages.login.failure': '登录失败，请重试！',

@@ -92,11 +92,13 @@ export default () => {
             title: 'created_at',
             key: 'showTime',
             dataIndex: 'created_at',
+            ellipsis: true,
             search: false,
         },
         {
             title: 'Memo',
             dataIndex: 'memo',
+            ellipsis: true,
             search: false,
         },
         {
@@ -107,7 +109,7 @@ export default () => {
                 <a
                     key="editable"
                     onClick={() => {
-                        const { goods, shipment_id, address, form_data } = record
+                        const { goods, shipment_id, address, form_data, ship_to_address } = record
                         let tempParams = {
                             selectedRowKeys: goods.map((item: any) => {
                                 return {
@@ -120,7 +122,8 @@ export default () => {
                             formData: {
                                 ...form_data,
                                 packages: form_data.items
-                            }
+                            },
+                            ship_to_address
                         }
                         setAllParams(tempParams)
                         createShipmentModal.current.showModal(tempParams)
@@ -167,7 +170,7 @@ export default () => {
                     if (type === 'get') {
                         return {
                             ...values,
-                            created_at: [values.startTime, values.endTime],
+                            // created_at: [values.startTime, values.endTime],
                         };
                     }
                     return values;

@@ -1,21 +1,21 @@
 {
-  "name": "RE-PRICER",
-  "short_name": "RE-PRICER",
+  "name": "ChannelConnector",
+  "short_name": "ChannelConnector",
   "display": "standalone",
   "start_url": "./?utm_source=homescreen",
   "theme_color": "#002140",
   "background_color": "#001529",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "logo_n.png",
       "sizes": "192x192"
     },
     {
-      "src": "logo.png",
+      "src": "logo_n.png",
       "sizes": "128x128"
     },
     {
-      "src": "logo.png",
+      "src": "logo_n.png",
       "sizes": "512x512"
     }
   ]

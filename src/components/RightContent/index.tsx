@@ -1,11 +1,10 @@
-import { getGlobalParams, setGlobalParams } from '@/utils/globalParams';
+import { getGlobalParams, setGlobalParams, setCountry } from '@/utils/globalParams';
 import { ControlOutlined } from '@ant-design/icons';
 import { Button, Form, Popover, Select, Space, Tag } from 'antd';
 import React from 'react';
 import { SelectLang, useModel } from 'umi';
 import Avatar from './AvatarDropdown';
 import styles from './index.less';
-import { getKesValue } from '@/utils/utils';
 
 export type SiderTheme = 'light' | 'dark';
 
@@ -19,7 +18,7 @@ const GlobalHeaderRight: React.FC = () => {
   const { navTheme, layout } = initialState.settings;
   const { configInfo = {} } = initialState;
   let publicParms: any = getGlobalParams();
-  let storeName = configInfo['store'].find((item: any) => item.id === publicParms.store_id)?.name || '';
+  let storeName = configInfo['store']?.find((item: any) => item.id === publicParms.store_id)?.nick_name || '';
   let className = styles.right;
 
   if ((navTheme === 'dark' && layout === 'top') || layout === 'mix') {
@@ -41,6 +40,9 @@ const GlobalHeaderRight: React.FC = () => {
 
   const onFinish = (fieldsValue: any) => {
     setGlobalParams(JSON.stringify(fieldsValue));
+    const storeId = fieldsValue.store_id;
+    const country = configInfo['store']?.find((item: any) => item.id === storeId)?.country;
+    setCountry(country);
     setVisible(false);
     history.go(0);
   };
@@ -70,9 +72,7 @@ const GlobalHeaderRight: React.FC = () => {
               initialValues={{
                 company_id: 0,
                 country_id: 0,
-                marketplace_id: 0,
                 store_id: 0,
-                vendor_id: 0,
               }}
               {...formItemLayout}
               onFinish={onFinish}

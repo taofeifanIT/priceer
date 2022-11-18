@@ -47,10 +47,11 @@ import {
     Spin,
     Checkbox,
     Popconfirm,
-    Tooltip
+    Tooltip,
 } from 'antd';
 import 'antd/dist/antd.css';
 import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { getCountry } from '@/utils/globalParams';
 const { Step } = Steps;
 
 const { Panel } = Collapse;
@@ -350,18 +351,19 @@ const PrintBarCodeModal = forwardRef((props, ref) => {
     const [barcodeObj, setBarcodeObj] = useState<any>([]);
     const [barCodeSize, setBarCodeSize] = useState<any>(barCodeSizeGroup[8]);
     const [details, setDetails] = useState<listItem[]>([]);
+    const [printSkus, setPrintSkus] = useState<string[]>([]);
     useImperativeHandle(ref, () => ({
         showModal: (selectedRowKeys: listItem[]) => {
             setVisible(true);
             setDetails(selectedRowKeys);
-            // createBarCode(selectedRowKeys)
+            setPrintSkus(selectedRowKeys.map((item: listItem) => item.ts_sku));
         }
     }));
     const createBarCode = () => {
         setLoading(true);
         const { width, height } = barCodeSize
-        let promises = details.map((item) => {
-            return printBarCode({ sku: item.ts_sku });
+        let promises = printSkus.map((sku) => {
+            return printBarCode({ sku: sku });
         });
         Promise.all(promises).then((res: any) => {
             let flag = true;
@@ -392,13 +394,29 @@ const PrintBarCodeModal = forwardRef((props, ref) => {
         <Modal open={visible} onCancel={() => setVisible(false)} width={640} title='Bar code'>
             <Spin spinning={loading}>
                 <Space>
-                    <span>Size:</span>
+                    <span style={{ 'width': '40px', 'display': 'inline-block' }}>Size:</span>
                     <Select style={{ 'width': '430px' }} defaultValue={'24-up labels 70mm x 40mm on A4'} onChange={changeSize}>
                         {barCodeSizeGroup.map((item) => {
                             return <Option value={item.title}>{item.title}</Option>
                         })}
                     </Select>
                     <Button type='primary' onClick={createBarCode}>Download PDF</Button>
+                </Space>
+                <Space style={{ 'marginTop': '10px' }}>
+                    <span style={{ 'width': '40px', 'display': 'inline-block' }}>Skus:</span>
+                    <Select
+                        mode="multiple"
+                        allowClear
+                        style={{ width: '430px' }}
+                        placeholder="Please select"
+                        defaultValue={printSkus}
+                        onChange={(skus) => {
+                            setPrintSkus(skus);
+                        }}
+                        options={details.map((item) => {
+                            return { label: item.ts_sku, value: item.ts_sku }
+                        })}
+                    />
                 </Space>
                 <div id={'viewBarCode'}>
                     {barcodeObj.map((item: any) => {
@@ -533,7 +551,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     const [createShipmentformRef] = Form.useForm();
     const [current, setCurrent] = useState(0);
     const [runLoading, setRunLoading] = useState(false);
-    const [resMsg, setResMsg] = useState<string[]>(['', '', '', '', '', '']);
+    const [resMsg, setResMsg] = useState<string[]>(['', '', '']);
     const [shipmentId, setShipmentId] = useState(shipment_id); // FBA15D7Y6JQT
     const [treeForm, setFreeForm] = useState<any>([]);
     const [tabKey, setTabKey] = useState('1');
@@ -542,6 +560,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     const [getAddressLoading, setGetAddressLoading] = useState(false);
     const [carton_number, setCarton_number] = useState<number>(1);
     const [isEdit, setIsEdit] = useState(false);
+    const [shipToAddress, setShipToAddress] = useState<any>({});
     const [amount, setAmount] = useState<{
         CurrencyCode: string,
         Value: number
@@ -550,7 +569,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     useImperativeHandle(ref, () => ({
         showModal: (params?: any) => {
             if (params) {
-                const { formData, selectedRowKeys, shipment_id } = params
+                const { formData, selectedRowKeys, shipment_id, ship_to_address } = params
                 const { carrierName, packages } = formData
                 setShipmentId(shipment_id)
                 setFreeForm(packages || [])
@@ -558,6 +577,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
                 setCarton_number(packages?.length)
                 setItemDetail(selectedRowKeys)
                 setIsEdit(true)
+                setShipToAddress(ship_to_address)
                 setCurrent(1)
             }
             setIsModalOpen(true);
@@ -568,6 +588,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     };
     const handleCancel = () => {
         setIsModalOpen(false);
+        setShipToAddress({})
     };
     const addCarton = () => {
         let lastItem = treeForm[treeForm.length - 1];
@@ -575,19 +596,20 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
         if (lastItem) {
             cartonId = 'U' + String(Number(lastItem.cartonId.slice(1)) + 1).padStart(6, '0');
         }
+        const country = getCountry()
         setFreeForm([
             ...treeForm,
             {
                 trackingId: '',
                 weight_value: '',
-                weight_unit: 'pounds',
+                weight_unit: country === 'US' ? 'pounds' : 'kilograms',
                 dimensions_length: '',
                 dimensions_width: '',
                 dimensions_height: '',
-                dimensions_unit: 'inches',
+                dimensions_unit: country === 'US' ? 'inches' : 'centimeters',
                 cartonId: cartonId,
                 products: [
-                    { sku: '', quantityShipped: '', quantityInCase: 1 }
+                    { sku: '', quantityShipped: '', quantityInCase: 1, fnSku: '' }
                 ]
             },
         ]);
@@ -612,7 +634,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
             return;
         }
         const newTreeForm = [...treeForm];
-        newTreeForm[index].products.push({ sku: '', quantityShipped: '', quantityInCase: 1 });
+        newTreeForm[index].products.push({ sku: '', quantityShipped: '', quantityInCase: 1, fnSku: '' });
         setFreeForm(newTreeForm);
     };
     const changeFreeFormPop = (index: number, key: string, value: any) => {
@@ -623,6 +645,12 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     const changeProductPop = (index: number, index2: number, value: any, key: string) => {
         const newTreeForm = [...treeForm];
         newTreeForm[index].products[index2][key] = value;
+        if (key === 'sku') {
+            const item = itemDetail.find((item) => item.ts_sku === value)
+            if (item) {
+                newTreeForm[index].products[index2].fnSku = item.fnsku
+            }
+        }
         setFreeForm(newTreeForm);
     };
     const toCreateShipment = async (values: any) => {
@@ -1009,6 +1037,31 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
         }} />
     </div>)
 
+    const shipToAddressTable = (<div style={{ 'marginBottom': '10px', 'textAlign': 'center' }}>
+        {/* <table style={{ 'display': 'inline-block' }} border="1">
+            {Object.keys(shipToAddress).map((key) => {
+                return <th>{key}</th>
+            })}
+            <tbody>
+                <tr>
+                    {Object.values(shipToAddress).map((value: any) => {
+                        return <td align='left'>{value}</td>
+                    })}
+                </tr>
+            </tbody>
+        </table> */}
+        <h3>{['AddressLine1', 'AddressLine1', 'City', 'StateOrProvinceCode', 'PostalCode', 'CountryCode'].map(item => {
+            let fh = ' ';
+            if (shipToAddress[item]) {
+                if (item === 'City' || item === 'CountryCode' || item === 'StateOrProvinceCode') {
+                    fh = ','
+                }
+                return fh + shipToAddress[item]
+            }
+        })}</h3>
+        <Divider />
+    </div>)
+
     const putCartonContentsForm: any = (
         <>
             <Tabs defaultActiveKey={tabKey} onChange={(key) => {
@@ -1016,6 +1069,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
             }}>
                 <TabPane tab={<span style={{ 'marginLeft': '30px' }}>Form</span>} key="1">
                     <>
+                        {(shipToAddress !== '{}' && JSON.stringify(shipToAddress) !== '{}') && shipToAddressTable}
                         <Space style={{ 'marginBottom': '10px', 'paddingLeft': '138px' }}>
                             <span>Carrier name ：</span>
                             <Select style={{ 'width': '273px' }} value={carrierName} onChange={setCarrierName}>
@@ -1080,7 +1134,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
                                     </Space>
                                     <div style={{ marginTop: '20px' }}>
                                         {item.products.map((product: any, productIndex: number) => {
-                                            return (
+                                            return (<>
                                                 <Space style={{ marginTop: productIndex > 0 ? 10 : 0, width: '600px' }}>
                                                     <span style={{ marginLeft: '10px' }}>Sku ：</span>
                                                     <Select
@@ -1106,8 +1160,9 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
                                                     <Popconfirm title="Are you sure delete this product?" onConfirm={() => removeProduct(index, productIndex)}>
                                                         <MinusCircleOutlined />
                                                     </Popconfirm>
+                                                    {product.fnSku && <Tag style={{ 'marginLeft': productIndex > 0 ? '22px' : '0' }}>{product.fnSku}</Tag>}
                                                 </Space>
-                                            );
+                                            </>);
                                         })}
                                     </div>
                                 </div>
@@ -1130,6 +1185,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
                 </TabPane>
                 <TabPane tab="Excel" key="2">
                     <>
+                        {(shipToAddress !== '{}' && JSON.stringify(shipToAddress) !== '{}') && shipToAddressTable}
                         <Space style={{ 'marginBottom': '10px' }}>
                             <span style={{ 'display': 'inline-block', 'width': '135px', 'textAlign': 'right', marginLeft: '140px' }}>Carton numbers</span>
                             <Input.Group compact>
