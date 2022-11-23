@@ -1,8 +1,10 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { useRef, useState } from 'react';
-import { getList } from '@/services/shipment'
+import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { getList, deleteShipment } from '@/services/shipment'
+import { Modal } from 'antd'
 import CreateShipmentModal from './CreateShipmentModal'
+import Delete from '@/components/Delete'
 
 type GithubIssueItem = {
     url: string;
@@ -21,12 +23,31 @@ type GithubIssueItem = {
 };
 
 
+const ShowResponse = forwardRef((props: any, ref: any) => {
+    const [visible, setVisible] = useState(false)
+    const [data, setData] = useState<any>({})
+    useImperativeHandle(ref, () => ({
+        show: (data: any) => {
+            setData(data)
+            setVisible(true)
+        }
+    }))
+    return (<Modal
+        width={1000}
+        visible={visible}
+        onCancel={() => setVisible(false)}
+        onOk={() => setVisible(false)}>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+    </Modal>)
+})
+
 export default () => {
     const actionRef = useRef<ActionType>();
     const [allParams, setAllParams] = useState<{
         selectedRowKeys: any[], shipment_id?: string, addressInfo?: any, formData?: any[]
     }>({ selectedRowKeys: [], shipment_id: '', addressInfo: {}, formData: [] });
     const createShipmentModal: any = useRef();
+    const showResponse: any = useRef();
 
     const columns: ProColumns<any>[] = [
         {
@@ -85,7 +106,9 @@ export default () => {
             dataIndex: 'log',
             search: false,
             render: (_, record) => {
-                return (<a>{record.log.length}</a>)
+                return (<a onClick={() => {
+                    showResponse.current.show(record.log)
+                }}>{record.log.length}</a>)
             }
         },
         {
@@ -130,7 +153,8 @@ export default () => {
                     }}
                 >
                     Edit
-                </a>
+                </a>,
+                <Delete key={'delete'} params={{ shipment_id: record.shipment_id }} api={deleteShipment} initData={() => actionRef.current?.reload()} />
             ],
         },
     ];
@@ -182,6 +206,7 @@ export default () => {
             }}
             dateFormatter="string"
         />
-        <CreateShipmentModal {...allParams} ref={createShipmentModal} />
+        <CreateShipmentModal {...allParams} ref={createShipmentModal} initData={() => { actionRef.current?.reload() }} />
+        <ShowResponse ref={showResponse} />
     </>);
 };

@@ -35,6 +35,7 @@ export async function putCartonContents(params: any) {
   return request('/api/shipment/putCartonContents', {
     method: 'POST',
     data: params,
+    timeout: 1000 * 60 * 5,
   });
 }
 
@@ -44,6 +45,7 @@ export async function updatePackageByFile(params: { shipment_id: string; file: a
     method: 'POST',
     data: params,
     requestType: 'form',
+    timeout: 1000 * 60 * 5,
   });
 }
 
@@ -164,6 +166,21 @@ export async function estimateTransport(params: any) {
 //shipment/confirmTransport
 export async function confirmTransport(params: any) {
   return request('/api/shipment/confirmTransport', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+// shipment/updateFnSku
+export async function updateFnSku(params: { sku: string }) {
+  return request('/api/shipment/updateFnSku', {
+    method: 'POST',
+    data: params,
+  });
+}
+// shipment/deleteShipment
+export async function deleteShipment(params: { shipment_id: string }) {
+  return request('/api/shipment/deleteShipment', {
     method: 'POST',
     data: params,
   });

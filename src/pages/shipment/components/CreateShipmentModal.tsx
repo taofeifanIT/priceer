@@ -170,6 +170,17 @@ const PrepOwner = [
     "SELLER"
 ]
 
+const shipToCountryCode = [
+    {
+        title: 'ShipToCountryCode values forNorth America',
+        value: ["CA", "MX", "US"]
+    },
+    {
+        title: 'ShipToCountryCode values forMCI sellers in Europe:',
+        value: ["DE", "ES", "FR", "GB", "IT"]
+    }
+]
+
 const FnBtn = (props: { title: string; api: any; params: any, callback: (msg: string) => void, ghost?: boolean }) => {
     const { title, api, params, callback, ghost } = props;
     const [loading, setLoading] = useState(false);
@@ -532,8 +543,8 @@ const PrintLablesModal = forwardRef((props, ref) => {
     </>)
 });
 
-const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], shipment_id?: string, addressInfo?: any, formData?: any }, ref) => {
-    const { selectedRowKeys, shipment_id, addressInfo = undefined } = props;
+const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], initData?: () => void, shipment_id?: string, addressInfo?: any, formData?: any }, ref) => {
+    const { selectedRowKeys, shipment_id, addressInfo = undefined, initData = null } = props;
     const printBarcodeModal: any = useRef();
     const printLablesModal: any = useRef();
     const [itemDetail, setItemDetail] = useState<listItem[]>(selectedRowKeys.map((item) => {
@@ -554,7 +565,6 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     const [resMsg, setResMsg] = useState<string[]>(['', '', '']);
     const [shipmentId, setShipmentId] = useState(shipment_id); // FBA15D7Y6JQT
     const [treeForm, setFreeForm] = useState<any>([]);
-    const [tabKey, setTabKey] = useState('1');
     const [address, setAddress] = useState<addressItem[]>([]);
     const [carrierName, setCarrierName] = useState('other');
     const [getAddressLoading, setGetAddressLoading] = useState(false);
@@ -589,6 +599,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     const handleCancel = () => {
         setIsModalOpen(false);
         setShipToAddress({})
+        initData && initData()
     };
     const addCarton = () => {
         let lastItem = treeForm[treeForm.length - 1];
@@ -660,11 +671,13 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
             const res = await createShipmentPlan(values);
             if (res.code != 0) {
                 msg = JSON.stringify(res) + '\n';
-                const { ShipmentId } = res.data[0];
-                const subRes = await createShipment(ShipmentId);
+                const shipmentIds = res.data.map((item: any) => {
+                    return item.ShipmentId
+                }).join(",")
+                const subRes = await createShipment(shipmentIds);
                 msg += JSON.stringify(subRes);
                 if (subRes.code != 0) {
-                    setShipmentId(ShipmentId);
+                    setShipmentId(shipmentIds);
                     setRunLoading(false);
                     message.success('CreateShipment success!');
                 } else {
@@ -841,6 +854,25 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
     const createShipmentForm: any = (
         <Spin spinning={getAddressLoading}>
             <Form {...layout} form={createShipmentformRef}>
+                <Form.Item name='shipToCountryCode' label="ShipToCountryCode" rules={[{ required: false }]} initialValue={""}>
+                    <Select>
+                        <Option value="">Default</Option>
+                        {shipToCountryCode.map((item) => {
+                            return (
+                                <Select.OptGroup label={item.title}>
+                                    {item.value.map((subItem) => {
+                                        return (
+                                            <Option value={subItem}>
+                                                {subItem}
+                                            </Option>
+                                        );
+                                    })}
+                                </Select.OptGroup>
+                            );
+                        })}
+                    </Select>
+                </Form.Item>
+                <Divider style={{ 'height': '10px', 'background': '#fff', 'borderTop': '.75px solid #e7dfdf', 'borderBottom': '.75px solid #e7dfdf' }} />
                 {address.length > 0 && (<Form.Item name='address_id' label="Address list" initialValue={address[0].id}>
                     <Select onChange={(val) => {
                         const tempAddress = address.filter(item => item.id === val)[0];
@@ -1037,36 +1069,19 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
         }} />
     </div>)
 
-    const shipToAddressTable = (<div style={{ 'marginBottom': '10px', 'textAlign': 'center' }}>
-        {/* <table style={{ 'display': 'inline-block' }} border="1">
-            {Object.keys(shipToAddress).map((key) => {
-                return <th>{key}</th>
-            })}
-            <tbody>
-                <tr>
-                    {Object.values(shipToAddress).map((value: any) => {
-                        return <td align='left'>{value}</td>
-                    })}
-                </tr>
-            </tbody>
-        </table> */}
-        <h3>{['AddressLine1', 'AddressLine1', 'City', 'StateOrProvinceCode', 'PostalCode', 'CountryCode'].map(item => {
-            let fh = ' ';
-            if (shipToAddress[item]) {
-                if (item === 'City' || item === 'CountryCode' || item === 'StateOrProvinceCode') {
-                    fh = ','
-                }
-                return fh + shipToAddress[item]
-            }
-        })}</h3>
+    const shipToAddressTable = (<div style={{ 'textAlign': 'center' }}>
+        <div style={{ 'textAlign': 'left', 'display': 'inline-block', 'fontWeight': '700' }}>
+            <p>{shipToAddress['Name']}</p>
+            <p>{shipToAddress['AddressLine1'] + shipToAddress['AddressLine2'] || ""}</p>
+            <p>{shipToAddress['City'] + "," + shipToAddress['StateOrProvinceCode'] + " " + shipToAddress['PostalCode']}</p>
+            <p>{shipToAddress['CountryCode'] + `(${shipToAddress['center_id']})`}</p>
+        </div>
         <Divider />
     </div>)
 
     const putCartonContentsForm: any = (
         <>
-            <Tabs defaultActiveKey={tabKey} onChange={(key) => {
-                setTabKey(key);
-            }}>
+            <Tabs defaultActiveKey={"1"}>
                 <TabPane tab={<span style={{ 'marginLeft': '30px' }}>Form</span>} key="1">
                     <>
                         {(shipToAddress !== '{}' && JSON.stringify(shipToAddress) !== '{}') && shipToAddressTable}
@@ -1230,9 +1245,9 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], sh
         if (isModalOpen && treeForm.length > 0 && shipmentId && current === 1) {
             timerRef.current = setInterval(() => {
                 // 打印当前时间
-                console.log(new Date().toLocaleTimeString());
+                // console.log(new Date().toLocaleTimeString());
                 saveParams();
-            }, 1000 * 10)
+            }, 1000 * 20)
         } else {
             clearInterval(timerRef.current);
         }

@@ -2,7 +2,8 @@ import {
     getSkuList,
     getInfo,
     editAddress,
-    getListingByAmazon
+    getListingByAmazon,
+    updateFnSku
 } from '@/services/shipment';
 import type { AddressItem } from '@/services/shipment';
 import { ProColumns } from '@ant-design/pro-components';
@@ -19,6 +20,9 @@ import {
     Typography,
     message
 } from 'antd';
+import {
+    SyncOutlined
+} from '@ant-design/icons';
 import 'antd/dist/antd.css';
 import { useRef, useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import CreateShipmentModal from './CreateShipmentModal'
@@ -262,6 +266,27 @@ const Address = forwardRef((props: any, ref: any) => {
     </Modal>)
 });
 
+const RefreshFnku = (props: { sku: string, refresh: () => void }) => {
+    const { sku, refresh } = props;
+    const [loading, setLoading] = useState(false);
+    const getFnsku = () => {
+        setLoading(true);
+        updateFnSku({ sku }).then(res => {
+            if (res.code !== 0) {
+                refresh();
+            } else {
+                message.error(JSON.stringify(res.msg));
+            }
+        }).catch(err => {
+            message.error(JSON.stringify(err));
+            setLoading(false);
+        }).finally(() => {
+            setLoading(false);
+        })
+    };
+    return (<a onClick={getFnsku}><SyncOutlined spin={loading} /></a>)
+}
+
 
 const ListTable = () => {
     const actionRef: any = useRef<FormInstance>();
@@ -302,6 +327,16 @@ const ListTable = () => {
             dataIndex: 'store_name',
             search: false,
         },
+        {
+            // action
+            title: 'action',
+            dataIndex: 'option',
+            valueType: 'option',
+            align: 'center',
+            render: (_, record) => [
+                <RefreshFnku sku={record.ts_sku} refresh={refresh} key={'RefreshFnku'} />
+            ],
+        }
     ];
     const pullDataFn = () => {
         setPullDataLoading(true);
@@ -315,6 +350,9 @@ const ListTable = () => {
         }).finally(() => {
             setPullDataLoading(false);
         })
+    }
+    const refresh = () => {
+        actionRef.current.reload();
     }
     return (<>
         <ProTable<listItem>
