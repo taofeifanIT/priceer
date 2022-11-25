@@ -50,6 +50,9 @@ const GlobalHeaderRight: React.FC = () => {
   const onReset = () => {
     form.resetFields();
   };
+
+  const colorByStoreName = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padEnd(6, '0')
+
   React.useEffect(() => {
     if (publicParms && visible) {
       form.setFieldsValue(publicParms);
@@ -57,7 +60,7 @@ const GlobalHeaderRight: React.FC = () => {
   }, [visible]);
   return (
     <Space className={className}>
-      {storeName && <Tag color={'#108ee9'}>{storeName}</Tag>}
+      {storeName && <Tag color={colorByStoreName}>{storeName}</Tag>}
       <Popover
         id="popPopover"
         placement="bottomRight"

@@ -178,6 +178,10 @@ const shipToCountryCode = [
     {
         title: 'ShipToCountryCode values forMCI sellers in Europe:',
         value: ["DE", "ES", "FR", "GB", "IT"]
+    },
+    {
+        title: 'ShipToCountryCode values forMCI sellers in Oceania:',
+        value: ["AU", "NZ"]
     }
 ]
 
@@ -1072,7 +1076,7 @@ const CreateShipmentModal = forwardRef((props: { selectedRowKeys: listItem[], in
     const shipToAddressTable = (<div style={{ 'textAlign': 'center' }}>
         <div style={{ 'textAlign': 'left', 'display': 'inline-block', 'fontWeight': '700' }}>
             <p>{shipToAddress['Name']}</p>
-            <p>{shipToAddress['AddressLine1'] + shipToAddress['AddressLine2'] || ""}</p>
+            <p>{shipToAddress['AddressLine1'] + (shipToAddress['AddressLine2'] || "")}</p>
             <p>{shipToAddress['City'] + "," + shipToAddress['StateOrProvinceCode'] + " " + shipToAddress['PostalCode']}</p>
             <p>{shipToAddress['CountryCode'] + `(${shipToAddress['center_id']})`}</p>
         </div>

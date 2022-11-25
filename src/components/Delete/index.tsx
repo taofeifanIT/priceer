@@ -33,7 +33,7 @@ function DeleteComponent(props: { params: any; api: any, initData: () => void })
     };
     return (
         <Popconfirm
-            title="Are you sure you want to delete this data？"
+            title="Are you sure you want to delete this data?"
             visible={visible}
             onConfirm={handleOk}
             okButtonProps={{ loading: confirmLoading }}

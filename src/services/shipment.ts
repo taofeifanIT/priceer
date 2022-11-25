@@ -186,6 +186,14 @@ export async function deleteShipment(params: { shipment_id: string }) {
   });
 }
 
+//shipment/getLog
+export async function getLog(params: { shipment_id: string }) {
+  return request('/api/shipment/getLog', {
+    method: 'POST',
+    data: params,
+  });
+}
+
 export interface AddressItem {
   id: number;
   store_id: string;

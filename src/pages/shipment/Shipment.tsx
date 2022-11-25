@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons';
 import {
   Tabs,
+  Button
 } from 'antd';
 import 'antd/dist/antd.css';
 

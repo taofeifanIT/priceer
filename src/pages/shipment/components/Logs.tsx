@@ -1,8 +1,8 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
-import { getList, deleteShipment } from '@/services/shipment'
-import { Modal } from 'antd'
+import { getList, deleteShipment, getLog } from '@/services/shipment'
+import { Modal, Spin, message } from 'antd'
 import CreateShipmentModal from './CreateShipmentModal'
 import Delete from '@/components/Delete'
 
@@ -23,21 +23,40 @@ type GithubIssueItem = {
 };
 
 
-const ShowResponse = forwardRef((props: any, ref: any) => {
+const ShowResponse = forwardRef((_: any, ref: any) => {
     const [visible, setVisible] = useState(false)
-    const [data, setData] = useState<any>({})
+    const [data, setData] = useState<any>([])
+    const [loading, setLoading] = useState(false)
     useImperativeHandle(ref, () => ({
-        show: (data: any) => {
-            setData(data)
+        show: (shipment_id: any) => {
             setVisible(true)
+            setLoading(true)
+            getLog({ shipment_id }).then(res => {
+                if (res.code) {
+                    setData(res.data)
+                } else {
+                    throw res.msg
+                }
+            }).catch(e => {
+                message.error(e)
+            }).finally(() => {
+                setLoading(false)
+            })
         }
     }))
+    const handleCancel = () => {
+        setVisible(false)
+        setData([])
+    }
     return (<Modal
+        title="Response log"
         width={1000}
         visible={visible}
-        onCancel={() => setVisible(false)}
-        onOk={() => setVisible(false)}>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
+        onCancel={handleCancel}
+        onOk={handleCancel}>
+        <Spin spinning={loading}>
+            <pre>{JSON.stringify(data, null, 2)}</pre>
+        </Spin>
     </Modal>)
 })
 
@@ -103,12 +122,12 @@ export default () => {
         {
             disable: true,
             title: 'RequestLogs',
-            dataIndex: 'log',
+            dataIndex: 'log_num',
             search: false,
-            render: (_, record) => {
+            render: (text, record) => {
                 return (<a onClick={() => {
-                    showResponse.current.show(record.log)
-                }}>{record.log.length}</a>)
+                    showResponse.current.show(record.shipment_id)
+                }}>{text}</a>)
             }
         },
         {
