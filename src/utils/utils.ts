@@ -103,8 +103,7 @@ export function getKesValue(
   key: string | number,
 ) {
   const allKeys = getGlobalParams();
-  console.log(allKeys, parentKey, key);
-  return 1
+  return allKeys[parentKey].find((item: any) => item.key == key);
 }
 
 export function getPageHeight() {

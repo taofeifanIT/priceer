@@ -359,7 +359,6 @@ const AddModal = React.memo((props: {
   width?: number;
   confirmLoading?: boolean;
 }) => {
-  console.log("重新渲染")
   return (
     <>
       <Modal {...props} okText="ok" cancelText="cancel">
@@ -435,7 +434,6 @@ function TreeData(props: any) {
           <a
             onClick={() => {
               setVisible(true);
-              console.log(record);
               setEditRecord(record);
             }}
           >

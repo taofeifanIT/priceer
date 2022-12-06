@@ -5,8 +5,7 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import {
-  Tabs,
-  Button
+  Tabs
 } from 'antd';
 import 'antd/dist/antd.css';
 

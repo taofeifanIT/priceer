@@ -53,6 +53,7 @@ interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
     record: AddressItem;
     index: number;
     children: React.ReactNode;
+    required?: boolean;
 }
 
 const EditableCell: React.FC<EditableCellProps> = ({
@@ -63,6 +64,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
     record,
     index,
     children,
+    required,
     ...restProps
 }) => {
     const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
@@ -74,7 +76,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
                     style={{ margin: 0 }}
                     rules={[
                         {
-                            required: true,
+                            required,
                             message: `Please Input ${title}!`,
                         },
                     ]}
@@ -110,7 +112,7 @@ const Address = forwardRef((props: any, ref: any) => {
                     ...item,
                     ...row,
                 });
-                editAddress(item).then(res => {
+                editAddress(newData[index]).then(res => {
                     if (res.code !== 0) {
                         setData(newData);
                         setEditingKey('');
@@ -170,6 +172,7 @@ const Address = forwardRef((props: any, ref: any) => {
             dataIndex: 'address_line2',
             width: '15%',
             editable: true,
+            required: false,
         },
         {
             title: 'districtOrCounty',
@@ -204,7 +207,7 @@ const Address = forwardRef((props: any, ref: any) => {
         {
             title: 'operation',
             dataIndex: 'operation',
-            render: (_: any, record: Item) => {
+            render: (_: any, record: AddressItem) => {
                 const editable = isEditing(record);
                 return editable ? (
                     <span>
@@ -390,13 +393,13 @@ const ListTable = () => {
                 <Button type='primary' key={'address '} style={{ 'background': '#6e44d3' }} onClick={() => { addressModal.current.showModal() }}>Address</Button>,
                 <Button loading={pullDataLoading} onClick={pullDataFn}>Pull data</Button>,
                 <Button disabled={!selectedRowKeys.length} key="Createshipment" type="primary" onClick={() => {
-                    createShipmentModal.current.showModal();
+                    createShipmentModal.current.showModal({ selectedRowKeys });
                 }}>
                     Create shipment
                 </Button>
             ]}
         />
-        <CreateShipmentModal key={selectedRowKeys.length + 'createShipmentModal'} ref={createShipmentModal} selectedRowKeys={selectedRowKeys} />
+        <CreateShipmentModal ref={createShipmentModal} />
         <Address ref={addressModal} />
     </>)
 }

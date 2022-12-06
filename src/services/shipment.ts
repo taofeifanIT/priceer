@@ -194,6 +194,14 @@ export async function getLog(params: { shipment_id: string }) {
   });
 }
 
+// shipment/getShipment
+export async function getShipment(params: { shipment_id: string }) {
+  return request('/api/shipment/getShipment', {
+    method: 'POST',
+    data: params,
+  });
+}
+
 export interface AddressItem {
   id: number;
   store_id: string;
@@ -206,3 +214,20 @@ export interface AddressItem {
   postal_code: string;
   country_code: string;
 }
+
+export type ListItem = {
+  asin: string;
+  ts_sku: string;
+  fnsku: string;
+  quantity: number;
+  title: string;
+  conditionType: string;
+  productType: string;
+  itemName: string;
+  store_id: number;
+  store_name: string;
+  quantityForm?: number;
+  quantityInCaseForm?: number;
+  printQuantity?: number;
+  prepDetailsList?: { prepInstruction: string, prepOwner: string }[];
+};

@@ -63,8 +63,8 @@ const ShowResponse = forwardRef((_: any, ref: any) => {
 export default () => {
     const actionRef = useRef<ActionType>();
     const [allParams, setAllParams] = useState<{
-        selectedRowKeys: any[], shipment_id?: string, addressInfo?: any, formData?: any[]
-    }>({ selectedRowKeys: [], shipment_id: '', addressInfo: {}, formData: [] });
+        selectedRowKeys: any[], shipment_id?: string, addressForm?: any, formData?: any[]
+    }>({ selectedRowKeys: [], shipment_id: '', addressForm: {}, formData: [] });
     const createShipmentModal: any = useRef();
     const showResponse: any = useRef();
 
@@ -160,7 +160,7 @@ export default () => {
                                 }
                             }),
                             shipment_id,
-                            addressInfo: address,
+                            addressForm: address,
                             formData: {
                                 ...form_data,
                                 packages: form_data.items
@@ -199,9 +199,6 @@ export default () => {
             columnsState={{
                 persistenceKey: 'pro-table-singe-demos',
                 persistenceType: 'localStorage',
-                onChange(value) {
-                    console.log('value: ', value);
-                },
             }}
             rowKey="id"
             search={{
@@ -221,7 +218,7 @@ export default () => {
             }}
             pagination={{
                 pageSize: 20,
-                onChange: (page) => console.log(page),
+                // onChange: (page) => console.log(page),
             }}
             dateFormatter="string"
         />

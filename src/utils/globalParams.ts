@@ -2,7 +2,6 @@ export function getGlobalParams(): object {
     // let params = localStorage.getItem("globalParams")
     let params = sessionStorage.getItem("globalParams")
     if (params) {
-        console.log(params)
         return JSON.parse(params)
     }
     return {}
