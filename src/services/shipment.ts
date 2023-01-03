@@ -202,6 +202,25 @@ export async function getShipment(params: { shipment_id: string }) {
   });
 }
 
+// shipment/getPrepInstructions
+export async function getPrepInstructions(params: { sku: string }) {
+  return request('/api/shipment/getPrepInstructions', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+// getItemEligibilityPreview
+export async function getItemEligibilityPreview(params: { asin: string }) {
+  return request('/api/shipment/getItemEligibilityPreview', {
+    method: 'POST',
+    data: {
+      ...params,
+      program: 'INBOUND',
+    },
+  });
+}
+
 export interface AddressItem {
   id: number;
   store_id: string;

@@ -9,7 +9,6 @@ import {
     Steps,
     Typography,
 } from 'antd';
-import 'antd/dist/antd.css';
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { steps } from '../enumeration';
 import type { ListItem } from '@/services/shipment';

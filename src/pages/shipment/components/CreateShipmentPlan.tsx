@@ -1,16 +1,50 @@
 import { getInfo as storeAddress } from '@/services/basePop'
-import { MinusCircleOutlined, PrinterOutlined, PlusCircleOutlined, CaretRightOutlined } from '@ant-design/icons';
-import { Button, Divider, Form, Input, InputNumber, message, Select, Space, Tag, Spin, Popconfirm, Tooltip } from 'antd';
+import { MinusCircleOutlined, PrinterOutlined, PlusCircleOutlined, CaretRightOutlined, EyeTwoTone, LoadingOutlined } from '@ant-design/icons';
+import { Button, Divider, Form, Input, InputNumber, message, Select, Space, Tag, Spin, Popconfirm, Tooltip, Modal } from 'antd';
 import { useRef, useState, useEffect } from 'react';
 import { LabelPrepPreference, PrepInstruction, PrepOwner, shipToCountryCode } from '../enumeration';
 import type { AddressItem, ListItem } from '@/services/shipment';
 import PrintBarCodeModal from './PrintBarCodeModal';
-import { createShipment, createShipmentPlan } from '@/services/shipment';
+import { createShipment, createShipmentPlan, getPrepInstructions, getItemEligibilityPreview } from '@/services/shipment';
 const { Option } = Select;
 const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 8 },
 };
+
+
+const ItemEligibilityPreview = (props: { asin: string }) => {
+    const { asin } = props;
+    const [loading, setLoading] = useState(false);
+    const showConfirm = () => {
+        setLoading(true);
+        getItemEligibilityPreview({ asin }).then((res) => {
+            if (res.code !== 1) {
+                throw res.msg;
+            }
+            const { data } = res;
+            let viewStr = 'isEligibleForProgram:' + data.isEligibleForProgram;
+            if (!data.isEligibleForProgram) {
+                viewStr += '\nineligibilityReasonList:' + data.ineligibilityReasonList.join(',');
+            }
+            Modal.confirm({
+                title: 'Item Eligibility Preview',
+                icon: <EyeTwoTone />,
+                content: viewStr,
+            });
+        }).catch((err) => {
+            message.error(JSON.stringify(err), 10);
+        }).finally(() => {
+            setLoading(false);
+        });
+    };
+    return <>
+        <Tooltip title="Item Eligibility Preview">
+            {loading ? <LoadingOutlined /> : <EyeTwoTone onClick={showConfirm} />}
+        </Tooltip>
+    </>
+};
+
 const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: AddressItem, setShipmentId: (shipment_id: string) => void, setStepResMsg: (current: number, msg: string) => void, isEdit?: boolean }) => {
     const { selectedRowKeys, addressInfo, setShipmentId, setStepResMsg, isEdit = false } = props;
     const [getAddressLoading, setAddressLoading] = useState(false);
@@ -125,6 +159,38 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                 console.log(errorInfo);
             });
     }
+    const getPrepInstructionsData = () => {
+        setAddressLoading(true);
+        getPrepInstructions({
+            sku: itemDetail.map(item => item.ts_sku).join(",")
+        }).then(res => {
+            if (res.code === 0) {
+                message.error(JSON.stringify(res));
+                setStepResMsg(0, JSON.stringify(res));
+                return;
+            }
+            const { SKUPrepInstructionsList } = res.data;
+            let temp: any = [...itemDetail];
+            temp.forEach((item: any) => {
+                let SKUPrepInstructions = SKUPrepInstructionsList.find((subItem: any) => subItem.SellerSKU === item.ts_sku)
+                if (SKUPrepInstructions) {
+                    item.prepDetailsList = SKUPrepInstructions.PrepInstructionList.map((prepItem: string) => {
+                        return {
+                            prepInstruction: prepItem,
+                            prepOwner: 'SELLER',
+                        }
+                    })
+                }
+            })
+            setItemDetail(temp);
+            setStepResMsg(0, JSON.stringify(res));
+        }).catch(error => {
+            message.error(JSON.stringify(error));
+            setStepResMsg(0, JSON.stringify(error));
+        }).finally(() => {
+            setAddressLoading(false);
+        })
+    }
     useEffect(() => {
         if (address.length) {
             setFisrstAddress(address);
@@ -224,6 +290,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                     <Input.TextArea rows={3} />
                 </Form.Item>
                 <Divider />
+                <Button onClick={getPrepInstructionsData} style={{ 'float': 'right', 'marginBottom': '10px', 'marginTop': '-10px', 'marginRight': '10px' }} type='primary' size='small'>Get prepInstructions</Button>
                 <Form.List name="goods">
                     {(fields, { add, remove }) => {
                         return (
@@ -245,6 +312,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                                         <Tooltip placement="top" title={'Add PrepDetails'}>
                                             <PlusCircleOutlined onClick={() => addPrepDetails(name)} />
                                         </Tooltip>
+                                        <ItemEligibilityPreview asin={field.asin} />
                                     </Space>
                                     <div>
                                         {field.prepDetailsList?.map((item, index) => {
