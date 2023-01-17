@@ -221,6 +221,14 @@ export async function getItemEligibilityPreview(params: { asin: string }) {
   });
 }
 
+// shipment/printBarCodes
+export async function printBarCodes(params: { skus: string[] }) {
+  return request('/api/shipment/printBarCodes', {
+    method: 'POST',
+    data: params,
+  });
+}
+
 export interface AddressItem {
   id: number;
   store_id: string;

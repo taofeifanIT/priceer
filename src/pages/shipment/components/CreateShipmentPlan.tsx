@@ -7,6 +7,7 @@ import type { AddressItem, ListItem } from '@/services/shipment';
 import PrintBarCodeModal from './PrintBarCodeModal';
 import { createShipment, createShipmentPlan, getPrepInstructions, getItemEligibilityPreview } from '@/services/shipment';
 const { Option } = Select;
+
 const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 8 },

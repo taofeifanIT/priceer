@@ -144,21 +144,19 @@ export function findIndexPage(arr: any[]) {
   return path;
 }
 
-export const exportPDF = (el: string, products: { fnSku: string, printQuantity: number }[], size: { width: number, height: number }) => {
+export const exportPDF = async (el: string, products: { fnSku: string, printQuantity: number }[], size: { width: number, height: number }) => {
   const { width, height } = size;
   const elChild = (document.getElementById(el) as any).children;
   const oddChild = Array.from(elChild).filter((item: any, index: number) => index % 2 === 1);
-  let pdf = new jsPDF('l', 'mm', [width, height]);
+  let pdf = new jsPDF('l', 'mm', [width, height], true);
   let promises = oddChild.map((item: any) => {
     return html2canvas(item, {
       scale: 1,
+      logging: false,
       allowTaint: true,
     })
   });
-  let pdfHeight = height * 0.575;
-  if (height < 30) {
-    pdfHeight = height * 0.6;
-  }
+  let pdfHeight = height < 30 ? height * 0.6 : height * 0.575;
   Promise.all(promises).then((canvas) => {
     canvas.forEach((item, index) => {
       let imgData = item.toDataURL('image/png', 1.0);
@@ -169,7 +167,46 @@ export const exportPDF = (el: string, products: { fnSku: string, printQuantity: 
         }
       });
     });
-    let pdfName = products.map(item => item.fnSku).join('-');
-    pdf.save(`${pdfName}.pdf`);
+    // let pdfName = products.map(item => item.fnSku).join('-');
+    pdf.save(`shipment.pdf`);
   });
 };
+// https://blog.csdn.net/c_kite/article/details/81364592 相关文档
+export const newExportPDF = async (el: string, products: { fnSku: string, printQuantity: number }[], size: { width: number, height: number }) => {
+  var element: any = document.getElementById(el);
+  html2canvas(element, {
+    logging: false,
+  }).then(function (canvas) {
+    var pdf = new jsPDF('l', 'mm', [size.width, size.height], true);
+    var ctx: any = canvas.getContext('2d');
+    // 用canvas画布的高度来除以products的length，得到每个产品的高度
+    var productHeight = canvas.height / products.length;
+    // pdf高度适配
+    let pdfHeight = size.height < 30 ? size.height * 0.6 : size.height * 0.575;
+    products.forEach((item, index) => {
+      // 截取不同高度部分的canvas
+      var startHeight = (productHeight * index);
+      // 剪裁图片
+      var imgData = ctx.getImageData(0, startHeight, canvas.width, productHeight);
+      // 重新绘制canvas
+      var newCanvas: any = document.createElement('canvas');
+      newCanvas.width = canvas.width;
+      newCanvas.height = productHeight;
+      var newCtx = newCanvas.getContext('2d');
+      newCtx.putImageData(imgData, 0, 0);
+      // 生成图片
+      var img = new Image();
+      img.src = newCanvas.toDataURL('image/png', 1.0);
+      // 生成pdf
+      new Array(item.printQuantity).fill('').forEach((_, subIndex) => {
+        pdf.addImage(img, 'JPEG', 5, 3, size.width - 10, pdfHeight);
+        if (index !== products.length - 1 || subIndex !== item.printQuantity - 1) {
+          pdf.addPage();
+        }
+      });
+      if (index === products.length - 1) {
+        pdf.save(`shipment.pdf`);
+      }
+    });
+  });
+}

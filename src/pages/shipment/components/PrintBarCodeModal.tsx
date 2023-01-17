@@ -1,5 +1,5 @@
-import { printBarCode } from '@/services/shipment';
-import { exportPDF } from '@/utils/utils';
+import { printBarCodes } from '@/services/shipment';
+import { newExportPDF } from '@/utils/utils';
 import { Button, Divider, message, Modal, Select, Space, Spin, Typography } from 'antd';
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { barCodeSizeGroup } from '../enumeration';
@@ -24,29 +24,20 @@ const PrintBarCodeModal = forwardRef((props, ref) => {
             setPrintSkus(selectedRowKeys.map((item: ListItem) => item.ts_sku));
         }
     }));
-    const createBarCode = () => {
+    const createBarCode = async () => {
         setLoading(true);
         const { width, height } = barCodeSize
-        let promises = printSkus.map((sku) => {
-            return printBarCode({ sku: sku });
-        });
-        Promise.all(promises).then((res: any) => {
-            let flag = true;
-            res.forEach((item: any) => {
-                if (item.code != 1) {
-                    flag = false;
-                }
-            });
-            if (flag) {
-                let tempData = res.map((item: any, index: number) => {
-                    return { fnSku: item.data.fnSku, barCode: item.data.barcode, title: item.data.title, printQuantity: details[index].quantityForm, conditionType: details[index].conditionType };
-                });
-                setBarcodeObj(tempData);
-                exportPDF('viewBarCode', tempData, { width, height });
-                message.success('PrintBarCode success!');
-            } else {
-                message.error('PrintBarCode fail!');
+        printBarCodes({ skus: printSkus }).then((res) => {
+            if (res.code !== 1) {
+                message.error(JSON.stringify(res), 10);
+                return;
             }
+            let tempData = res.data.map((item: any, index: number) => {
+                return { fnSku: item.fnSku, barCode: item.barcode, title: item.title, printQuantity: details[index].quantityForm, conditionType: details[index].conditionType };
+            });
+            setBarcodeObj(tempData);
+            newExportPDF('viewBarCode', tempData, { width, height });
+            message.success('PrintBarCode success!');
         }).finally(() => {
             setLoading(false);
         });
@@ -85,7 +76,8 @@ const PrintBarCodeModal = forwardRef((props, ref) => {
                 </Space>
                 <div id={'viewBarCode'}>
                     {barcodeObj.map((item: any) => {
-                        return (<><Divider />
+                        return (<>
+                            <Divider />
                             <div style={{ textAlign: 'center', marginTop: '10px' }}>
                                 <div>
                                     <img src={item.barCode} style={barCodeSize.height < 30 ? { 'height': '100px', 'width': '100%' } : undefined} />
