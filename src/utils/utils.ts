@@ -185,7 +185,7 @@ export const newExportPDF = async (el: string, products: { fnSku: string, printQ
     let pdfHeight = size.height < 30 ? size.height * 0.6 : size.height * 0.575;
     products.forEach((item, index) => {
       // 截取不同高度部分的canvas
-      var startHeight = (productHeight * index);
+      var startHeight = productHeight * index;
       // 剪裁图片
       var imgData = ctx.getImageData(0, startHeight, canvas.width, productHeight);
       // 重新绘制canvas
