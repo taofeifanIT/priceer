@@ -96,6 +96,27 @@ export default [
     component: './shipment/Shipment',
   },
   {
+    path: '/RemovalOrder',
+    name: 'RemovalOrder',
+    routes: [
+      {
+        path: '/RemovalOrder/OrderList',
+        name: 'Order List',
+        component: './RemovalOrder/OrderList',
+      },
+      {
+        path: '/RemovalOrder/ShipmentList',
+        name: 'Shipment List',
+        component: './RemovalOrder/ShipmentList',
+      },
+      {
+        path: '/RemovalOrder/ClaimList',
+        name: 'Claim List',
+        component: './RemovalOrder/ClaimList',
+      }
+    ],
+  },
+  {
     path: '/404',
     name: '404',
     component: './404',
