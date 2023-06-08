@@ -1,6 +1,6 @@
 export function getGlobalParams(): object {
     // let params = localStorage.getItem("globalParams")
-    let params = sessionStorage.getItem("globalParams")
+    const params = sessionStorage.getItem("globalParams")
     if (params) {
         return JSON.parse(params)
     }

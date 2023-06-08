@@ -56,7 +56,7 @@ function DeleteComponent(props: {
 
 export default (props: any) => {
   const [init, setInit] = useState([]);
-  const [data, setData] = useState<Array<any>>([]);
+  const [data, setData] = useState<any[]>([]);
   const [tableRecord, setTableRecord] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editRecord, setEditRecord] = useState({});
@@ -215,7 +215,7 @@ export default (props: any) => {
                 <DeleteComponent
                   setTableRecord={setTableRecord}
                   initData={initData}
-                  id={item['id']}
+                  id={item.id}
                 />
               </span>
             }
@@ -255,14 +255,14 @@ function TreeData(props: { tableRecord: any; init: any }) {
   ];
   const [data, setData] = React.useState([]);
   const [tableLoading, setTableLoading] = useState(false);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<Array<number>>(
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>(
     props.tableRecord.permission_ids,
   );
   function initData() {
     setTableLoading(true);
     listRules()
       .then((res) => {
-        let tempData = res.data.auth_rules;
+        const tempData = res.data.auth_rules;
         setData(tempData);
       })
       .catch((e: any) => {

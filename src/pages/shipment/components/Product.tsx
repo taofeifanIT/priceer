@@ -6,7 +6,7 @@ import {
     updateFnSku
 } from '@/services/shipment';
 import type { AddressItem } from '@/services/shipment';
-import { ProColumns } from '@ant-design/pro-components';
+import type { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import type { FormInstance } from 'antd';
 import {

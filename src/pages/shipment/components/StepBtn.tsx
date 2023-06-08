@@ -12,7 +12,7 @@ const StepBtn = (props: {
   const [loading, setLoading] = useState(false);
   const checkProductQuantityShipped = () => {
     const { treeForm, itemDetail } = params;
-    let skuObj = {};
+    const skuObj = {};
     let msg = '';
     itemDetail.forEach((item: any) => {
       if (!skuObj[item.ts_sku]) {
@@ -20,11 +20,11 @@ const StepBtn = (props: {
       }
       skuObj[item.ts_sku] += item.quantityForm;
     });
-    let treeFormSkuObj = {};
+    const treeFormSkuObj = {};
     treeForm.forEach((item: any) => {
       console.log(item.products.length);
       item.products.forEach((subItem: any) => {
-        let sku = subItem.sku;
+        const sku = subItem.sku;
         console.log(sku);
         if (!treeFormSkuObj[sku]) {
           treeFormSkuObj[sku] = 0;
@@ -34,7 +34,7 @@ const StepBtn = (props: {
     });
     //  判断数量是否相等
     let isSame = true;
-    for (let key in skuObj) {
+    for (const key in skuObj) {
       if (skuObj[key] !== treeFormSkuObj[key]) {
         isSame = false;
         msg = `SKU: ${key} quantity is not equal!`;
@@ -160,7 +160,7 @@ const StepBtn = (props: {
   };
   const resquestApi = () => {
     if (title === 'Put cartonContent') {
-      let result = checkProductQuantityShipped();
+      const result = checkProductQuantityShipped();
       if (!result.isSame) {
         message.error(JSON.stringify(result.msg));
         callback(JSON.stringify(result.msg));
@@ -168,14 +168,14 @@ const StepBtn = (props: {
       }
     }
     if (title === 'Submit transport') {
-      let result = checkSubmitTransport();
+      const result = checkSubmitTransport();
       if (!result.isSame) {
         message.error(JSON.stringify(result.msg));
         callback(JSON.stringify(result.msg));
         return;
       }
     }
-    let params = processeParams();
+    const params = processeParams();
     setLoading(true);
     api(params).then((res: any) => {
       setLoading(false);

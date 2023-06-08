@@ -21,17 +21,17 @@ const { CheckableTag } = Tag;
 type QuestItem = {
     type: any;
     year?: number,
-    data: Array<{
+    data: {
         week: string,
         date: string,
-        data: Array<string>,
-    }>
+        data: string[],
+    }[]
 }
 
 type UseItem = {
     week: string,
     date: string,
-    data: Array<string>,
+    data: string[],
     year: number,
     loading: boolean,
     type: any;
@@ -67,7 +67,7 @@ const ReportView = (props: {
         const downloadReport = (year: number, week: number) => {
             setLoading(true)
             downloadFile({ year, week, reportNames: selectedTags }).then(res => {
-                let url = window.URL.createObjectURL(new Blob([res]))
+                const url = window.URL.createObjectURL(new Blob([res]))
                 message.success("Download Complete!")
                 createDownload(`${year}-${week}.csv`, url)
             }).finally(() => {
@@ -128,7 +128,7 @@ const ReportView = (props: {
         index().then((res: any) => {
             if (res.code) {
                 const resData: QuestItem[] = res.data
-                let tempData: any[] = []
+                const tempData: any[] = []
                 resData.forEach(item => {
                     item.data.forEach(subItem => {
                         tempData.push({
@@ -176,7 +176,7 @@ const ReportView = (props: {
                         if (res.msg) {
                             throw res.msg
                         }
-                        let url = window.URL.createObjectURL(new Blob([res]))
+                        const url = window.URL.createObjectURL(new Blob([res]))
                         createDownload(`${time.year}-${time.week}.csv`, url)
                     }).catch(e => {
                         message.error(e)

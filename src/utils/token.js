@@ -29,10 +29,9 @@ export function setToken(value) {
 }
 
 export function getToken() {
-  return localStorage.getItem('token');
+  return localStorage.getItem('token') || '';
 }
 
 export function removeToken() {
   localStorage.removeItem('token');
 }
-

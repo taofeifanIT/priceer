@@ -73,7 +73,7 @@ const PutCartonContentsForm = (props: PutCartonContentsFormProps) => {
   }>({ CurrencyCode: '', Value: 0 });
   const timerRef: any = useRef(-1);
   const addCarton = () => {
-    let lastItem = treeForm[treeForm.length - 1];
+    const lastItem = treeForm[treeForm.length - 1];
     let cartonId = 'U000001';
     if (lastItem) {
       cartonId = 'U' + String(Number(lastItem.cartonId.slice(1)) + 1).padStart(6, '0');
@@ -107,7 +107,7 @@ const PutCartonContentsForm = (props: PutCartonContentsFormProps) => {
     setTreeForm([...treeForm]);
   };
   const addProduct = (index: number) => {
-    let lastItem = treeForm[index].products[treeForm[index].products.length - 1];
+    const lastItem = treeForm[index].products[treeForm[index].products.length - 1];
     // 校验lastItem属性值是否都有值
     if (lastItem && (!lastItem.quantityShipped || !lastItem.sku)) {
       message.error('Empty parameters are found. Please fill in the parameter values！');
@@ -145,7 +145,7 @@ const PutCartonContentsForm = (props: PutCartonContentsFormProps) => {
     maxCount: 1,
     data: {
       shipment_id: shipmentId,
-      store_id: getGlobalParams()['store_id'],
+      store_id: getGlobalParams().store_id,
     },
     headers: {
       authorization: 'authorization-text',
@@ -182,7 +182,7 @@ const PutCartonContentsForm = (props: PutCartonContentsFormProps) => {
     });
   };
   const saveParams = () => {
-    let tempValues = {
+    const tempValues = {
       shipment_id: shipmentId,
       carrierName: carrier,
       items: treeForm,
@@ -318,16 +318,16 @@ const PutCartonContentsForm = (props: PutCartonContentsFormProps) => {
   const shipToAddressTable = (
     <div style={{ textAlign: 'center' }}>
       <div style={{ textAlign: 'left', display: 'inline-block', fontWeight: '700' }}>
-        <p>{shipToAddress['Name']}</p>
-        <p>{shipToAddress['AddressLine1'] + (shipToAddress['AddressLine2'] || '')}</p>
+        <p>{shipToAddress.Name}</p>
+        <p>{shipToAddress.AddressLine1 + (shipToAddress.AddressLine2 || '')}</p>
         <p>
-          {shipToAddress['City'] +
+          {shipToAddress.City +
             ',' +
-            shipToAddress['StateOrProvinceCode'] +
+            shipToAddress.StateOrProvinceCode +
             ' ' +
-            shipToAddress['PostalCode']}
+            shipToAddress.PostalCode}
         </p>
-        <p>{shipToAddress['CountryCode'] + `(${shipToAddress['center_id']})`}</p>
+        <p>{shipToAddress.CountryCode + `(${shipToAddress.center_id})`}</p>
       </div>
       <Divider />
     </div>

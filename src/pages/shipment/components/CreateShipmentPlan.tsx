@@ -82,7 +82,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
         });
     }
     const addPrepDetails = (index: number) => {
-        let temp: any = [...itemDetail];
+        const temp: any = [...itemDetail];
         let prepDetailsList = temp[index].prepDetailsList
         if (!prepDetailsList) {
             prepDetailsList = []
@@ -96,7 +96,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
         setItemDetail(temp);
     }
     const removePrepDetails = (index: number, index2: number) => {
-        let temp: any = [...itemDetail];
+        const temp: any = [...itemDetail];
         temp[index].prepDetailsList.splice(index2, 1);
         setItemDetail(temp);
     }
@@ -142,7 +142,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
         createShipmentformRef
             .validateFields()
             .then((values) => {
-                let tempValues = {
+                const tempValues = {
                     ...values,
                     goods: itemDetail.map(item => {
                         return {
@@ -171,9 +171,9 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                 return;
             }
             const { SKUPrepInstructionsList } = res.data;
-            let temp: any = [...itemDetail];
+            const temp: any = [...itemDetail];
             temp.forEach((item: any) => {
-                let SKUPrepInstructions = SKUPrepInstructionsList.find((subItem: any) => subItem.SellerSKU === item.ts_sku)
+                const SKUPrepInstructions = SKUPrepInstructionsList.find((subItem: any) => subItem.SellerSKU === item.ts_sku)
                 if (SKUPrepInstructions) {
                     item.prepDetailsList = SKUPrepInstructions.PrepInstructionList.map((prepItem: string) => {
                         return {
@@ -208,10 +208,10 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                         <Option value="">Default</Option>
                         {shipToCountryCode.map((item) => {
                             return (
-                                <Select.OptGroup label={item.title}>
+                                <Select.OptGroup key={item.title} label={item.title}>
                                     {item.value.map((subItem) => {
                                         return (
-                                            <Option value={subItem}>
+                                            <Option key={subItem} value={subItem}>
                                                 {subItem}
                                             </Option>
                                         );
@@ -241,7 +241,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                     }}>
                         {address.map((item) => {
                             return (
-                                <Select.Option value={item.id}>
+                                <Select.Option key={item.id} value={item.id}>
                                     {item.name + '\n' + item.address_line1}
                                 </Select.Option>
                             );
@@ -280,7 +280,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                     <Select>
                         {LabelPrepPreference.map((item) => {
                             return (
-                                <Option value={item}>
+                                <Option key={item} value={item}>
                                     {item}
                                 </Option>
                             );
@@ -293,12 +293,12 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                 <Divider />
                 <Button onClick={getPrepInstructionsData} style={{ 'float': 'right', 'marginBottom': '10px', 'marginTop': '-10px', 'marginRight': '10px' }} type='primary' size='small'>Get prepInstructions</Button>
                 <Form.List name="goods">
-                    {(fields, { add, remove }) => {
+                    {(fields) => {
                         return (
                             <>
                                 {itemDetail.map((field, name) => (<>
                                     <Space
-                                        key={field.ts_sku + name}
+                                        key={field.ts_sku}
                                         style={{ width: '1550px', 'marginBottom': '-14px' }}
                                         align="center"
                                         size={15}
@@ -306,7 +306,7 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                                         <span style={{ 'marginLeft': '125px' }}>Sku:</span><Input disabled style={{ 'width': '100px' }} value={field.ts_sku} />
                                         <span>Asin:</span><Input disabled value={field.asin} style={{ 'width': '100px' }} />
                                         <span>Quantity:</span><InputNumber value={field.quantityForm} onChange={(val) => {
-                                            let newDetail: any = [...itemDetail];
+                                            const newDetail: any = [...itemDetail];
                                             newDetail[name].quantityForm = val;
                                             setItemDetail(newDetail);
                                         }} />
@@ -317,25 +317,25 @@ const CreateShipmentPlan = (props: { selectedRowKeys: ListItem[], addressInfo: A
                                     </Space>
                                     <div>
                                         {field.prepDetailsList?.map((item, index) => {
-                                            return <div style={{ 'marginTop': '20px' }}>
+                                            return <div key={`div${index + 1}`} style={{ 'marginTop': '20px' }}>
                                                 <Space >
                                                     {index === 0 && <span style={{ 'marginLeft': '125px' }}>PrepDetails:</span>}
                                                     <Select style={{ 'width': '170px', 'marginLeft': index > 0 ? '206px' : 0 }} value={item.prepInstruction} onChange={(val) => {
-                                                        let newDetail: any = [...itemDetail];
+                                                        const newDetail: any = [...itemDetail];
                                                         newDetail[name].prepDetailsList[index].prepInstruction = val;
                                                         setItemDetail(newDetail);
                                                     }}>
                                                         {PrepInstruction.map((subItem) => {
-                                                            return <Option value={subItem}>{subItem}</Option>
+                                                            return <Option key={subItem} value={subItem}>{subItem}</Option>
                                                         })}
                                                     </Select>
                                                     <Select value={item.prepOwner} onChange={(val) => {
-                                                        let newDetail: any = [...itemDetail];
+                                                        const newDetail: any = [...itemDetail];
                                                         newDetail[name].prepDetailsList[index].prepOwner = val;
                                                         setItemDetail(newDetail);
                                                     }}>
                                                         {PrepOwner.map((subItem) => {
-                                                            return <Option value={subItem}>{subItem}</Option>
+                                                            return <Option key={subItem} value={subItem}>{subItem}</Option>
                                                         })}
                                                     </Select>
                                                     <Popconfirm title="Are you sure delete this prepDetails?" onConfirm={() => removePrepDetails(name, index)}>

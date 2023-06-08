@@ -12,7 +12,7 @@ export async function stores() {
         }).then(res => {
             if (res.code) {
                 // @ts-ignore
-                let data = res.data.map(item => {
+                const data = res.data.map(item => {
                     return {
                         label: item.name,
                         value: item.id

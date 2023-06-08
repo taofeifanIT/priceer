@@ -57,14 +57,15 @@ export async function getInitialState(): Promise<{
     return undefined;
   };
   const fetchConfigInfo = async () => {
-    let msg: any = await getConfig();
-    let { data } = msg;
+    const msg: any = await getConfig();
+    const { data } = msg;
     return data;
   };
   // 如果不是登录页面，执行
   if (!getToken()) {
     history.push(loginPath);
   }
+  console.log(history.location.pathname)
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
     const configInfo = await fetchConfigInfo();
@@ -94,9 +95,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     onPageChange: () => {
       const { location } = history;
       if (!whiteRouter.includes(location.pathname)) {
-        let jumpPath = location.pathname.replace(/\/$/, '');
+        const jumpPath = location.pathname.replace(/\/$/, '');
         // @ts-ignore
-        let result = throwMenu(initialState.currentUser?.menu, jumpPath);
+        const result = throwMenu(initialState.currentUser?.menu, jumpPath);
         let hasPage: boolean = false;
         if (result && result.path) {
           hasPage = result?.path === jumpPath;
@@ -201,12 +202,12 @@ const errorHandler = (error: ResponseError) => {
 };
 const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const token: string | undefined = getToken() || '';
-  let authHeader = token ? { token: token } : {};
+  const authHeader = token ? { token: token } : {};
   let lastUrl = url;
   lastUrl = `http://api-rp.itmars.net${url.replace('/api', '')}`;
-  let additionalData = getGlobalParams();
-  let config = JSON.parse(JSON.stringify(options));
-  let { method } = config;
+  const additionalData = getGlobalParams();
+  const config = JSON.parse(JSON.stringify(options));
+  const { method } = config;
   if (method === 'post') {
     config.data = {
       ...config.data,
@@ -225,7 +226,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   };
 };
 
-const demoResponseInterceptors = (response: Response, options: RequestConfig) => {
+const demoResponseInterceptors = (response: Response) => {
   // response.headers.append('interceptors', 'yes yo');
   // console.log(response, options)
   return response;

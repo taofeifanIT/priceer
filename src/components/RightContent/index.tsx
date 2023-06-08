@@ -17,8 +17,8 @@ const GlobalHeaderRight: React.FC = () => {
   }
   const { navTheme, layout } = initialState.settings;
   const { configInfo = {} } = initialState;
-  let publicParms: any = getGlobalParams();
-  let storeName = configInfo['store']?.find((item: any) => item.id === publicParms.store_id)?.nick_name || '';
+  const publicParms: any = getGlobalParams();
+  const storeName = configInfo.store?.find((item: any) => item.id === publicParms.store_id)?.nick_name || '';
   let className = styles.right;
 
   if ((navTheme === 'dark' && layout === 'top') || layout === 'mix') {
@@ -41,7 +41,7 @@ const GlobalHeaderRight: React.FC = () => {
   const onFinish = (fieldsValue: any) => {
     setGlobalParams(JSON.stringify(fieldsValue));
     const storeId = fieldsValue.store_id;
-    const country = configInfo['store']?.find((item: any) => item.id === storeId)?.country;
+    const country = configInfo.store?.find((item: any) => item.id === storeId)?.country;
     setCountry(country);
     setVisible(false);
     history.go(0);

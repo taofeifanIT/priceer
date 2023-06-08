@@ -152,7 +152,7 @@ export default () => {
                     key="editable"
                     onClick={() => {
                         const { goods, shipment_id, address, form_data, ship_to_address } = record
-                        let tempParams = {
+                        const tempParams = {
                             selectedRowKeys: goods.map((item: any) => {
                                 return {
                                     ...item,

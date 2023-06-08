@@ -271,7 +271,7 @@ export default () => {
   };
   const getBestSize = (): number => {
     // 搜索栏+功能栏+表头+分页器/每行的高度 四舍五入
-    let size: number = (initialState as any).pageHeight / 47;
+    const size: number = (initialState as any).pageHeight / 47;
     return Math.round(size);
   };
   useEffect(() => {
@@ -327,7 +327,7 @@ export default () => {
         dataInit={dataInit}
         roleData={roleData}
         record={record}
-      ></OperationModal>
+       />
     </PageContainer>
   );
 };

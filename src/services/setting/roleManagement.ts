@@ -2,7 +2,7 @@ import { request } from 'umi';
 
 interface rolePop {
   name: string;
-  permission: Array<Number>;
+  permission: number[];
   display_name: string;
   description: string;
 }

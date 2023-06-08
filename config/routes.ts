@@ -113,8 +113,51 @@ export default [
         path: '/RemovalOrder/ClaimList',
         name: 'Claim List',
         component: './RemovalOrder/ClaimList',
+      },
+      {
+        path: '/RemovalOrder/Checked',
+        name: 'Checked details',
+        target: '_blank',
+        component: './RemovalOrder/Checked',
       }
     ],
+  },
+  {
+    // earlyWarning
+    path: '/earlyWarning',
+    name: 'earlyWarning',
+    routes: [
+      {
+        // SalesTargetWarning
+        path: '/earlyWarning/SalesTargetWarning',
+        name: 'SalesTargetWarning',
+        component: './earlyWarning/SalesTargetWarning',
+      }
+    ]
+  },
+  //businessUnitData\PurchasingSalesHistory
+  {
+    path: '/businessUnitData',
+    name: 'businessUnitData',
+    routes: [
+      {
+        path: '/businessUnitData/PurchasingSalesHistory',
+        name: 'PurchasingSalesHistory',
+        component: './businessUnitData/PurchasingSalesHistory',
+      }
+    ]
+  },
+  // odika\RequirementList
+  {
+    path: '/odika',
+    name: 'odika',
+    routes: [
+      {
+        path: '/odika/RequirementList',
+        name: 'RequirementList',
+        component: './odika/RequirementList',
+      }
+    ]
   },
   {
     path: '/404',

@@ -24,7 +24,7 @@ export const isAntDesignProOrDev = (): boolean => {
   return isAntDesignPro();
 };
 
-export function getMenu(params: Array<any>): any {
+export function getMenu(params: any[]): any {
   return params.map((item) => {
     let routeObj: any = {
       sort_num: item.sort_num,
@@ -39,6 +39,14 @@ export function getMenu(params: Array<any>): any {
         ? getMenu(item.children).sort((a: any, b: any) => a.sort_num - b.sort_num)
         : [],
     };
+    if (routeObj.name === 'Checked') {
+      routeObj = {
+        ...routeObj,
+        target: '_blank',
+        menuRender: false,
+        headerRender: false,
+      }
+    }
     if (!routeObj.routes.length) {
       delete routeObj.routes;
     } else {
@@ -67,15 +75,15 @@ export function createDownload(fileName: string, url: any) {
 }
 
 export function getQueryVariable(variable: string) {
-  var query = window.location.search.substring(1);
-  var vars = query.split('&');
-  for (var i = 0; i < vars.length; i++) {
-    var pair = vars[i].split('=');
+  const query = window.location.search.substring(1);
+  const vars = query.split('&');
+  for (let i = 0; i < vars.length; i++) {
+    const pair = vars[i].split('=');
     if (pair[0] == variable) {
       return pair[1];
     }
   }
-  return false;
+  return "";
 }
 
 export function getKesGroup(
@@ -111,8 +119,8 @@ export function getPageHeight() {
   return pageHeight;
 }
 
-export function throwMenu(Arr: Array<any>, ID: string): any {
-  var _result = null;
+export function throwMenu(Arr: any[], ID: string): any {
+  let _result = null;
   for (let i = 0; i < Arr.length; i++) {
     if (Arr[i].path == ID) return Arr[i];
     if (Arr[i].routes) _result = throwMenu(Arr[i].routes, ID);
@@ -122,7 +130,7 @@ export function throwMenu(Arr: Array<any>, ID: string): any {
 }
 
 export function enterF11() {
-  var docElm: any = document.documentElement;
+  const docElm: any = document.documentElement;
   try {
     if (docElm.webkitRequestFullScreen) {
       docElm.webkitRequestFullScreen();
@@ -136,9 +144,9 @@ export function findIndexPage(arr: any[]) {
   let path = '';
   arr.forEach((item) => {
     if (!item.routes) {
-      path = item['path'];
+      path = item.path;
     } else {
-      path = item.routes[0]['path'];
+      path = item.routes[0].path;
     }
   });
   return path;
@@ -148,18 +156,18 @@ export const exportPDF = async (el: string, products: { fnSku: string, printQuan
   const { width, height } = size;
   const elChild = (document.getElementById(el) as any).children;
   const oddChild = Array.from(elChild).filter((item: any, index: number) => index % 2 === 1);
-  let pdf = new jsPDF('l', 'mm', [width, height], true);
-  let promises = oddChild.map((item: any) => {
+  const pdf = new jsPDF('l', 'mm', [width, height], true);
+  const promises = oddChild.map((item: any) => {
     return html2canvas(item, {
       scale: 1,
       logging: false,
       allowTaint: true,
     })
   });
-  let pdfHeight = height < 30 ? height * 0.6 : height * 0.575;
+  const pdfHeight = height < 30 ? height * 0.6 : height * 0.575;
   Promise.all(promises).then((canvas) => {
     canvas.forEach((item, index) => {
-      let imgData = item.toDataURL('image/png', 1.0);
+      const imgData = item.toDataURL('image/png', 1.0);
       new Array(products[index].printQuantity).fill('').forEach((_, subIndex) => {
         pdf.addImage(imgData, 'JPEG', 5, 5, width - 10, pdfHeight);
         if (index !== canvas.length - 1 || subIndex !== products[index].printQuantity - 1) {
@@ -172,30 +180,30 @@ export const exportPDF = async (el: string, products: { fnSku: string, printQuan
   });
 };
 // https://blog.csdn.net/c_kite/article/details/81364592 相关文档
-export const newExportPDF = async (el: string, products: { fnSku: string, printQuantity: number }[], size: { width: number, height: number }) => {
-  var element: any = document.getElementById(el);
+export const newExportPDF = async (el: string, products: { fnSku: string, printQuantity: number }[], size: { width: number, height: number }, fileName?: string) => {
+  const element: any = document.getElementById(el);
   html2canvas(element, {
     logging: false,
   }).then(function (canvas) {
-    var pdf = new jsPDF('l', 'mm', [size.width, size.height], true);
-    var ctx: any = canvas.getContext('2d');
+    const pdf = new jsPDF('l', 'mm', [size.width, size.height], true);
+    const ctx: any = canvas.getContext('2d');
     // 用canvas画布的高度来除以products的length，得到每个产品的高度
-    var productHeight = canvas.height / products.length;
+    const productHeight = canvas.height / products.length;
     // pdf高度适配
-    let pdfHeight = size.height < 30 ? size.height * 0.6 : size.height * 0.575;
+    const pdfHeight = size.height < 30 ? size.height * 0.6 : size.height * 0.575;
     products.forEach((item, index) => {
       // 截取不同高度部分的canvas
-      var startHeight = productHeight * index;
+      const startHeight = productHeight * index;
       // 剪裁图片
-      var imgData = ctx.getImageData(0, startHeight, canvas.width, productHeight);
+      const imgData = ctx.getImageData(0, startHeight, canvas.width, productHeight);
       // 重新绘制canvas
-      var newCanvas: any = document.createElement('canvas');
+      const newCanvas: any = document.createElement('canvas');
       newCanvas.width = canvas.width;
       newCanvas.height = productHeight;
-      var newCtx = newCanvas.getContext('2d');
+      const newCtx = newCanvas.getContext('2d');
       newCtx.putImageData(imgData, 0, 0);
       // 生成图片
-      var img = new Image();
+      const img = new Image();
       img.src = newCanvas.toDataURL('image/png', 1.0);
       // 生成pdf
       new Array(item.printQuantity).fill('').forEach((_, subIndex) => {
@@ -205,7 +213,7 @@ export const newExportPDF = async (el: string, products: { fnSku: string, printQ
         }
       });
       if (index === products.length - 1) {
-        pdf.save(`shipment.pdf`);
+        pdf.save(`${fileName ? fileName : 'shipment'}.pdf`);
       }
     });
   });

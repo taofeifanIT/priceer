@@ -32,7 +32,7 @@ const PrintBarCodeModal = forwardRef((props, ref) => {
                 message.error(JSON.stringify(res), 10);
                 return;
             }
-            let tempData = res.data.map((item: any, index: number) => {
+            const tempData = res.data.map((item: any, index: number) => {
                 return { fnSku: item.fnSku, barCode: item.barcode, title: item.title, printQuantity: details[index].quantityForm, conditionType: details[index].conditionType };
             });
             setBarcodeObj(tempData);
@@ -53,7 +53,7 @@ const PrintBarCodeModal = forwardRef((props, ref) => {
                     <span style={{ 'width': '40px', 'display': 'inline-block' }}>Size:</span>
                     <Select style={{ 'width': '430px' }} defaultValue={'24-up labels 70mm x 40mm on A4'} onChange={changeSize}>
                         {barCodeSizeGroup.map((item) => {
-                            return <Option value={item.title}>{item.title}</Option>
+                            return <Option key={item.title} value={item.title}>{item.title}</Option>
                         })}
                     </Select>
                     <Button type='primary' onClick={createBarCode}>Download PDF</Button>

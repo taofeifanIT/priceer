@@ -25,7 +25,7 @@ const PrintLablesModal = forwardRef((props, ref) => {
         getLablesFormRef
             .validateFields()
             .then((values) => {
-                let params = {
+                const params = {
                     shipment_id: shipmentId,
                     ...values,
                     package_labels_to_print: values.package_labels_to_print.toString(),

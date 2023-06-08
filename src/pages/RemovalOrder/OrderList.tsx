@@ -3,30 +3,18 @@ import type { ProColumns } from '@ant-design/pro-components';
 import type { FormInstance } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import { getList } from '@/services/removalOrder'
+import moment from 'moment';
 
 export type TableListItem = {
-    id: number,
-    store_id: number,
-    ns_id: number,
-    order_id: string,
-    order_type: string,
-    order_status: string,
-    sku: string,
-    msku: string,
-    fnsku: string,
-    dispostion: string
-    request_date: string;
-    last_updated_date: string,
-    requested_quantity: number,
-    cancelled_quantity: number,
-    disposed_quantity: number,
-    shipped_quantity: number,
-    in_process_quantity: number,
-    removal_fee: string,
-    currency: string,
-    request_date_timestamp: number,
-    last_updated_date_timestamp: number,
-    store_name: string
+    store_name: string;
+    order_id: string;
+    order_type: string;
+    request_date_timestamp: number;
+    order_status: string;
+    requested_quantity: string;
+    shipped_quantity: string;
+    cancelled_quantity: string;
+    in_process_quantity: string;
 }
 
 
@@ -41,26 +29,19 @@ export default () => {
             search: false,
         },
         {
+            title: 'Request Date',
+            dataIndex: 'request_date_timestamp',
+            align: 'center',
+            valueType: 'dateRange',
+            render: (_, record) => {
+                return (
+                    <span>{moment(record.request_date_timestamp * 1000).format('YYYY-MM-DD')}</span>
+                )
+            }
+        },
+        {
             title: 'Order ID',
             dataIndex: 'order_id',
-            align: 'center',
-            valueType: 'text',
-        },
-        {
-            title: 'MSKU',
-            dataIndex: 'msku',
-            align: 'center',
-            valueType: 'text',
-        },
-        {
-            title: 'FNSKU',
-            dataIndex: 'fnsku',
-            align: 'center',
-            valueType: 'text',
-        },
-        {
-            title: 'SKU',
-            dataIndex: 'sku',
             align: 'center',
             valueType: 'text',
         },
@@ -88,71 +69,31 @@ export default () => {
             },
         },
         {
-            title: 'Disposition',
-            dataIndex: 'disposition',
-            align: 'center',
-            valueType: 'text',
-            valueEnum: {
-                Sellable: { text: 'Sellable' },
-                Unsellable: { text: 'Unsellable' }
-            }
-        },
-        {
-            title: 'Requested Quantity',
+            title: 'Requested QTY',
             dataIndex: 'requested_quantity',
             align: 'center',
             valueType: 'digit',
             search: false,
         },
         {
-            title: 'Cancelled Quantity',
-            dataIndex: 'cancelled_quantity',
-            align: 'center',
-            valueType: 'digit',
-            search: false,
-        },
-        {
-            title: 'Disposed Quantity',
-            dataIndex: 'disposed_quantity',
-            align: 'center',
-            valueType: 'digit',
-            search: false,
-        },
-        {
-            title: 'Shipped Quantity',
+            title: 'Completed QTY',
             dataIndex: 'shipped_quantity',
             align: 'center',
             valueType: 'digit',
             search: false,
         },
         {
-            title: 'In Process QUantity',
-            dataIndex: 'in_process_quantity',
+            title: 'Cancelled QTY',
+            dataIndex: 'cancelled_quantity',
             align: 'center',
             valueType: 'digit',
             search: false,
         },
         {
-            title: 'Request Date',
-            dataIndex: 'request_date',
+            title: 'In Process QTY',
+            dataIndex: 'in_process_quantity',
             align: 'center',
-            valueType: 'text',
-            search: false,
-        },
-        {
-            title: 'Removal Fee',
-            dataIndex: 'removal_fee',
-            align: 'center',
-            search: false,
-            render: (_, record) => {
-                return `${record.removal_fee}` != '0.0000' ? `$${record.removal_fee}` : '-'
-            },
-        },
-        {
-            title: 'Currency',
-            dataIndex: 'currency',
-            align: 'center',
-            valueType: 'text',
+            valueType: 'digit',
             search: false,
         }
     ];
@@ -164,8 +105,10 @@ export default () => {
                 // 表单搜索项会从 params 传入，传递给后端接口。
                 // console.log(params, sorter, filter);
                 new Promise((resolve) => {
-                    let tempParams: any = {
+                    const tempParams: any = {
                         ...params,
+                        start_date: params.request_date_timestamp ? params.request_date_timestamp[0] : undefined,
+                        end_date: params.request_date_timestamp ? params.request_date_timestamp[1] : undefined,
                         len: params.pageSize,
                         page: params.current
                     }
@@ -181,17 +124,18 @@ export default () => {
                     });
                 })
             }
-            rowKey="id"
+            rowKey="order_id"
             pagination={{
                 showQuickJumper: true,
             }}
+            scroll={{ x: columns.reduce((total, item) => total + Number(item.width || 0), 0) }}
             search={{
                 labelWidth: 'auto',
             }}
             size="small"
             bordered
             dateFormatter="string"
-            headerTitle="Removal Order List"
+            headerTitle="Removal Order Detail"
             toolBarRender={() => []}
         />
     </>);

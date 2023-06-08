@@ -143,7 +143,7 @@ const ListingModel = React.forwardRef((props: listingModelItem, ref) => {
     const handleOk = () => {
         form.validateFields().then(async ({ store_ids }) => {
             setLoading(true)
-            let params: listingItem = {
+            const params: listingItem = {
                 store_ids,
                 ids: props.ids.toString()
             }
@@ -172,7 +172,7 @@ const ListingModel = React.forwardRef((props: listingModelItem, ref) => {
         form.resetFields()
     };
     const requestStore = async () => {
-        let data = await stores()
+        const data = await stores()
         setStoreInfo(data)
     }
     useImperativeHandle(ref, () => ({
@@ -355,7 +355,7 @@ export default () => {
             valueType: 'select',
             hideInTable: true,
             request: async () => {
-                let data = await stores()
+                const data = await stores()
                 return data
             }
         },
@@ -413,7 +413,7 @@ export default () => {
                 // 表单搜索项会从 params 传入，传递给后端接口。
                 // console.log(params, sorter, filter);
                 new Promise((resolve) => {
-                    let tempParams: any = {
+                    const tempParams: any = {
                         ...params,
                         len: params.pageSize,
                         page: params.current
@@ -454,7 +454,7 @@ export default () => {
                     <Button icon={<UploadOutlined />}>Click to Upload</Button>
                 </Upload>,
                 <Button key="primary" onClick={() => {
-                    let url = `http://api-rp.itmars.net/example/vendor_import.csv`;
+                    const url = `http://api-rp.itmars.net/example/vendor_import.csv`;
                     createDownload('test.csv', url);
                 }}>
                     download the template

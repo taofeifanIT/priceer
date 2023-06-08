@@ -26,7 +26,7 @@ export async function login(body: API.LoginParams) {
 }
 
 /** 此处后端没有提供注释 GET /api/notices */
-export async function getNotices(options?: { [key: string]: any }) {
+export async function getNotices(options?: Record<string, any>) {
   return request<API.NoticeIconList>('/api/notices', {
     method: 'GET',
     ...(options || {}),
@@ -42,7 +42,7 @@ export async function rule(
     /** 页面的容量 */
     pageSize?: number;
   },
-  options?: { [key: string]: any },
+  options?: Record<string, any>,
 ) {
   return request<API.RuleList>('/api/rule', {
     method: 'GET',
@@ -54,7 +54,7 @@ export async function rule(
 }
 
 /** 新建规则 PUT /api/rule */
-export async function updateRule(options?: { [key: string]: any }) {
+export async function updateRule(options?: Record<string, any>) {
   return request<API.RuleListItem>('/api/rule', {
     method: 'PUT',
     ...(options || {}),
@@ -62,7 +62,7 @@ export async function updateRule(options?: { [key: string]: any }) {
 }
 
 /** 新建规则 POST /api/rule */
-export async function addRule(options?: { [key: string]: any }) {
+export async function addRule(options?: Record<string, any>) {
   return request<API.RuleListItem>('/api/rule', {
     method: 'POST',
     ...(options || {}),
@@ -70,7 +70,7 @@ export async function addRule(options?: { [key: string]: any }) {
 }
 
 /** 删除规则 DELETE /api/rule */
-export async function removeRule(options?: { [key: string]: any }) {
+export async function removeRule(options?: Record<string, any>) {
   return request<Record<string, any>>('/api/rule', {
     method: 'DELETE',
     ...(options || {}),

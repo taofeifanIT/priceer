@@ -14,7 +14,7 @@ import {
   Tag,
 } from 'antd';
 import { PageContainer } from '@ant-design/pro-components';
-import { FormInstance } from 'antd/lib/form';
+import type { FormInstance } from 'antd/lib/form';
 import React, { useState, useEffect } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import styles from './style/menuManagement.less';
@@ -23,15 +23,15 @@ import * as Icons from '@ant-design/icons';
 
 function getIcons(
   params: number,
-): Array<{
+): {
   iconName: string;
   iconComponent: Object;
-}> {
-  let iconData = Object.keys(Icons).map((key) => {
-    let AntIcon = Icons[key];
+}[] {
+  const iconData = Object.keys(Icons).map((key) => {
+    const AntIcon = Icons[key];
     return {
       iconName: key,
-      iconComponent: <AntIcon></AntIcon>,
+      iconComponent: <AntIcon />,
     };
   });
   iconData.length = params;
@@ -58,7 +58,7 @@ function IconSelect(props: {
         onOk={() => props.setIconVisible(false)}
         onCancel={() => props.setIconVisible(false)}
         content={getIcons(400).map((Item, key) => {
-          let tempIcon = Item.iconComponent;
+          const tempIcon = Item.iconComponent;
           return (
             <div
               key={'card' + key}
@@ -76,11 +76,11 @@ function IconSelect(props: {
 
 interface foderOptions {
   value: any;
-  label: String;
-  children: Array<any>;
+  label: string;
+  children: any[];
 }
 
-const forderOptions = (children: Array<foderOptions>) => [
+const forderOptions = (children: foderOptions[]) => [
   {
     value: 0,
     label: 'root',
@@ -88,7 +88,7 @@ const forderOptions = (children: Array<foderOptions>) => [
   },
 ];
 
-function getNewTree(params: Array<any>): any {
+function getNewTree(params: any[]): any {
   return params.map((item) => {
     return {
       value: item.id,
@@ -109,10 +109,10 @@ function FromComponet(props: any) {
       span: 12,
     },
   };
-  let [iconVisible, setIconVisible] = useState(false);
-  let [iconName, setIconName] = useState('');
-  let [showIcon, setShowIcon] = useState(<></>);
-  let [options, setOption] = useState([]);
+  const [iconVisible, setIconVisible] = useState(false);
+  const [iconName, setIconName] = useState('');
+  const [showIcon, setShowIcon] = useState(<></>);
+  const [options, setOption] = useState([]);
 
   const getIcon = () => {
     if (formRef.current.getFieldValue('icon')) {
@@ -146,23 +146,23 @@ function FromComponet(props: any) {
         component += '/' + findMenu(op, options).label
       }
     })
-    let title = formRef.current.getFieldValue("title")
+    const title = formRef.current.getFieldValue("title")
     formRef.current.setFieldsValue({
       component: component + (title ? '/' + title : ''),
     });
   }
 
   const changeComponent = (e: any) => {
-    let componentName = e.target.value
-    let pid = formRef.current.getFieldValue("pid")
+    const componentName = e.target.value
+    const pid = formRef.current.getFieldValue("pid")
     if (pid.toString() === '0') {
       formRef.current.setFieldsValue({
         component: './' + componentName,
       });
     }
     if (pid.length > 1) {
-      let component = formRef.current.getFieldValue("component")
-      let paths = component.split("/")
+      const component = formRef.current.getFieldValue("component")
+      const paths = component.split("/")
       paths[paths.length - 1] = componentName
       formRef.current.setFieldsValue({
         component: paths.join("/")
@@ -176,7 +176,7 @@ function FromComponet(props: any) {
     setShowIcon(getIcon());
   }, [iconName]);
   useEffect(() => {
-    let newRree: any = getNewTree(props.menuData);
+    const newRree: any = getNewTree(props.menuData);
     // console.log(newRree)
     setOption(newRree);
   }, [props.menuData]);
@@ -408,7 +408,7 @@ function TreeData(props: any) {
       dataIndex: 'icon',
       key: 'icon',
       render: (iconkey: any) => {
-        let Icon = Icons[iconkey]
+        const Icon = Icons[iconkey]
         return <Icon />
       }
     },
@@ -440,16 +440,16 @@ function TreeData(props: any) {
             edit
           </a>
           <Divider type="vertical" />
-          <DeleteComponent initData={initData} id={record['id']} />
+          <DeleteComponent initData={initData} id={record.id} />
         </>
       ),
     },
   ];
   const [data, setData] = React.useState([]);
-  let [visible, setVisible] = useState(false);
-  let [editRecord, setEditRecord] = useState(null);
-  let [tableLoading, setTableLoading] = useState(false);
-  let [confirmLoading, setConfirmLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [editRecord, setEditRecord] = useState(null);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   function initData() {
     setTableLoading(true);

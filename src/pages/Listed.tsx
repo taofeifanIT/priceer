@@ -148,7 +148,7 @@ export default () => {
             dataIndex: 'store_id',
             valueType: 'select',
             request: async () => {
-                let data = await stores()
+                const data = await stores()
                 return data
             }
         },
@@ -197,7 +197,7 @@ export default () => {
                 // 表单搜索项会从 params 传入，传递给后端接口。
                 // console.log(params, sorter, filter);
                 new Promise((resolve) => {
-                    let tempParams: any = {
+                    const tempParams: any = {
                         ...params,
                         len: params.pageSize,
                         page: params.current

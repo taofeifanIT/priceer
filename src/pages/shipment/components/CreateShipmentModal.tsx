@@ -58,7 +58,7 @@ const CreateShipmentModal = forwardRef((props: { initData?: () => void, shipment
         initData && initData()
     };
     const setStepResMsg = (index: number, msg: string) => {
-        let newResMsg = [...resMsg];
+        const newResMsg = [...resMsg];
         newResMsg[index] += msg;
         setResMsg(newResMsg);
     };
