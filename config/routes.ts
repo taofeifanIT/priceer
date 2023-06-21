@@ -156,6 +156,33 @@ export default [
         path: '/odika/RequirementList',
         name: 'RequirementList',
         component: './odika/RequirementList',
+      },
+      // odika\requirementSortList
+      {
+        path: '/odika/RequirementSortList',
+        name: 'RequirementSortList',
+        component: './odika/RequirementSortList',
+      },
+      // ViewDesign
+      {
+        path: '/odika/ViewDesign',
+        name: 'ViewDesign',
+        component: './odika/ViewDesign',
+        target: '_blank',
+        menuRender: false,
+        headerRender: false,
+      },
+      // RequirementManagement
+      {
+        path: '/odika/RequirementManagement',
+        name: 'RequirementManagement',
+        component: './odika/RequirementManagement',
+      },
+      // DemandProcessControl
+      {
+        path: '/odika/DemandProcessControl',
+        name: 'DemandProcessControl',
+        component: './odika/DemandProcessControl',
       }
     ]
   },
@@ -170,3 +197,4 @@ export default [
     component: './403',
   },
 ];
+

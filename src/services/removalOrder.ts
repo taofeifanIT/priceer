@@ -36,6 +36,8 @@ export type TableListItem = {
     progress: number;
     sku_total: number;
     tracking_status: string;
+    po: string;
+    po_id: number;
 }
 
 export type ShipmentDetailsItem = {

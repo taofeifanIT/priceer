@@ -29,7 +29,6 @@ const OperationModal = (props: {
   const formRef: any = React.createRef<FormInstance>();
   const [form] = Form.useForm();
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [showTag, setShowTag] = useState(false);
   const { record } = props;
   const onFinish = () => {
     formRef.current
@@ -37,7 +36,6 @@ const OperationModal = (props: {
       .then((value: any) => {
         let api = addUser;
         const param = value;
-        param.open_tag_permission = param.open_tag_permission ? 1 : 0;
         if (record) {
           api = updateUser;
           param.id = record.id;
@@ -76,20 +74,11 @@ const OperationModal = (props: {
   };
   React.useEffect(() => {
     if (formRef.current && props.record && props.isModalVisible) {
-      if (props.record.open_tag_permission) {
-        setShowTag(true);
-      }
-      formRef.current.setFieldsValue({
-        ...props.record,
-        open_tag_permission: !!props.record.open_tag_permission,
-        tag_ids: JSON.parse(props.record.tag_ids),
-        group_id: props.record.group_id,
-      });
+      formRef.current.setFieldsValue(props.record);
     } else {
-      setShowTag(false);
       form.resetFields();
     }
-  }, [props.isModalVisible]);
+  }, [form, formRef, props.isModalVisible, props.record]);
   return (
     <>
       <Modal
@@ -129,7 +118,19 @@ const OperationModal = (props: {
             >
               <Input.Password />
             </Form.Item>
+
           ) : null}
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
           <Form.Item
             label="role"
             name="group_id"
@@ -218,6 +219,11 @@ export default () => {
     {
       title: 'user name',
       dataIndex: 'username',
+      copyable: true,
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
       copyable: true,
     },
     {
@@ -327,7 +333,7 @@ export default () => {
         dataInit={dataInit}
         roleData={roleData}
         record={record}
-       />
+      />
     </PageContainer>
   );
 };

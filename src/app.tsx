@@ -65,7 +65,6 @@ export async function getInitialState(): Promise<{
   if (!getToken()) {
     history.push(loginPath);
   }
-  console.log(history.location.pathname)
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
     const configInfo = await fetchConfigInfo();
@@ -84,7 +83,7 @@ export async function getInitialState(): Promise<{
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 // @ts-ignore
-export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     rightContentRender: () => <RightContent />,
     disableContentMargin: false,

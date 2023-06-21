@@ -2,7 +2,7 @@ import { getQueryVariable } from '@/utils/utils'
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react'
 import type { ShipmentDetailsItem } from '@/services/removalOrder'
 import { getShipmentDetails, checkShipment } from '@/services/removalOrder'
-import { Radio, message, Upload, Modal, Form, Button, Divider, Table, Image, Select, Spin } from 'antd';
+import { Radio, message, Upload, Modal, Form, Button, Divider, Table, Image, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusCircleFilled, UploadOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'

@@ -39,7 +39,7 @@ export function getMenu(params: any[]): any {
         ? getMenu(item.children).sort((a: any, b: any) => a.sort_num - b.sort_num)
         : [],
     };
-    if (routeObj.name === 'Checked') {
+    if (!item.is_show) {
       routeObj = {
         ...routeObj,
         target: '_blank',

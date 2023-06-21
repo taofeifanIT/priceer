@@ -17,10 +17,26 @@ export type SalesTargetItem = {
     inventory: number;
     salesTarget: number; // 前端计算的销售目标
     dailyOverValue: number; // 前端计算的日均销量
+    daily_sales_country: {
+        country_id: number;
+        number: number;
+    }[];
+    weekly_sales_country: {
+        country_id: number;
+        number: number;
+    }[];
+    inventory_country: {
+        country_id: number;
+        number: number;
+    }[];
 }
 
 // salesTarget/getList
-export async function getSalesTargetList(params?: { start_time: string, end_time: string }) {
+export type SalesTargetListParams = {
+    start_time: string;
+    end_time: string;
+}
+export async function getSalesTargetList(params?: SalesTargetListParams) {
     return request('/api/salesTarget/getList', {
         method: 'POST',
         data: params

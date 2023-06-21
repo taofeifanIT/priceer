@@ -10,27 +10,27 @@ import Dayjs from 'dayjs';
 
 
 
-const checkProgress = (progress: number, tracking_status: string, shipped_quantity: number): any => {
-    let text = ''
-    let color = ''
-    if (tracking_status !== 'IN_TRANSIT') {
-        if (progress === shipped_quantity) {
-            text = 'Full Received'
-            color = 'green'
-        } else if (progress > 0 && progress < shipped_quantity) {
-            text = 'Partial receipt'
-            color = '#faad14'
-        }
-        // 如果shipment_status是pending就没有颜色
-        if (tracking_status === 'PENDING') {
-            color = ''
-        }
-        return <span style={{ 'color': color }}>{text}</span>
-    } else {
-        return null
-    }
+// const checkProgress = (progress: number, tracking_status: string, shipped_quantity: number): any => {
+//     let text = ''
+//     let color = ''
+//     if (tracking_status !== 'IN_TRANSIT') {
+//         if (progress === shipped_quantity) {
+//             text = 'Full Received'
+//             color = 'green'
+//         } else if (progress > 0 && progress < shipped_quantity) {
+//             text = 'Partial receipt'
+//             color = '#faad14'
+//         }
+//         // 如果shipment_status是pending就没有颜色
+//         if (tracking_status === 'PENDING') {
+//             color = ''
+//         }
+//         return <span style={{ 'color': color }}>{text}</span>
+//     } else {
+//         return null
+//     }
 
-}
+// }
 
 
 export default () => {
@@ -39,11 +39,10 @@ export default () => {
         {
             // 进度
             title: 'Progress',
-            dataIndex: 'progress',
+            dataIndex: 'tracking_status',
             align: 'center',
             width: 120,
             search: false,
-            render: (_, record) => checkProgress(record.progress || 0, record.tracking_status, record.shipped_quantity)
         },
         {
             // request_date_timestamp
@@ -120,6 +119,13 @@ export default () => {
             valueType: 'text',
         },
         {
+            title: 'PO',
+            dataIndex: 'po',
+            width: 100,
+            align: 'center',
+            search: false,
+        },
+        {
             title: 'action',
             width: 100,
             key: 'option',
@@ -127,7 +133,7 @@ export default () => {
             fixed: 'right',
             valueType: 'option',
             render: (_, record) => [
-                <Button type="primary" size='small' key="checked" disabled={record.progress === record.shipped_quantity} onClick={() => {
+                <Button type="primary" size='small' key="checked" disabled={!(record.tracking_status === 'DELIVERED' && record.po_id !== 0)} onClick={() => {
                     window.open(`/RemovalOrder/Checked?tracking_number=${record.tracking_number}`)
                 }}>Checked</Button>
             ],
