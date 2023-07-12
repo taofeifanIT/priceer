@@ -176,18 +176,6 @@ export default () => {
             width: 110,
             render: (_, record) => [<span key='ship_fee'>${record.ship_fee}</span>],
         },
-        // {
-        //     title: 'Ship Rate',
-        //     dataIndex: 'ship_rate',
-        //     search: false,
-        //     render: (_, record) => [<span key='ship_rate'>{(record.ship_rate * 100).toFixed(2)}%</span>],
-        // },
-        // {
-        //     title: 'Margin Rate',
-        //     dataIndex: 'margin_rate',
-        //     search: false,
-        //     render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(2)}%</span>],
-        // },
         {
             title: 'Platform Fee Percentage',
             dataIndex: 'platform_fee',
@@ -229,6 +217,14 @@ export default () => {
             key: 'username',
             copyable: true,
             width: 80,
+        },
+        {
+            // comments
+            title: 'Comments',
+            dataIndex: 'comments',
+            key: 'comments',
+            search: false,
+            width: 120,
         },
         {
             title: 'Unit Cost(USD)',
@@ -279,6 +275,15 @@ export default () => {
                 })
                 setBrands(brandData)
                 exportData = resultData
+                if (sort?.margin_rate) {
+                    exportData.sort((a: any, b: any) => {
+                        if (sort.margin_rate === 'ascend') {
+                            return a.margin_rate - b.margin_rate
+                        } else {
+                            return b.margin_rate - a.margin_rate
+                        }
+                    })
+                }
                 return {
                     data: resultData,
                     success: true,
@@ -288,13 +293,13 @@ export default () => {
             editable={{
                 type: 'multiple',
             }}
-            columnsState={{
-                persistenceKey: 'pro-table-singe-demos',
-                persistenceType: 'localStorage',
-                onChange(value) {
-                    console.log('value: ', value);
-                },
-            }}
+            // columnsState={{
+            //     persistenceKey: 'pro-table-singe-demos',
+            //     persistenceType: 'localStorage',
+            //     onChange(value) {
+            //         console.log('value: ', value);
+            //     },
+            // }}
             scroll={{ y: document.body.clientHeight - 360, x: columns.reduce((total: any, item) => total + (item.width || 0), 0) }}
             rowKey="id"
             search={{
@@ -322,7 +327,9 @@ export default () => {
             dateFormatter="string"
             toolBarRender={() => [
                 <Button key="button" size='small' icon={<VerticalAlignBottomOutlined />} onClick={() => {
-                    exportExcel(columns, exportData, 'ProductReactivationEvaluation.xlsx')
+                    // excelColumns index不需要
+                    const excelColumns = columns.filter(item => item.dataIndex !== 'index')
+                    exportExcel(excelColumns, exportData, 'ProductReactivationEvaluation.xlsx')
                 }}>Download</Button>
             ]}
         />
