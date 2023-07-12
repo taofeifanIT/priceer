@@ -29,6 +29,16 @@ export type SalesTargetItem = {
         country_id: number;
         number: number;
     }[];
+    us_sales: number;
+    ca_sales: number;
+    us_sales_weekly: number;
+    ca_sales_weekly: number;
+    us_inventory: number;
+    ca_inventory: number;
+    us_sales_daily: number;
+    ca_sales_daily: number;
+    us_sales_weekly_daily: number;
+    ca_sales_weekly_daily: number;
 }
 
 // salesTarget/getList

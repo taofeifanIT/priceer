@@ -11,7 +11,6 @@ const COLORS = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#f50', '#2db7f5', '#87
 const CheckForm = (props: { check?: string }) => {
 
     const { check } = props;
-
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
@@ -28,8 +27,8 @@ const CheckForm = (props: { check?: string }) => {
             setLoading(true)
             checkDesign({ id: parseInt(getQueryVariable('id')), status: values.status, reason: values.reason }).then(res => {
                 if (res.code) {
-                    message.success('审核成功')
-                    // window.location.href = '/odika/requirementManagement'
+                    message.success('审核完成！')
+
                 } else {
                     message.error(res.msg)
                 }
@@ -119,10 +118,10 @@ export default () => {
     const getImage = (url: string, thumbUrl: string | undefined) => {
         if (url) {
             const imgUrl = 'http://api-rp.itmars.net/storage/' + url
-            const thumb = 'http://api-rp.itmars.net/storage/' + thumbUrl
+            // const thumb = 'http://api-rp.itmars.net/storage/' + thumbUrl
             return <Image
                 style={{ border: '4px solid #eee' }}
-                src={thumb}
+                src={imgUrl}
                 preview={{ src: imgUrl }}
                 height={HEIGHT}
                 width={WIDTH} />
@@ -199,7 +198,7 @@ export default () => {
                     </div>
                 </div>
             </div>
-            <Title level={3} style={{ 'marginTop': '20px' }}>副图场景</Title>
+            {designDetail?.auxiliaryPictureScene?.length ? <Title level={3} style={{ 'marginTop': '20px' }}>副图场景</Title> : null}
             <div>
                 {designDetail?.auxiliaryPictureScene?.map((item, index) => {
                     return <div key={index} style={{ display: 'inline-block', verticalAlign: 'top' }}>
@@ -225,7 +224,8 @@ export default () => {
                     </div>
                 })}
             </div>
-            <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title>
+            {/* <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title> */}
+            {designDetail?.aPlus.aplusScene ? <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title> : null}
             <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
                 {designDetail?.aPlus.aplusScene?.map((item, index) => {
                     return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
@@ -259,7 +259,8 @@ export default () => {
                     </div>
                 })}
             </div>
-            <Title level={3} style={{ 'marginTop': '20px' }}>细节</Title>
+            {/* <Title level={3} style={{ 'marginTop': '20px' }}>细节</Title> */}
+            {designDetail?.detailPicture.length ? <Title level={3} style={{ 'marginTop': '20px' }}>细节</Title> : null}
             <div>
                 {designDetail?.detailPicture?.map((item, index) => {
                     return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>

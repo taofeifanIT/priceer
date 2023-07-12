@@ -10,28 +10,27 @@ import Dayjs from 'dayjs';
 
 
 
-// const checkProgress = (progress: number, tracking_status: string, shipped_quantity: number): any => {
-//     let text = ''
-//     let color = ''
-//     if (tracking_status !== 'IN_TRANSIT') {
-//         if (progress === shipped_quantity) {
-//             text = 'Full Received'
-//             color = 'green'
-//         } else if (progress > 0 && progress < shipped_quantity) {
-//             text = 'Partial receipt'
-//             color = '#faad14'
-//         }
-//         // 如果shipment_status是pending就没有颜色
-//         if (tracking_status === 'PENDING') {
-//             color = ''
-//         }
-//         return <span style={{ 'color': color }}>{text}</span>
-//     } else {
-//         return null
-//     }
-
-// }
-
+const checkProgress = (check_status: number): any => {
+    let text = 'not yet'
+    switch (check_status) {
+        case 1:
+            text = 'Pending Delivery'
+            break;
+        case 2:
+            text = 'Waiting Receive'
+            break;
+        case 3:
+            text = 'Need to Finish'
+            break;
+        case 4:
+            text = 'Need to Claim'
+            break;
+        case 5:
+            text = 'Done'
+            break;
+    }
+    return text
+}
 
 export default () => {
     const actionRef: any = useRef<FormInstance>();
@@ -39,17 +38,24 @@ export default () => {
         {
             // 进度
             title: 'Progress',
-            dataIndex: 'tracking_status',
+            dataIndex: 'check_status',
             align: 'center',
-            width: 120,
+            width: 90,
             search: false,
+            render: (_, record) => {
+                return (
+                    <div>
+                        {checkProgress(record.check_status)}
+                    </div>
+                )
+            }
         },
         {
             // request_date_timestamp
             title: 'Request Date',
             dataIndex: 'request_date_timestamp',
             align: 'center',
-            width: 120,
+            width: 80,
             search: false,
             render: (_, record) => {
                 return (
@@ -62,15 +68,14 @@ export default () => {
             dataIndex: 'store_name',
             align: 'center',
             valueType: 'text',
-            width: 100,
+            width: 65,
             search: false,
         },
         {
             title: 'Order ID',
             dataIndex: 'order_id',
-            align: 'center',
             search: false,
-            width: 140,
+            width: 80,
             valueType: 'text',
         },
         {
@@ -79,14 +84,14 @@ export default () => {
             align: 'center',
             valueType: 'text',
             search: false,
-            width: 80,
+            width: 40,
         },
         {
             title: 'Shipped-Quantity',
             dataIndex: 'shipped_quantity',
             align: 'center',
             valueType: 'digit',
-            width: 180,
+            width: 100,
             search: false,
         },
         {
@@ -94,7 +99,7 @@ export default () => {
             dataIndex: 'shipment_date_timestamp',
             align: 'center',
             valueType: 'dateRange',
-            width: 180,
+            width: 100,
             render(_, record) {
                 return (
                     <div>
@@ -107,36 +112,54 @@ export default () => {
             title: 'Tracking',
             dataIndex: 'tracking_number',
             valueType: 'text',
+            width: 150,
+            // ellipsis: true,
+        },
+        {
+            // Progress
+            title: 'Progress',
+            dataIndex: 'check_status',
             align: 'center',
-            width: 140,
+            hideInTable: true,
+            valueType: 'select',
+            valueEnum: {
+                1: { text: 'Pending Delivery', status: 'Processing' },
+                2: { text: 'Waiting Receive', status: 'Processing' },
+                3: { text: 'Need to Finish', status: 'Processing' },
+                4: { text: 'Need to Claim', status: 'Processing' },
+                5: { text: 'Done', status: 'Success' },
+            },
         },
         {
             title: 'Status',
             dataIndex: 'tracking_last_status',
-            align: 'center',
             search: false,
-            width: 100,
+            width: 130,
             valueType: 'text',
         },
         {
             title: 'PO',
             dataIndex: 'po',
-            width: 100,
-            align: 'center',
+            width: 60,
             search: false,
         },
         {
-            title: 'action',
-            width: 100,
+            title: 'Action',
+            width: 65,
             key: 'option',
             align: 'center',
             fixed: 'right',
             valueType: 'option',
-            render: (_, record) => [
-                <Button type="primary" size='small' key="checked" disabled={!(record.tracking_status === 'DELIVERED' && record.po_id !== 0)} onClick={() => {
-                    window.open(`/RemovalOrder/Checked?tracking_number=${record.tracking_number}`)
-                }}>Checked</Button>
-            ],
+            render: (_, record) => {
+                if (record.check_status === 2 && record.po_id !== 0) {
+                    return <Button type="primary" size='small' key="checked" onClick={() => {
+                        window.open(`/RemovalOrder/Checked?tracking_number=${record.tracking_number}`)
+                    }}>Checked</Button>
+                } else if (record.check_status === 4 || record.check_status === 5) {
+                    // view  use a tag
+                    return <a href={`/RemovalOrder/Checked?tracking_number=${record.tracking_number}&view=true`} target="_blank" rel="noopener noreferrer">View</a>
+                }
+            },
         },
     ];
     return (<>

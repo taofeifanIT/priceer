@@ -5,7 +5,7 @@ import { Image, message, Typography, Form, Modal, Input, InputNumber, Spin, Uplo
 import { ProTable } from '@ant-design/pro-components';
 import { UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import {
-    getClaimList,
+    getClaimListV2,
     addClaimNumber,
     addReimbursement,
     downloadInfo,
@@ -13,7 +13,9 @@ import {
     addReimburseNumber,
     editMemo,
     saveMemoImages,
-    finishFail
+    finishFail,
+    editLpn,
+    editShipmentId
 }
     from '@/services/removalOrder'
 import moment from 'moment';
@@ -45,7 +47,7 @@ export type TableListItem = {
     tracking_last_times: number,
     shipment_status: number,
     memo: string,
-    images: string[],
+    image: string[],
     thumb: string[],
     checked_at: number,
     store_name: string,
@@ -53,7 +55,11 @@ export type TableListItem = {
     reimburse_money: number,
     reimburse_number: string,
     memo_images: string[],
-    memo_thumb: string[]
+    memo_thumb: string[],
+    shipment_id: string,
+    lpn: string,
+    claim_reason: string,
+    claim_date: string,
 }
 
 const ShipmentStatusGroup = [
@@ -136,7 +142,9 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
     const [spinning, setSpinning] = useState(false)
     return (<>
         <Spin spinning={spinning}>
-            <Typography.Title editable={{
+            {/* reimburse_money */}
+            {(editKey === 'reimburse_money' && value) && '$'}
+            <Typography.Text editable={{
                 onChange(val) {
                     // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
                     if (!val || val === paramValue) {
@@ -157,19 +165,19 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                         setSpinning(false)
                     })
                 },
-            }} level={4} >
+            }} >
                 {paramValue}
-            </Typography.Title>
+            </Typography.Text>
         </Spin>
 
     </>)
 }
 
-const DownloadComponent = (props: { id: number }) => {
-    const { id } = props
+const DownloadComponent = (props: { id: number, type?: number }) => {
+    const { id, type } = props
     return (<>
-        <Button type='primary' icon={<DownloadOutlined />} style={{ marginBottom: '5px', width: 170 }} href={downloadInfo(id)}>
-            Download images
+        <Button type={type ? 'dashed' : 'primary'} icon={<DownloadOutlined />} size='small' style={{ marginBottom: '5px', width: 180 }} target='blank' href={downloadInfo(id, type)}>
+            Download {type === 2 ? 'Extra Images' : 'Images'}
         </Button>
     </>)
 }
@@ -193,7 +201,7 @@ const FailedComponent = (props: { id: number, shipment_status: number, refresh: 
         })
     }
     return (<>
-        <Button danger style={{ width: 170 }} disabled={shipment_status === 5} loading={loading} onClick={onClick}>
+        <Button danger size='small' style={{ width: 180 }} disabled={shipment_status === 5} loading={loading} onClick={onClick}>
             Failed
         </Button>
     </>)
@@ -201,37 +209,52 @@ const FailedComponent = (props: { id: number, shipment_status: number, refresh: 
 
 const UploadCommonImage = (props: { record: TableListItem, refresh: () => void }) => {
     const { record, refresh } = props
-    const onChange = (info: any) => {
-        if (info.file.status === 'done') {
-            const { id } = record
-            const fileList = info.fileList
-            const saveResult = fileList.filter((item: any) => item.status === 'done')
-            if (saveResult.length === fileList.length) {
-                const images: string[] = info.fileList.map((item: any) => item.response.data.file_name)
-                saveMemoImages({ id, images }).then((res: any) => {
-                    if (res.code) {
-                        message.success('Upload success')
-                        refresh()
-                    } else {
-                        throw res.msg
-                    }
-                }).catch((err: any) => {
-                    message.error('Upload failed ' + err)
-                })
+    // memo_images
+    const [fileList, setFileList] = useState<any[]>([...record.memo_images.map((item: string, index: number) => {
+        // 获取文件名
+        const fileName = item.split('/').pop()
+        return {
+            uid: index,
+            name: fileName,
+            status: 'done',
+            url: `http://api-rp.itmars.net/storage/${item}`,
+            response: {
+                data: {
+                    file_name: item
+                }
             }
+        }
+    })])
+    const onChange = (info: any) => {
+        setFileList(info.fileList)
+        const allImageStatus = info.fileList.every((item: any) => item.status === 'done')
+        if (allImageStatus) {
+            const { id } = record
+            const images: string[] = info.fileList.map((item: any) => item.response.data.file_name)
+            saveMemoImages({ id, images }).then((res: any) => {
+                if (res.code) {
+                    message.success('Upload success')
+                    refresh()
+                } else {
+                    throw res.msg
+                }
+            }).catch((err: any) => {
+                message.error('Upload failed ' + err)
+            })
         }
     }
     return (<Upload
         accept=".jpg, .jpeg, .png"
         action="http://api-rp.itmars.net/removalOrder/uploadImage"
         headers={{ authorization: 'authorization-text', token: getToken() }}
+        fileList={fileList}
         data={{ id: record.id }}
         listType="text"
         multiple={true}
         onChange={onChange}
         maxCount={50}
     >
-        <Button icon={<UploadOutlined />} style={{ width: "170px", marginBottom: '5px' }}>Common images</Button>
+        <Button icon={<UploadOutlined />} size='small' disabled={record.shipment_status !== 3} style={{ width: "180px", marginBottom: '5px' }}>Upload Images</Button>
     </Upload>)
 
 }
@@ -244,17 +267,38 @@ export default () => {
     }
     const columns: ProColumns<TableListItem>[] = [
         {
+            title: 'Status',
+            dataIndex: 'shipment_status',
+            width: 100,
+            valueType: 'select',
+            valueEnum: {
+                1: { text: 'Pending', status: 'Default' },
+                2: { text: 'Waiting', status: 'Processing' },
+                3: { text: 'Request more Details', status: 'Processing' },
+                4: { text: 'Win', status: 'Success' },
+                5: { text: 'Failed', status: 'Error' },
+            },
+            render: (_, record) => {
+                return ShipmentStatusGroup.find((item) => item.value === record.shipment_status)?.text
+            }
+        },
+        // claim_date
+        {
+            title: 'Claim Date',
+            dataIndex: 'claim_date',
+            width: 90,
+            search: false,
+        },
+        {
             title: 'Store Name',
             dataIndex: 'store_name',
-            align: 'center',
             valueType: 'text',
-            width: 100,
+            width: 95,
             search: false,
         },
         {
             title: 'Order ID',
             dataIndex: 'order_id',
-            align: 'center',
             width: 100,
             valueType: 'text',
         },
@@ -267,30 +311,29 @@ export default () => {
         {
             title: 'MSKU',
             dataIndex: 'msku',
-            align: 'center',
-            width: 180,
+            width: 200,
+            ellipsis: true,
             valueType: 'text',
         },
         {
             title: 'FNSKU',
             dataIndex: 'fnsku',
-            align: 'center',
-            width: 100,
+            width: 110,
             valueType: 'text',
         },
         {
             title: 'SKU',
             dataIndex: 'sku',
-            align: 'center',
-            width: 100,
+            width: 200,
+            ellipsis: true,
             valueType: 'text',
         },
         {
             title: 'Shipment Date',
             dataIndex: 'shipment_date',
-            align: 'center',
             width: 120,
             valueType: 'text',
+            search: false,
             render(_, record) {
                 return (
                     <div>
@@ -300,40 +343,15 @@ export default () => {
             },
         },
         {
-            title: 'Removal Type',
-            dataIndex: 'removal_order_type',
-            align: 'center',
-            width: 110,
-            valueType: 'select',
-            valueEnum: {
-                Return: { text: 'Return' },
-                Disposal: { text: 'Disposal' },
-                Liquidate: { text: 'Liquidations' },
-            },
-        },
-        {
-            title: 'Disposition',
-            dataIndex: 'disposition',
-            align: 'center',
-            width: 100,
-            valueType: 'text',
-            valueEnum: {
-                Sellable: { text: 'Sellable' },
-                Unsellable: { text: 'Unsellable' }
-            }
-        },
-        {
-            title: 'Shipped Quantity',
+            title: 'QTY',
             dataIndex: 'shipped_quantity',
-            align: 'center',
-            width: 150,
+            width: 135,
             valueType: 'digit',
             search: false,
         },
         {
             title: 'Carrier',
             dataIndex: 'carrier',
-            align: 'center',
             width: 70,
             valueType: 'text',
             search: false,
@@ -341,24 +359,41 @@ export default () => {
         {
             title: 'Tracking Number',
             dataIndex: 'tracking_number',
-            align: 'center',
-            width: 200,
+            width: 155,
             valueType: 'text',
             search: false,
         },
         {
+            // Shipment ID
+            title: 'Shipment ID',
+            dataIndex: 'shipment_id',
+            width: 150,
+            search: false,
+            render: (_, record) => {
+                return <SetValueComponent id={record.id} editKey={'shipment_id'} value={record.shipment_id} api={editShipmentId} refresh={refresh} />
+            }
+        },
+        {
+            title: 'LPN',
+            dataIndex: 'lpn',
+            width: 150,
+            search: false,
+            render: (_, record) => {
+                return <SetValueComponent id={record.id} editKey={'lpn'} value={record.lpn} api={editLpn} refresh={refresh} />
+            }
+        },
+        {
             title: 'Images',
             dataIndex: 'images',
-            align: 'center',
             width: 220,
             search: false,
             render: (_, record) => {
                 return (
                     <div style={{ overflowX: 'auto', width: '200px', WebkitOverflowScrolling: 'touch' }}>
-                        <div style={{ width: record.images.length * 54 }}>
+                        <div style={{ width: record.image.length * 54 }}>
                             <Image.PreviewGroup>
                                 {record.thumb.map((image: string, index: number) => (
-                                    <span key={image} style={{ 'marginRight': index !== record.images.length ? 4 : 0 }}><Image width={50} preview={{ src: `http://api-rp.itmars.net/storage/${record.images[index]}` }} key={image} src={`http://api-rp.itmars.net/storage/${image}`} /></span>
+                                    <span key={image} style={{ 'marginRight': index !== record.image.length ? 4 : 0 }}><Image width={50} preview={{ src: `http://api-rp.itmars.net/storage/${record.image[index]}` }} key={image} src={`http://api-rp.itmars.net/storage/${image}`} /></span>
                                 ))}
                             </Image.PreviewGroup>
                         </div>
@@ -367,18 +402,15 @@ export default () => {
             }
         },
         {
-            title: 'Status',
-            dataIndex: 'shipment_status',
-            align: 'center',
-            width: 100,
-            render: (_, record) => {
-                return ShipmentStatusGroup.find((item) => item.value === record.shipment_status)?.text
-            }
+            title: 'Claim Reason',
+            dataIndex: 'claim_reason',
+            width: 120,
+            valueType: 'text',
+            search: false,
         },
         {
-            title: 'Claim Number',
+            title: 'Claim ID',
             dataIndex: 'claim_number',
-            align: 'center',
             width: 120,
             valueType: 'text',
             search: false,
@@ -387,9 +419,8 @@ export default () => {
             }
         },
         {
-            title: 'Reimburse Number',
+            title: 'Reimbursement ID',
             dataIndex: 'reimburse_number',
-            align: 'center',
             width: 180,
             valueType: 'text',
             search: false,
@@ -398,9 +429,8 @@ export default () => {
             }
         },
         {
-            title: 'Reimburse Money',
+            title: 'Reimbursement Amount',
             dataIndex: 'reimburse_money',
-            align: 'center',
             width: 180,
             valueType: 'text',
             search: false,
@@ -410,32 +440,33 @@ export default () => {
         },
         {
             // dataindex memo title Common
-            title: 'Memo',
+            title: 'Memo - Mellon',
             dataIndex: 'memo',
             width: 200,
             search: false,
             render: (_, record) => {
                 // 如果 shipment_status 为 2 
-                return record.shipment_status === 2 ? <SetValueComponent id={record.id} editKey={'memo'} value={record.memo} api={editMemo} refresh={refresh} /> : record.memo
+                return <SetValueComponent id={record.id} editKey={'memo'} value={record.memo} api={editMemo} refresh={refresh} />
             }
         },
         {
-            // Common
-            title: 'Common',
+            title: 'Additional Images',
             dataIndex: 'common',
             width: 200,
             search: false,
             render: (_, record) => {
-                return (
-                    <div style={{ overflowX: 'auto', width: '200px', WebkitOverflowScrolling: 'touch' }}>
-                        <div style={{ width: record.images.length * 54 }}>
+                return (<>
+                    <div style={{ overflowX: 'auto', width: '200px', WebkitOverflowScrolling: 'touch', marginBottom: '5px' }}>
+                        <div style={{ width: record.memo_thumb.length * 54 }}>
                             <Image.PreviewGroup>
                                 {record.memo_thumb.map((image: string, index: number) => (
-                                    <span key={image} style={{ 'marginRight': index !== record.images.length ? 4 : 0 }}><Image width={50} preview={{ src: `http://api-rp.itmars.net/storage/${record.memo_images[index]}` }} key={image} src={`http://api-rp.itmars.net/storage/${image}`} /></span>
+                                    <span key={image} style={{ 'marginRight': index !== record.memo_thumb.length ? 4 : 0 }}><Image width={50} preview={{ src: `http://api-rp.itmars.net/storage/${record.memo_images[index]}` }} key={image} src={`http://api-rp.itmars.net/storage/${image}`} /></span>
                                 ))}
                             </Image.PreviewGroup>
                         </div>
                     </div>
+                    <UploadCommonImage record={record} refresh={refresh} />
+                </>
                 )
             }
         },
@@ -445,11 +476,10 @@ export default () => {
             dataIndex: 'option',
             valueType: 'option',
             width: 200,
-            align: 'center',
             fixed: 'right',
             render: (_, record) => (<>
                 <DownloadComponent id={record.id} />
-                <UploadCommonImage record={record} refresh={refresh} />
+                <DownloadComponent id={record.id} type={2} />
                 <FailedComponent id={record.id} shipment_status={record.shipment_status} refresh={refresh} />
             </>)
         }
@@ -467,7 +497,7 @@ export default () => {
                         len: params.pageSize,
                         page: params.current
                     }
-                    getClaimList(tempParams).then((res) => {
+                    getClaimListV2(tempParams).then((res) => {
                         resolve({
                             data: res.data.data,
                             // success 请返回 true，

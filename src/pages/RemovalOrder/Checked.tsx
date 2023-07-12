@@ -1,18 +1,21 @@
 import { getQueryVariable } from '@/utils/utils'
-import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import type { ShipmentDetailsItem } from '@/services/removalOrder'
-import { getShipmentDetails, checkShipment } from '@/services/removalOrder'
-import { Radio, message, Upload, Modal, Form, Button, Divider, Table, Image, Select } from 'antd';
+import { getShipmentDetails, checkShipment, saveCheck } from '@/services/removalOrder'
+import { Radio, message, Upload, Modal, Button, Table, Image, Select, Space, Spin } from 'antd';
+import type { RcFile, UploadFile } from 'antd/es/upload/interface';
 import type { ColumnsType } from 'antd/es/table';
-import { PlusCircleFilled, UploadOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons';
+import { VerticalAlignBottomOutlined, PlusOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'
-import { barCodeSizeGroup } from '@/pages/shipment/enumeration';
-import { newExportPDF } from '@/utils/utils';
-
+import { exportPDFWithFont } from '@/utils/utils';
 const claimProps = [
-    { label: 'Missing Parts', value: 'Missing Parts' },
+    { label: 'Wrong Brand', value: 'Worng Brand' },
     { label: 'Wrong Product', value: 'Wrong Product' },
-    { label: 'Empty Box', value: 'Empty Box' }
+    { label: 'Missing Parts', value: 'Missing Parts' },
+    { label: 'Empty Box', value: 'Empty Box' },
+    { label: 'Invalid Tracking', value: 'Invalid Tracking' },
+    { label: 'Package returned to sender', value: 'Package returned to sender' },
+    { label: 'Item damaged', value: 'Item damaged' },
 ]
 
 const conditionProps = [
@@ -36,136 +39,92 @@ const matchProps = [
 //     { name: 'image6', title: 'Damaged photo' },
 // ]
 
+const getImageUrl = (baseUrl: string) => {
+    return 'http://api-rp.itmars.net/storage/' + baseUrl
+}
 
-const UploadImageModel = forwardRef((props: { callback: (value: any, record: ShipmentDetailsItem) => void }, ref) => {
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [targetItem, setTargetItem] = useState<ShipmentDetailsItem>({} as ShipmentDetailsItem)
-    const [form] = Form.useForm();
-    // 定义函数用于根据选中的值更新状态
-    const handleUploadChange = (info: { fileList: string | any[]; }) => {
-        if (info.fileList.length > 50) {  // 限制上传图片数量为 6 张
-            message.error('You can only upload up to 6 images!')
-            return;
+const getBase64 = (file: RcFile): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+    });
+
+const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value: string, key: string, record: ShipmentDetailsItem) => void, isView: boolean }) => {
+    const { record, callback, isView } = props
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
+    const [previewTitle, setPreviewTitle] = useState('');
+    const [fileList, setFileList] = useState<any>([...record.images.map((item: any, index: number) => {
+        // 获取文件名
+        const fileName = item.file_name.split('/').pop();
+        return {
+            uid: index,
+            name: fileName,
+            status: 'done',
+            url: getImageUrl(item.file_name),
+            // thumbUrl: getImageUrl(item.file_name),
+            // thumb: getImageUrl(item.file_name),
+            response: {
+                data: {
+                    file_name: item.file_name,
+                    thumb_name: item.file_name,
+                }
+            }
         }
-    };
-    const handleOk = () => {
-        form.validateFields().then(async (values: any) => {
-            const fileList = values.images.fileList.map(({ response }: any) => {
+    })]);
+    const handleChange = ({ fileList: newFileList }) => {
+        setFileList(newFileList);
+        // 判断是否上传完成
+        if (newFileList.length && newFileList.every((file: any) => file.status === 'done')) {
+            const tempData = newFileList.map((item: any) => {
                 return {
-                    file_name: response.data.file_name,
-                    thumb_name: response.data.thumb_name,
+                    file_name: item.response.data.file_name,
+                    thumb_name: item.response.data.file_name,
                 }
             })
-            setIsModalVisible(false);
-            form.resetFields()
-            props.callback(fileList, targetItem)
-        }).catch((e) => {
-            console.log(e)
-        })
-    };
-
-    useImperativeHandle(ref, () => ({
-        showModal: (record: ShipmentDetailsItem) => {
-            setIsModalVisible(true)
-            setTargetItem(record)
-            console.log(record)
+            callback(tempData, 'images', record)
         }
-    }));
+    }
+    const handleCancel = () => setPreviewOpen(false);
+    const handlePreview = async (file: UploadFile) => {
+        if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originFileObj as RcFile);
+        }
+        setPreviewImage(file.url || (file.preview as string));
+        setPreviewOpen(true);
+        setPreviewTitle(file.name || file.url!.substring(file.url!.lastIndexOf('/') + 1));
+    };
     return (
         <>
-            <Modal
-                width={515}
-                title={'check'}
-                open={isModalVisible}
-                onOk={handleOk}
-                onCancel={() => { setIsModalVisible(false) }}
+            <Upload
+                accept=".jpg, .jpeg, .png"
+                action="http://api-rp.itmars.net/removalOrder/uploadImage"
+                headers={{ authorization: 'authorization-text', token: getToken() }}
+                data={{ id: record?.uuid }}
+                fileList={fileList}
+                listType="picture-card"
+                multiple={true}
+                disabled={isView}
+                onPreview={handlePreview}
+                onChange={handleChange}
+                maxCount={100}
             >
-                <Form
-                    layout={"horizontal"}
-                    form={form}
-                >
-                    <Form.Item colon={false} name={'images'} rules={[{ required: true }]}>
-                        <Upload
-                            accept=".jpg, .jpeg, .png"
-                            action="http://api-rp.itmars.net/removalOrder/uploadImage"
-                            headers={{ authorization: 'authorization-text', token: getToken() }}
-                            data={{ id: targetItem.uuid }}
-                            listType="picture"
-                            multiple={true}
-                            onChange={handleUploadChange}
-                            maxCount={100}
-                        >
-                            <Button icon={<UploadOutlined />} style={{ width: "470px" }}>Upload</Button>
-                        </Upload>
-                    </Form.Item>
-                    {/* {imageUploadProps.map(imgItem => {
-                        return (<>
-                            <Form.Item key={imgItem.name} label="" name={imgItem.name} rules={[{ required: true }]}>
-                                <Upload
-                                    accept=".jpg, .jpeg, .png"
-                                    action="http://api-rp.itmars.net/removalOrder/uploadImage"
-                                    headers={{ authorization: 'authorization-text', token: getToken() }}
-                                    listType="picture"
-                                    onChange={handleUploadChange}
-                                    maxCount={1}
-                                >
-                                    <Button icon={<UploadOutlined />} style={{ width: "470px" }}>{imgItem.title}</Button>
-                                </Upload>
-                            </Form.Item>
-                            <Divider />
-                        </>)
-                    })} */}
-                </Form>
-            </Modal >
+                <div>
+                    <PlusOutlined />
+                    <div style={{ marginTop: 8 }}>Upload</div>
+                </div>
+            </Upload>
+            <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel}>
+                <img alt="example" style={{ width: '100%' }} src={previewImage} />
+            </Modal>
         </>
     );
-});
+};
 
 
-const PrintBarCodeModal = forwardRef((_, ref) => {
-    const [visible, setVisible] = useState(false);
-    const [items, setItems] = useState<any>([]);
-    useImperativeHandle(ref, () => ({
-        showModal: (ShipmentDetailsItem: string[]) => {
-            setVisible(true);
-            // 加上printQuantity
-            const tempData = ShipmentDetailsItem.map((item: any) => {
-                return {
-                    ...item,
-                    printQuantity: 1,
-                }
-            })
-            setItems(tempData);
-        }
-    }));
-    const createBarCode = async () => {
-        const { width, height } = barCodeSizeGroup[0]
-        const fileName = items.map((item: any) => item.msku).join('_')
-        newExportPDF('viewBarCode', items, { width: parseFloat(width), height: parseFloat(height) }, fileName);
-    };
-    return (<>
-        <Modal open={visible} onCancel={() => setVisible(false)} width={640} title='Bar code' onOk={createBarCode} okText='Print'>
-            <div id={'viewBarCode'}>
-                {items.map((item: any) => {
-                    return (<>
-                        <Divider />
-                        <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                            {/* <div>
-                                <img src={item.bar_code} style={parseInt(barCodeSizeGroup[0].height) < 30 ? { 'height': '100px', 'width': '100%' } : undefined} />
-                            </div> */}
-                            <div style={{ fontSize: '50px', margin: '8px 0', fontWeight: '600' }}>
-                                {item.msku}
-                            </div>
-                        </div>
-                    </>)
-                })}
-            </div>
-        </Modal>
-    </>)
-});
-
-
-const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack: (data: ShipmentDetailsItem[]) => void }) => {
+const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void }) => {
     const { title, data, callBack } = props
     const [titleObj] = useState<any>({ pops: title === 'Match' ? matchProps : title === 'Claim' ? claimProps : conditionProps })
     const changeAllPop = (value: string) => {
@@ -190,14 +149,16 @@ const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack:
     </>
 }
 
+
+
 export default () => {
     // 读取链接中的参数
     const [trackingNumber] = useState<string>(getQueryVariable('tracking_number'))
+    // view
+    const [view] = useState<boolean>(getQueryVariable('view') === 'true')
     const [data, setData] = useState<ShipmentDetailsItem[]>([])
     const [dataLoading, setDataLoading] = useState<boolean>(false)
     const [saveLoading, setSaveLoading] = useState<boolean>(false)
-    const uploadImageModelRef: any = useRef<any>();
-    const printBarcodeModal: any = useRef();
     const changePop = (value: string, key: string, record: ShipmentDetailsItem) => {
         const tempData = data.map(item => {
             if (item.uuid === record.uuid) {
@@ -211,7 +172,8 @@ export default () => {
         setData(tempData)
     }
 
-    const handleOk = () => {
+    const handleOk = (type: 'save' | 'submit') => {
+        const api = type === 'save' ? saveCheck : checkShipment
         const tempData = {
             content: [...data.map(item => {
                 return {
@@ -227,9 +189,9 @@ export default () => {
             })]
         }
         setSaveLoading(true)
-        checkShipment(tempData).then(res => {
+        api(tempData).then(res => {
             if (res.code) {
-                message.success('Checked successfully')
+                message.success(res.msg)
             } else {
                 throw res.msg
             }
@@ -242,7 +204,10 @@ export default () => {
 
     const downloadAllSKu = () => {
         return <>Action <a onClick={() => {
-            printBarcodeModal.current.showModal(data)
+            const fonts = data.map((item) => {
+                return item.msku
+            });
+            exportPDFWithFont(fonts, { width: 66.675, height: 25.4 });
         }}><VerticalAlignBottomOutlined /></a></>
     }
 
@@ -264,7 +229,8 @@ export default () => {
                 );
             },
         },
-        { title: 'SKU', dataIndex: 'msku', key: 'msku', width: 150 },
+        { title: 'MSKU', dataIndex: 'msku', key: 'msku', width: 150 },
+        { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 150 },
         { title: 'FNSKU', dataIndex: 'fnsku', key: 'fnsku', width: 150 },
         {
             title: 'Quantity',
@@ -273,13 +239,13 @@ export default () => {
             width: 80
         },
         {
-            title: <GetTitle title={'Match'} data={data} callBack={setData} />,
+            title: view ? 'Match' : <GetTitle title={'Match'} data={data} callBack={setData} />,
             dataIndex: 'atch',
             key: 'match',
             width: 200,
             render: (_, record) => {
                 return (<>
-                    <Radio.Group value={record.match} onChange={(e) => {
+                    <Radio.Group disabled={view} value={record.match} onChange={(e) => {
                         changePop(e.target.value, 'match', record)
                     }}>
                         <Radio value={'1'}>Yes</Radio>
@@ -289,7 +255,7 @@ export default () => {
             }
         },
         {
-            title: <GetTitle title={'Condition'} data={data} callBack={setData} />,
+            title: view ? 'Condition' : <GetTitle title={'Condition'} data={data} callBack={setData} />,
             dataIndex: 'condition',
             key: 'condition',
             width: 300,
@@ -306,7 +272,7 @@ export default () => {
             }
         },
         {
-            title: <GetTitle title={'Claim'} data={data} callBack={setData} />,
+            title: view ? 'Claim' : <GetTitle title={'Claim'} data={data} callBack={setData} />,
             dataIndex: 'claim',
             key: 'claim',
             width: 225,
@@ -328,32 +294,7 @@ export default () => {
             key: 'images',
             width: 300,
             render: (_, record) => {
-                return (<>
-                    {record.images?.length > 0 ? (
-                        <>
-                            <div style={{ overflowX: 'auto', width: '300px', WebkitOverflowScrolling: 'touch' }}>
-                                <div style={{ width: record.images.length * 104 }}>
-                                    <Image.PreviewGroup>
-                                        {record.images.map((image, index: number) => (
-                                            <span
-                                                key={image.thumb_name}
-                                                style={{ 'marginRight': index !== record.images.length ? 4 : 0 }}>
-                                                <Image
-                                                    width={100}
-                                                    style={{ 'width': '100px', 'height': '90px' }}
-                                                    preview={{ src: `http://api-rp.itmars.net/storage/${image.file_name}` }}
-                                                    src={`http://api-rp.itmars.net/storage/${image.thumb_name}`} />
-                                            </span>
-                                        ))}
-                                    </Image.PreviewGroup>
-                                </div>
-                            </div>
-                        </>
-                    ) : <Button style={{ 'width': '200px' }} disabled={record.match !== '-1'} icon={<PlusCircleFilled />} onClick={() => {
-                        uploadImageModelRef.current.showModal(record)
-                    }}>upload pictures</Button>}
-
-                </>)
+                return <UploadImageModel record={record} callback={changePop} isView={view} />
             }
         },
         {
@@ -365,8 +306,8 @@ export default () => {
             render: (_, record) => {
                 return (<>
                     <a onClick={() => {
-                        printBarcodeModal.current.showModal([record])
-                    }}>DownLoad BarCode</a>
+                        exportPDFWithFont([record.msku], { width: 66.675, height: 25.4 });
+                    }}>Print Barcode</a>
                 </>)
             }
         }
@@ -400,26 +341,32 @@ export default () => {
             initData()
         }
     }, [])
-    return (<> <Table
-        loading={dataLoading}
-        columns={columns}
-        id='uuid'
-        size='small'
-        pagination={{ position: ['bottomCenter'], pageSize: data.length }}
-        expandable={{
-            // 默认展开所有行
-            expandedRowKeys: data.map(item => item.uuid),
-            expandIcon: () => null
-        }}
-        scroll={{ x: columns.reduce((total, item) => total + Number(item.width || 0), 0) }}
-        dataSource={data}
-    />
-        <div style={{ 'textAlign': 'right' }}>
-            <Button type="primary" loading={saveLoading} onClick={handleOk}>Save</Button>
-        </div>
-        <UploadImageModel callback={(value, record) => {
-            changePop(value, 'images', record)
-        }} ref={uploadImageModelRef} />
-        <PrintBarCodeModal ref={printBarcodeModal} />
+    return (<>
+        <Spin spinning={saveLoading}>
+            <Table
+                loading={dataLoading}
+                columns={columns}
+                id='uuid'
+                size='small'
+                pagination={false}
+                expandable={{
+                    // 默认展开所有行
+                    expandedRowKeys: data.map(item => item.uuid),
+                    expandIcon: () => null
+                }}
+                scroll={{ x: columns.reduce((total, item) => total + Number(item.width || 0), 0) }}
+                dataSource={data}
+            />
+            <div style={{ 'textAlign': 'right', 'marginTop': '10px' }}>
+                {!view && (<Space >
+                    <Button onClick={() => {
+                        handleOk('save')
+                    }}>Save</Button>
+                    <Button type="primary" onClick={() => {
+                        handleOk('submit')
+                    }}>submit</Button>
+                </Space>)}
+            </div>
+        </Spin>
     </>)
 }

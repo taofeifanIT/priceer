@@ -38,6 +38,7 @@ export type TableListItem = {
     tracking_status: string;
     po: string;
     po_id: number;
+    check_status: number;
 }
 
 export type ShipmentDetailsItem = {
@@ -83,6 +84,15 @@ export async function checkShipment(params: checkItems) {
     });
 }
 
+// /removalOrder/saveCheck
+export async function saveCheck(params: checkItems) {
+    return request('/api/removalOrder/saveCheck', {
+        method: 'POST',
+        data: params
+    });
+
+}
+
 export async function addClaimNumber(params: addClaimNumberParams) {
     return request('/api/removalOrder/addClaimNumber', {
         method: 'POST',
@@ -113,8 +123,9 @@ export async function addReimbursement(params: { id: number, reimburse_number: s
 }
 
 // downloadInfo
-export function downloadInfo(id: number) {
-    return `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}`
+export function downloadInfo(id: number, type?: number) {
+    // return `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}`
+    return type ? `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}&type=${type}` : `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}`
 }
 
 // addReimburseMoney
@@ -152,6 +163,30 @@ export async function saveMemoImages(params: { id: number, images: string[] }) {
 // /removalOrder/finishFail
 export async function finishFail(params: { id: number }) {
     return request('/api/removalOrder/finishFail', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// /removalOrder/getClaimListV2
+export async function getClaimListV2(params: listingItem) {
+    return request('/api/removalOrder/getClaimListV2', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// /removalOrder/editShipmentId
+export async function editShipmentId(params: { id: number, shipment_id: string }) {
+    return request('/api/removalOrder/editShipmentId', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// /removalOrder/editLpn
+export async function editLpn(params: { id: number, lpn: string }) {
+    return request('/api/removalOrder/editLpn', {
         method: 'POST',
         data: params
     });

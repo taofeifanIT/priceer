@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { Input, message, Spin, Space } from 'antd';
 import { getBusinessUnitDataList } from '@/services/businessUnitData/purchasingSalesHistory';
 import { G2, Line } from '@ant-design/plots';
-// import { LineChartOutlined } from '@ant-design/icons';
+import { getQueryVariable } from '@/utils/utils'
 const { Search } = Input;
 
 
 const DemoLine = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
-
+    const [sku, setSku] = useState(getQueryVariable('sku') || 'RC-2375');
     const getPoint = (maxValue: number) => {
         G2.registerShape('point', 'breath-point', {
             draw(cfg, container) {
@@ -115,11 +115,15 @@ const DemoLine = () => {
                     if (item.purchasePrice) {
                         tempData.push({ date: item.current_date, value: parseFloat(item.purchasePrice), type: 'purchasePrice' });
                     }
-                    if (item.salePrice) {
-                        tempData.push({ date: item.current_date, value: parseFloat(item.salePrice), type: 'salePrice' });
-                    }
                     if (item.rate) {
                         tempData.push({ date: item.current_date, value: parseFloat(item.rate), type: 'rate' });
+                    }
+                    // 把采购价换算成人民币 CNY
+                    // if (item.purchasePrice && item.rate) {
+                    //     tempData.push({ date: item.current_date, value: (parseFloat(item.purchasePrice) * parseFloat(item.rate)).toFixed(2), type: 'purchasePrice(CNY)' });
+                    // }
+                    if (item.salePrice) {
+                        tempData.push({ date: item.current_date, value: parseFloat(item.salePrice), type: 'salePrice' });
                     }
                 })
                 setData(tempData);
@@ -135,6 +139,9 @@ const DemoLine = () => {
     const onSearch = (value: string) => {
         asyncFetch(value);
     };
+    const onSearchChange = (e: any) => {
+        setSku(e.target.value);
+    }
     const config: any = {
         autoFit: true,
         xField: 'date',
@@ -143,7 +150,7 @@ const DemoLine = () => {
         xAxis: {
             type: 'time',
         },
-        color: ['#5B8FF9', '#F6BD16', '#5AD8A6',],
+        color: ['#5B8FF9', '#F6BD16', '#5AD8A6', '#E76C5E'],
         slider: {
             start: 0,
             end: 1,
@@ -155,10 +162,10 @@ const DemoLine = () => {
         smooth: true,
     };
     useEffect(() => {
-        asyncFetch('RC-2375');
+        asyncFetch(sku);
     }, []);
     return (<>
-        <Space>SKU: <Search placeholder="Please enter SKU" onSearch={onSearch} loading={loading} style={{ width: 200 }} /></Space>
+        <Space>SKU: <Search placeholder="Please enter SKU" onSearch={onSearch} value={sku} onChange={onSearchChange} loading={loading} style={{ width: 200 }} /></Space>
         <Spin spinning={loading}>
             <Line {...config} data={data} />
         </Spin>

@@ -11,6 +11,7 @@ import localeData from 'dayjs/plugin/localeData'
 import weekday from 'dayjs/plugin/weekday'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import weekYear from 'dayjs/plugin/weekYear'
+import getInfoComponent from './components/getInfoComponent'
 dayjs.extend(customParseFormat)
 dayjs.extend(advancedFormat)
 dayjs.extend(weekday)
@@ -21,48 +22,11 @@ const { Text } = Typography;
 const { Search } = Input;
 
 
-const getImageUrl = (baseUrl: string) => {
-    return 'http://api-rp.itmars.net/storage/' + baseUrl
-}
-
-const getInfoComponent = (record: RequirementListItem) => {
-    let imgUrl: any = { url: 'http://api-rp.itmars.net/example/default.png', thunmb_url: 'http://api-rp.itmars.net/example/default.png' };
-    if (record.mainPicture?.whiteBackgroundAndProps?.url) {
-        imgUrl = {
-            url: getImageUrl(record.mainPicture?.whiteBackgroundAndProps?.url),
-            thunmb_url: getImageUrl(record.mainPicture?.whiteBackgroundAndProps?.url)
-        }
-    } else if (record.mainPicture?.sizeAndNaterial?.url) {
-        imgUrl = {
-            url: getImageUrl(record.mainPicture?.sizeAndNaterial?.url),
-            thunmb_url: getImageUrl(record.mainPicture?.sizeAndNaterial?.url)
-        }
-    }
-    return <>
-        <Space>
-            <div style={{ display: 'inline-block', 'width': 50 }}>
-                <Image
-                    width={50}
-                    height={50}
-                    src={imgUrl.thunmb_url}
-                    preview={{
-                        src: imgUrl.url,
-                    }} />
-            </div>
-            <div style={{ display: 'inline-block', width: 300 }}>
-                <Text>{record.sku}</Text>
-                <Text style={{ maxWidth: '300px' }} ellipsis={{ tooltip: record.memo }} type="secondary">{record.memo}</Text>
-            </div>
-        </Space>
-    </>
-}
-
 
 const TimeEditComponent = (props: { record: RequirementListItem, refresh: () => void }) => {
     const { record, refresh } = props
     const [time, setTime] = useState<any>(record.expectTime ? dayjs(record.expectTime) : dayjs());
     const [isEdit, setIsEdit] = useState(false);
-
 
     const editPlanTime = (expectTime: string) => {
         editExpectTime({ id: record.id, expect_time: expectTime }).then(res => {
@@ -78,6 +42,7 @@ const TimeEditComponent = (props: { record: RequirementListItem, refresh: () => 
     }
 
     const onChange = (date: any) => {
+        if (!date) return
         setTime(date)
         setIsEdit(false)
         editPlanTime(date.format('YYYY-MM-DD'))
@@ -90,12 +55,17 @@ const TimeEditComponent = (props: { record: RequirementListItem, refresh: () => 
             }} />
         </>
     }
-    return <>
+    return <div onBlur={() => {
+        setIsEdit(false)
+    }}>
         {isEdit ? <DatePicker
+            onBlur={() => {
+                setIsEdit(false)
+            }}
             value={time}
             format={'YYYY-MM-DD'}
             onChange={onChange} showTime /> : getEditComponent()}
-    </>
+    </div>
 }
 
 const App: React.FC = () => {
@@ -113,12 +83,7 @@ const App: React.FC = () => {
                 // 数据拆分priority大于0的升序，等于0的跟在后面
                 const tempData1 = sourceData.filter((item: any) => item.priority > 0).sort((a: any, b: any) => a.priority - b.priority)
                 const tempData2 = sourceData.filter((item: any) => item.priority === 0)
-                const newData = tempData1.concat(tempData2).map((item: any, index: number) => {
-                    return {
-                        ...item,
-                        priority: index + 1
-                    }
-                })
+                const newData = tempData1.concat(tempData2)
                 setDataSource(newData)
             } else {
                 throw res.msg
@@ -160,10 +125,9 @@ const App: React.FC = () => {
             }
         },
         {
-            // priority
             title: '优先级',
-            dataIndex: 'priority',
-            key: 'priority',
+            dataIndex: 'close_sort',
+            key: 'close_sort',
         },
         {
             // 状态
@@ -218,7 +182,7 @@ const App: React.FC = () => {
             title: '预计完成时间',
             dataIndex: 'expectTime',
             key: 'expectTime',
-            render: (text: any, record) => {
+            render: (_, record) => {
                 return <TimeEditComponent record={record} refresh={initData} />
             }
         },
@@ -227,7 +191,7 @@ const App: React.FC = () => {
             dataIndex: 'action',
             key: 'action',
             fixed: 'right',
-            render: (text: any, record) => {
+            render: (_, record) => {
                 return <>
                     <Button type="link" onClick={() => {
                         window.open(`/odika/ViewDesign?id=${record.id}`)

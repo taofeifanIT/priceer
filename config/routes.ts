@@ -144,6 +144,12 @@ export default [
         path: '/businessUnitData/PurchasingSalesHistory',
         name: 'PurchasingSalesHistory',
         component: './businessUnitData/PurchasingSalesHistory',
+      },
+      // Product Reactivation Evaluation
+      {
+        path: '/businessUnitData/ProductReactivationEvaluation',
+        name: 'ProductReactivationEvaluation',
+        component: './businessUnitData/ProductReactivationEvaluation',
       }
     ]
   },

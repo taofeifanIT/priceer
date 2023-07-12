@@ -1,18 +1,7 @@
-import { MenuOutlined } from '@ant-design/icons';
-import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
-import { DndContext } from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import {
-    arrayMove,
-    SortableContext,
-    useSortable,
-    verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Button, Card, Table, Input, Space, message, Image, Typography } from 'antd';
+import { Button, Card, Table, Input, Space, message, Image, Typography, InputNumber, Divider, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useState, useEffect } from 'react';
-import { getListForSort, editSortNew } from '@/services/odika/requirementList';
+import { getListForSort, editSortV3 } from '@/services/odika/requirementList';
 import type { RequirementListItem } from '@/services/odika/requirementList';
 const { Text } = Typography;
 const { Search } = Input;
@@ -54,144 +43,28 @@ const getInfoComponent = (record: RequirementListItem) => {
     </>
 }
 
-const columns: ColumnsType<RequirementListItem> = [
-    {
-        key: 'sort',
-    },
-    {
-        title: '信息',
-        dataIndex: 'info',
-        key: 'info',
-        width: 385,
-        render: (text: any, record: any) => getInfoComponent(record)
-    },
-    {
-        title: '创建信息',
-        dataIndex: 'creator',
-        key: 'creator',
-        width: 260,
-        render: (text: any, record: any) => {
-            return <div style={{ 'width': '260px' }}>
-                <div><Text type="secondary">创建人：</Text>{record.creator}</div>
-                <div><Text type="secondary">创建时间：</Text>{record.createTime}</div>
-            </div>
-        }
-    },
-    {
-        // priority
-        title: '优先级',
-        dataIndex: 'priority',
-        key: 'priority',
-    },
-    {
-        title: '操作',
-        dataIndex: 'action',
-        key: 'action',
-        fixed: 'right',
-        render: (text: any, record) => {
-            return <>
-                <Button type="link" onClick={() => {
-                    window.open(`/odika/ViewDesign?id=${record.id}`)
-                }}>View</Button>
-            </>
-        }
-    }
-]
 
-interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
-    'data-row-key': string;
-}
 
-const Row = ({ children, ...props }: RowProps) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        setActivatorNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({
-        id: props['data-row-key'],
-    });
-
-    const style: React.CSSProperties = {
-        ...props.style,
-        transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
-        transition,
-        ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
-    };
-
-    return (
-        <tr {...props} ref={setNodeRef} style={style} {...attributes}>
-            {React.Children.map(children, (child) => {
-                if ((child as React.ReactElement).key === 'sort') {
-                    return React.cloneElement(child as React.ReactElement, {
-                        children: (
-                            <MenuOutlined
-                                ref={setActivatorNodeRef}
-                                style={{ touchAction: 'none', cursor: 'move' }}
-                                {...listeners}
-                            />
-                        ),
-                    });
-                }
-                return child;
-            })}
-        </tr>
-    );
-};
 
 const App: React.FC = () => {
     const [dataSource, setDataSource] = useState<any>([]);
     const [keyword, setKeyword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [sorts, setSorts] = useState<number[]>([]);
     const onSearch = (value: string) => {
         setKeyword(value)
-    };
-    const editSortList = (params: { id: number, priority: number }[]) => {
-        editSortNew(params).then(res => {
-            if (!res.code) {
-                message.error(res.msg);
-            }
-        }).finally(() => {
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            initData()
-        })
-    }
-    const onDragEnd = ({ active, over }: DragEndEvent) => {
-        if (active.id !== over?.id) {
-            const data: any = (previous: any) => {
-                const activeIndex = previous.findIndex((i: { id: UniqueIdentifier; }) => i.id === active.id);
-                const overIndex = previous.findIndex((i: { id: UniqueIdentifier | undefined; }) => i.id === over?.id);
-                const result = arrayMove(previous, activeIndex, overIndex);
-                const params = result.map((item: any, index: number) => {
-                    return {
-                        id: item.id,
-                        priority: index + 1
-                    }
-                })
-                editSortList(params)
-                return result;
-            }
-            setDataSource(data);
-        }
     };
     const initData = () => {
         setLoading(true);
         getListForSort({ keyword: keyword || undefined }).then(res => {
             if (res.code) {
                 const sourceData = res.data.data
-                // 数据拆分priority大于0的升序，等于0的跟在后面
-                const tempData1 = sourceData.filter((item: any) => item.priority > 0).sort((a: any, b: any) => a.priority - b.priority)
-                const tempData2 = sourceData.filter((item: any) => item.priority === 0)
-                const newData = tempData1.concat(tempData2).map((item: any, index: number) => {
-                    return {
-                        ...item,
-                        priority: index + 1
-                    }
-                })
+                const tempData1 = sourceData.filter((item: any) => item.close_sort === 0 && item.status !== 7)
+                const tempData2 = sourceData.filter((item: any) => item.close_sort !== 0 && item.status >= 3).sort((a: any, b: any) => a.close_sort - b.close_sort)
+                const tempData3 = sourceData.filter((item: any) => item.close_sort === 0 && item.status > 3)
+                const newData = tempData1.concat(tempData2).concat(tempData3)
                 setDataSource(newData)
+                setSorts(res.data.sorts)
             } else {
                 throw res.msg
             }
@@ -201,6 +74,135 @@ const App: React.FC = () => {
             message.error(err)
         })
     }
+    const checkSort = (sort: number) => {
+        return sorts.includes(sort)
+    }
+    const getColor = (status: number) => {
+        let color = ''
+        let text = ''
+        switch (status) {
+            // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成
+            case 2:
+                color = ''
+                text = 'Wait sort'
+                break;
+            case 3:
+                color = '#2db7f5'
+                text = 'wait for review'
+                break;
+            case 4:
+                color = 'red'
+                text = 'Fail the audit'
+            case 5:
+                color = '#f39f6c'
+                text = 'Waiting schedule'
+                break;
+            case 6:
+                color = 'blue'
+                text = 'in production'
+                break;
+            case 7:
+                color = 'green'
+                text = 'completed'
+                break;
+        }
+        // 字体加粗
+        return <span style={{ color: color, fontWeight: 'bold' }}>{text}</span>
+    }
+    const columns: ColumnsType<RequirementListItem> = [
+        {
+            title: 'Info',
+            dataIndex: 'info',
+            key: 'info',
+            width: 385,
+            render: (text: any, record: any) => getInfoComponent(record)
+        },
+        {
+            title: 'Create message',
+            dataIndex: 'creator',
+            key: 'creator',
+            width: 200,
+            render: (text: any, record: any) => {
+                return <div style={{ 'width': '200px' }}>
+                    <div><Text type="secondary">创建人：</Text>{record.creator}</div>
+                    <div><Text type="secondary">创建时间：</Text>{record.createTime}</div>
+                </div>
+            }
+        },
+        {
+            // priority
+            title: 'Priority',
+            dataIndex: 'priority',
+            key: 'priority',
+            width: 150,
+            render: (_, record) => {
+                if (record.status === 7) {
+                    return ''
+                }
+                if (!!record.close_sort) {
+                    return record.close_sort
+                }
+                return <InputNumber
+                    min={1}
+                    defaultValue={record.priority}
+                    onChange={(value) => {
+                        if (value) {
+                            editSortV3({ id: record.id, no: value, is_lock: 0 }).then(res => {
+                                if (res.code) {
+                                    initData()
+                                } else {
+                                    throw res.msg
+                                }
+                            }).catch(err => {
+                                message.error(err)
+                            })
+                        }
+                    }}
+                />
+            }
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            width: 100,
+            render: (_, record) => {
+                return getColor(record.status)
+            }
+        },
+        {
+            title: 'Action',
+            dataIndex: 'action',
+            key: 'action',
+            fixed: 'right',
+            width: 150,
+            render: (_, record) => {
+                return <Space>
+                    {record.status !== 7 ? (<>
+                        <Switch style={{ width: '70px' }} checkedChildren="Locked" unCheckedChildren='Lock' disabled={!!record.close_sort || record.status === 7} checked={!!record.close_sort || record.status === 7} onChange={val => {
+                            if (checkSort(record.priority)) {
+                                message.error('This priority is already in use!')
+                                return false
+                            }
+                            editSortV3({ id: record.id, no: record.priority, is_lock: 1 }).then(res => {
+                                if (res.code) {
+                                    initData()
+                                } else {
+                                    throw res.msg
+                                }
+                            }).catch(err => {
+                                message.error(err)
+                            })
+                        }} />
+                        <Divider type="vertical" />
+                    </>) : null}
+                    <Button type="link" onClick={() => {
+                        window.open(`/odika/ViewDesign?id=${record.id}`)
+                    }}>View</Button>
+                </Space>
+            }
+        }
+    ]
     useEffect(() => {
         initData()
     }, [keyword])
@@ -210,25 +212,12 @@ const App: React.FC = () => {
             title={<Search placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />}
             extra={<Button type="primary" onClick={initData}>刷新</Button>}
         >
-            <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-                <SortableContext
-                    // rowKey array
-                    items={dataSource.map((i) => i.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    <Table
-                        components={{
-                            body: {
-                                row: Row,
-                            },
-                        }}
-                        loading={loading}
-                        rowKey="id"
-                        columns={columns}
-                        dataSource={dataSource}
-                    />
-                </SortableContext>
-            </DndContext>
+            <Table
+                loading={loading}
+                rowKey="id"
+                columns={columns}
+                dataSource={dataSource}
+            />
         </Card>
     );
 };

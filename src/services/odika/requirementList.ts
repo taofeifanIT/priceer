@@ -112,6 +112,7 @@ export type RequirementListItem = {
     createTime: string;
     expectTime: string;
     canto_url: string;
+    close_sort: number;
 }
 
 interface DesignListParams {
@@ -224,6 +225,14 @@ export async function editPlan(params: { id: number, status: number }) {
 // design/editExpectTime
 export async function editExpectTime(params: { id: number, expect_time: string }) {
     return request('/api/design/editExpectTime', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// design/editSortV3
+export async function editSortV3(params: { id: number, no: number, is_lock: number }) {
+    return request('/api/design/editSortV3', {
         method: 'POST',
         data: params
     });

@@ -1,10 +1,12 @@
-import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Image, Typography, Steps, Spin, Tooltip } from 'antd';
+import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Image, Typography, Steps, Spin, Tooltip, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { getSkuList, saveDesign, editDesign, getDesignList, getDesignDetail } from '@/services/odika/requirementList';
 import type { RequirementListItem, submitDesignParams, saveDesignParams } from '@/services/odika/requirementList';
 import { getToken } from '@/utils/token'
+import { getImageUrl } from '@/utils/utils'
+import getInfoComponent from './components/getInfoComponent'
 const { Search } = Input;
 const { Text } = Typography;
 // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成
@@ -44,10 +46,6 @@ const formItemLayout = {
     },
 };
 
-const getImageUrl = (baseUrl: string) => {
-    return 'http://api-rp.itmars.net/storage/' + baseUrl
-}
-
 const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const { refresh } = props;
     const [form] = Form.useForm();
@@ -60,6 +58,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const aPlusType = Form.useWatch('aPlusType', form);
     const [editRecord, setEditRecord] = useState<RequirementListItem>({} as RequirementListItem);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [checkStatus, setCheckStatus] = useState(false);
 
     const handleCancel = () => {
         setVisible(false);
@@ -67,6 +66,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         setCurrentSku('')
         form.resetFields();
     };
+
     const onChange = (value: string) => {
         setCurrentSku(value)
     };
@@ -74,6 +74,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const onSearch = (value: string) => {
         console.log('search:', value);
     };
+
     const getSkulist = () => {
         if (skuList.length) return;
         setSkuListLoading(true);
@@ -175,6 +176,11 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             message.error('请选择SKU!')
             return
         }
+        // if (type === 'submit') {
+        //     setCheckStatus(true)
+        // } else {
+        //     setCheckStatus(false)
+        // }
         form.validateFields().then(values => {
             console.log(values)
             const params: saveDesignParams = {
@@ -237,6 +243,24 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         })
     };
 
+    // const pasteUpload = (event) => {
+    //     event.stopPropagation()
+    //     console.log(event)
+    //     const data = event.clipboardData || window.clipboardData
+    //     let tempFile = null // 存储文件数据
+    //     if (data.items && data.items.length) {
+    //         // 检索剪切板items
+    //         for (const value of data.items) {
+    //             if (value.type.indexOf('image') !== -1) {
+    //                 tempFile = value.getAsFile()
+    //                 break
+    //             }
+    //         }
+    //     }
+    //     console.log('tempFile', tempFile)
+    //     // handleUpload(tempFile)
+    // }
+
     const modelTitle = <>
         <Space>
             <span>SKU:</span>
@@ -292,6 +316,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             }
         }
     }));
+
     return (<Modal
         width={800}
         title={modelTitle}
@@ -300,25 +325,19 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         footer={[
             <Button key="back" onClick={handleCancel}>Cancel</Button>,
             <Button key="save" type="primary" loading={saveLoading} onClick={() => onFinish('save')}>Save</Button>,
-            <Button key="submit" type="primary" loading={confirmLoading} onClick={() => onFinish('submit')}>Submit</Button>,
+            <Popconfirm
+                key={'submit'}
+                placement="top"
+                title={'确认提交？'}
+                description={'提交后不可修改'}
+                onConfirm={() => onFinish('submit')}
+                okText="Yes"
+                cancelText="No"
+            >
+                <Button key="submit" type="primary" loading={confirmLoading}>Submit</Button>
+            </Popconfirm>,
         ]}
     >
-        {/* <Button onClick={() => {
-            form.setFieldsValue({
-                whiteBackgroundMemo: 'test',
-                whiteBackgroundFile: [{
-                    uid: '1',
-                    name: 'test.png',
-                    status: 'done',
-                    thumbUrl: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-                    url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
-                }],
-            })
-            // console.log(form.getFieldValue('whiteBackgroundFile'))
-        }}>set image</Button>
-        <Button onClick={() => {
-            console.log(form.getFieldValue('whiteBackgroundFile'))
-        }}>get image</Button> */}
         <Spin spinning={detailLoading}>
             <Form
                 form={form}
@@ -337,7 +356,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 <Form.Item
                     name={'whiteBackgroundMemo'}
                     label="备注"
-                    rules={[{ required: true, message: 'Missing Memo' }]}
+                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
                     <Input.TextArea placeholder="请输入道具需求" />
                 </Form.Item>
@@ -353,7 +372,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 <Form.Item
                     name={'sizeAndNaterialMemo'}
                     label="备注"
-                    rules={[{ required: true, message: 'Missing Memo' }]}
+                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
                     <Input.TextArea placeholder="请输入需求" />
                 </Form.Item>
@@ -369,7 +388,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 <Form.Item
                     name={'auxiliaryPictureSellingPoint'}
                     label="卖点"
-                    rules={[{ required: true, message: 'Missing Memo' }]}
+                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
                     <Select
                         mode="tags"
@@ -380,7 +399,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 <Form.Item
                     name={'auxiliaryPictureMemo'}
                     label="备注"
-                    rules={[{ required: true, message: 'Missing Memo' }]}
+                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
                     <Input.TextArea placeholder="请输入需求" />
                 </Form.Item>
@@ -403,7 +422,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'scene']}
                                         label={'场景' + (name + 1)}
-                                        rules={[{ required: true, message: 'Missing scene' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing scene' }]}
                                     >
                                         <Select>
                                             {SceneList.map(item => <Select.Option key={item} value={item}>{item}</Select.Option>)}
@@ -414,7 +433,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'memo']}
                                         label={'需求'}
-                                        rules={[{ required: true, message: 'Missing memo' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing memo' }]}
                                     >
                                         <Input.TextArea placeholder="memo" />
                                     </Form.Item>
@@ -442,7 +461,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                         <Form.Item
                             name={'aPlusType'}
                             label=""
-                            rules={[{ required: true, message: 'Missing aPlusType' }]}>
+                            rules={[{ required: checkStatus, message: 'Missing aPlusType' }]}>
                             <Select style={{ 'width': '150px', 'position': 'relative', 'top': '10px' }}>
                                 <Select.Option value={'A+'}>A+(970x600)</Select.Option>
                                 <Select.Option value={'A++'}>A++(1464x600)</Select.Option>
@@ -460,7 +479,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'scene']}
                                         label={'场景' + (name + 1)}
-                                        rules={[{ required: true, message: 'Missing scene' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing scene' }]}
                                     >
                                         <Select>
                                             {SceneList.map(item => <Select.Option key={item} value={item}>{item}</Select.Option>)}
@@ -471,7 +490,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'memo']}
                                         label={'需求'}
-                                        rules={[{ required: true, message: 'Missing memo' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing memo' }]}
                                     >
                                         <Input.TextArea placeholder="请输入文字需求" />
                                     </Form.Item>
@@ -479,7 +498,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'pictureRequirement']}
                                         label={'画面要求'}
-                                        rules={[{ required: true, message: 'Missing pictureRequirement' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing pictureRequirement' }]}
                                     >
                                         <Input.TextArea placeholder="请输入画面要求" />
                                     </Form.Item>
@@ -512,7 +531,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'detailRequirementPoint']}
                                         label={'细节需求点' + (name + 1)}
-                                        rules={[{ required: true, message: 'Missing detailRequirementPoint' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing detailRequirementPoint' }]}
                                     >
                                         <Input />
                                     </Form.Item>
@@ -521,7 +540,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                         {...restField}
                                         name={[name, 'memo']}
                                         label={'画面需求'}
-                                        rules={[{ required: true, message: 'Missing memo' }]}
+                                        rules={[{ required: checkStatus, message: 'Missing memo' }]}
                                     >
                                         <Input.TextArea placeholder="请输入画面需求" />
                                     </Form.Item>
@@ -557,37 +576,6 @@ export default () => {
     const onSearch = (value: string) => {
         setKeyword(value)
     };
-    const getInfoComponent = (record: RequirementListItem) => {
-        let imgUrl: any = { url: 'http://api-rp.itmars.net/example/default.png', thunmb_url: 'http://api-rp.itmars.net/example/default.png' };
-        if (record.mainPicture?.whiteBackgroundAndProps?.url) {
-            imgUrl = {
-                url: getImageUrl(record.mainPicture?.whiteBackgroundAndProps?.url[0]),
-                thunmb_url: getImageUrl(record.mainPicture?.whiteBackgroundAndProps?.url[0])
-            }
-        } else if (record.mainPicture?.sizeAndNaterial?.url) {
-            imgUrl = {
-                url: getImageUrl(record.mainPicture?.sizeAndNaterial?.url[0]),
-                thunmb_url: getImageUrl(record.mainPicture?.sizeAndNaterial?.url[0])
-            }
-        }
-        return <>
-            <Space>
-                <div style={{ display: 'inline-block', 'width': 50 }}>
-                    <Image
-                        width={50}
-                        height={50}
-                        src={imgUrl.thunmb_url}
-                        preview={{
-                            src: imgUrl.url,
-                        }} />
-                </div>
-                <div style={{ display: 'inline-block', width: 300 }}>
-                    <Text>{record.sku}</Text>
-                    <Text style={{ maxWidth: '300px' }} ellipsis={{ tooltip: record.memo }} type="secondary">{record.memo}</Text>
-                </div>
-            </Space>
-        </>
-    }
     const getErrorMsg = (record: RequirementListItem, currentStatus: { value: number, label: string }) => {
         if (currentStatus.value === 4 && record.reason && record.status === 4) {
             return <Tooltip placement="top" title={record.reason}><span style={{ color: 'red' }}>审核</span></Tooltip>

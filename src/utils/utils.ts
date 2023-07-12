@@ -214,7 +214,97 @@ export const newExportPDF = async (el: string, products: { fnSku: string, printQ
       });
       if (index === products.length - 1) {
         pdf.save(`${fileName ? fileName : 'shipment'}.pdf`);
+        // 释放内存
+        newCanvas.width = 0;
+        newCanvas.height = 0;
+        newCtx.clearRect(0, 0, newCanvas.width, newCanvas.height);
+        img.src = '';
       }
     });
   });
+}
+
+export const exportPDFWithFont = async (fonts: string[], size: { width: number, height: number }) => {
+  const { width, height } = size;
+  const pdf = new jsPDF('l', 'mm', [width, height], true);
+  // 每一页的内容 fonts
+  const pageContent = fonts.map((item, index) => {
+    return {
+      page: index + 1,
+      content: item,
+    }
+  });
+  pageContent.forEach((item, index) => {
+    let fontSize = 15
+    const contentArr = item.content.split('');
+    const pdfWidth = width / 2
+    let pdfHeight = height / 2
+    if (contentArr.length > 20) {
+      pdfHeight = height / 2 - 4
+    } else {
+      fontSize = 20
+    }
+    pdf.setFontSize(fontSize);
+    let content = '';
+    contentArr.forEach((item, index) => {
+      if (index % 20 === 0 && index !== 0) {
+        content += '\r';
+      }
+      content += item;
+    });
+    pdf.text(content, pdfWidth, pdfHeight, { align: 'center', baseline: 'middle' });
+    if (index !== pageContent.length - 1) {
+      pdf.addPage();
+    }
+  });
+  pdf.save(`mskus.pdf`);
+  const printWindow = window.open(pdf.output('bloburl'), '_blank', 'fullscreen=yes');
+  if (printWindow) {
+    printWindow.print();
+  }
+}
+
+export const handlePrint = (id: any, num: number) => {
+  // 先用html2canvas将页面整个转为一张截图，再打印，防止出现echarts无法打印
+  const dom = document.getElementById(id) as any;
+  html2canvas(dom, {
+    scale: 2,
+    width: dom.offsetWidth,
+    height: dom.offsetHeight,
+  }).then((canvas) => {
+    const context = canvas.getContext('2d') as any;
+    context.mozImageSmoothingEnabled = false;
+    context.webkitImageSmoothingEnabled = false;
+    context.msImageSmoothingEnabled = false;
+    context.imageSmoothingEnabled = false;
+    const src64 = canvas.toDataURL();
+    const img = new Image();
+    img.setAttribute('src', src64);
+    // 控制纸张大小
+  });
+};
+
+function stringToDate(dateString: string) {
+  // eslint-disable-next-line no-param-reassign
+  const date = dateString.split('-');
+  return new Date(parseInt(date[0]), parseInt(date[1]) - 1, parseInt(date[2]));
+}
+
+
+export function countWorkDay(date1: string, date2: string) {
+  let date1Temp = stringToDate(date1);
+  const date2Temp = stringToDate(date2);
+  const delta = (date2Temp - date1Temp) / (1000 * 60 * 60 * 24) + 1; // 计算出总时间
+  let weeks = 0;
+  for (let i = 0; i < delta; i++) {
+    if (date1Temp.getDay() == 0 || date1Temp.getDay() == 6) weeks++;  // 若为周六或周天则加1
+    date1Temp = date1Temp.valueOf();
+    date1Temp += 1000 * 60 * 60 * 24;
+    date1Temp = new Date(date1Temp);
+  }
+  return delta - weeks;
+}
+
+export const getImageUrl = (baseUrl: string) => {
+  return 'http://api-rp.itmars.net/storage/' + baseUrl
 }
