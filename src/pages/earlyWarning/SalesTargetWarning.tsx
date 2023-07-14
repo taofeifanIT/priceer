@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { getSalesTargetList } from '@/services/earlyWarning'
+import { getSalesTargetList, getSalesTargetBrand } from '@/services/earlyWarning'
 import type { SalesTargetListParams } from '@/services/earlyWarning'
 import type { SalesTargetItem } from '@/services/earlyWarning'
 import { ProTable } from '@ant-design/pro-components';
@@ -22,15 +22,9 @@ export default () => {
         // 工作日算1 天 周末算0.25天
         const workDayNumInMonth = countWorkDayNum + (countWeekDayNum * 0.25)
         // 计算每天的平均销量
-        const averageSales = Math.round(salesTarget / workDayNumInMonth)
+        const averageSales = salesTarget / workDayNumInMonth
         if (!date) {
             difference = daily_sales - averageSales
-            // if (sku === '5TW10AA') {
-            //     console.log('averageSales', averageSales)
-            //     console.log('daily_sales', daily_sales)
-            //     console.log('difference', difference)
-            //     console.log('salesTarget', salesTarget)
-            // }
         } else {
             const daysRangeNum = dayjs(date[1]).diff(dayjs(date[0]), 'day')
             const workDayNum = countWorkDay(date[0], date[1])
@@ -39,6 +33,7 @@ export default () => {
             const workDayNumInRange = workDayNum + (weekDayNum * 0.25)
             // 算出这段时间内的目标销量
             const salesTargetInRange = averageSales * workDayNumInRange
+            // console.log('averageSales', averageSales, 'workDayNumInRange', workDayNumInRange, 'salesTargetInRange', salesTargetInRange, 'daily_sales', daily_sales, 'difference', difference, 'daysRangeNum', daysRangeNum, 'workDayNum', workDayNum, 'weekDayNum', weekDayNum, 'workDayNumInMonth', workDayNumInMonth, 'countWorkDayNum', countWorkDayNum, 'countWeekDayNum', countWeekDayNum, 'salesTarget', salesTarget)
             // 计算差值
             difference = daily_sales - salesTargetInRange
         }
@@ -54,6 +49,16 @@ export default () => {
         }
         return textDom
     }
+    const getBrands = async () => {
+        let brandData: any = []
+        const res = await getSalesTargetBrand()
+        if (res.code) {
+            brandData = res.data.map((brand: string) => ({ label: brand, value: brand }))
+        } else {
+            message.error(res.msg)
+        }
+        return brandData
+    }
     const columns: ProColumns<SalesTargetItem> = [
         {
             title: 'Date',
@@ -63,7 +68,6 @@ export default () => {
         },
         {
             title: 'Sales Tendency',
-            searchConfig: { span: 10 },
             dataIndex: 'sales_tendency',
             valueType: 'select',
             valueEnum: {
@@ -85,6 +89,7 @@ export default () => {
         {
             dataIndex: 'index',
             valueType: 'indexBorder',
+            fixed: 'left',
             width: 48,
         },
         {
@@ -92,20 +97,27 @@ export default () => {
             dataIndex: 'sku',
             key: 'sku',
             width: 170,
+            fixed: 'left',
+            ellipsis: true,
             copyable: true,
             // ellipsis: true,
         },
-        // {
-        //     title: 'Asin',
-        //     dataIndex: 'asin',
-        //     key: 'asin',
-        //     search: false,
-        // },
+        {
+            title: 'Brand',
+            dataIndex: 'brand',
+            key: 'brand',
+            valueType: 'select',
+            width: 120,
+            request: async () => {
+                return await getBrands()
+            }
+        },
         {
             title: 'Sales Target US',
             dataIndex: 'us_sales_target',
             key: 'us_sales_target',
             search: false,
+            width: 130,
             sorter: {
                 compare: (a, b) => a.us_sales_target - b.us_sales_target,
             },
@@ -114,6 +126,7 @@ export default () => {
             title: 'Sales US',
             dataIndex: 'us_sales',
             key: 'us_sales',
+            width: 100,
             sorter: {
                 compare: (a, b) => a.us_sales_daily - b.us_sales_daily,
             },
@@ -127,6 +140,7 @@ export default () => {
             dataIndex: 'us_sales_weekly',
             key: 'us_sales_weekly',
             search: false,
+            width: 150,
             sorter: {
                 compare: (a, b) => a.us_sales_weekly_daily - b.us_sales_weekly_daily,
             },
@@ -136,6 +150,7 @@ export default () => {
             dataIndex: 'us_inventory',
             key: 'us_inventory',
             search: false,
+            width: 190,
             sorter: {
                 compare: (a, b) => a.us_inventory - b.us_inventory,
             },
@@ -145,6 +160,7 @@ export default () => {
             dataIndex: 'ca_sales_target',
             key: 'ca_sales_target',
             search: false,
+            width: 130,
             sorter: {
                 compare: (a, b) => a.ca_sales_target - b.ca_sales_target,
             },
@@ -154,6 +170,7 @@ export default () => {
             dataIndex: 'ca_sales',
             key: 'ca_sales',
             search: false,
+            width: 100,
             sorter: {
                 compare: (a, b) => a.ca_sales_daily - b.ca_sales_daily,
             },
@@ -166,6 +183,7 @@ export default () => {
             dataIndex: 'ca_sales_weekly',
             key: 'ca_sales_weekly',
             search: false,
+            width: 150,
             sorter: {
                 compare: (a, b) => a.ca_sales_weekly_daily - b.ca_sales_weekly_daily,
             },
@@ -175,6 +193,7 @@ export default () => {
             dataIndex: 'ca_inventory',
             key: 'ca_inventory',
             search: false,
+            width: 190,
             sorter: {
                 compare: (a, b) => a.ca_inventory - b.ca_inventory,
             },
@@ -239,8 +258,9 @@ export default () => {
             // params={params}
             actionRef={actionRef}
             formRef={formRef}
+            size='small'
             columns={currentColumns}
-            scroll={{ y: document.body.clientHeight - 340 }}
+            scroll={{ y: document.body.clientHeight - 340, x: columns.reduce((total: any, item: { width: any; }) => total + (item.width || 0), 0) }}
             revalidateOnFocus={false}
             postData={(data) => {
                 let tempData = data
@@ -249,7 +269,6 @@ export default () => {
                 if (!date) {
                     tempData.sort((a, b) => a.us_sales_daily - b.us_sales_daily)
                 }
-                console.log('sales_tendency', sales_tendency)
                 if (sales_tendency) {
                     if (sales_tendency == 1) {
                         tempData.sort((a, b) => a.us_sales_daily - b.us_sales_daily)
@@ -290,6 +309,7 @@ export default () => {
             ) => {
                 // 这里需要返回一个 Promise,在返回之前你可以进行数据转化
                 // 如果需要转化参数可以在这里进行修改
+                // const brandData = await getBrands()
                 let tempParams = { ...params, sorter }
                 if (params.date && params.date.length === 2) {
                     tempParams = {

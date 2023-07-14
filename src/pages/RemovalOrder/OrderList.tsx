@@ -43,6 +43,7 @@ export default () => {
             title: 'Order ID',
             dataIndex: 'order_id',
             align: 'center',
+            copyable: true,
             valueType: 'text',
         },
         {

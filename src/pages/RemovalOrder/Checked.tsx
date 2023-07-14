@@ -109,7 +109,12 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
                 disabled={isView}
                 onPreview={handlePreview}
                 onChange={handleChange}
+                style={{ minWidth: '30px' }}
                 maxCount={100}
+            // previewFile={(file) => {
+            //     console.log(file.name)
+            //     return getImageUrl(file.name)
+            // }}
             >
                 <div>
                     <PlusOutlined />
@@ -124,8 +129,8 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
 };
 
 
-const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void }) => {
-    const { title, data, callBack } = props
+const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void, width: number }) => {
+    const { title, data, callBack, width = 120 } = props
     const [titleObj] = useState<any>({ pops: title === 'Match' ? matchProps : title === 'Claim' ? claimProps : conditionProps })
     const changeAllPop = (value: string) => {
         const tempData = data.map(item => {
@@ -137,15 +142,14 @@ const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?
         callBack(tempData)
     }
     return <>
-        <div style={{ 'paddingLeft': '2%' }}>{title}</div><div>
-            <Select size='small' style={{ 'width': '120px' }} onChange={(val) => {
-                changeAllPop(val)
-            }}>
-                {titleObj.pops.map((item: any) => {
-                    return <Select.Option key={item.value} value={item.value}>{item.label}</Select.Option>
-                })}
-            </Select>
-        </div>
+        <span style={{ 'paddingRight': '2%' }}>{title}</span>
+        <Select allowClear size='small' style={{ 'width': width }} onChange={(val) => {
+            changeAllPop(val)
+        }}>
+            {titleObj.pops.map((item: any) => {
+                return <Select.Option key={item.value} value={item.value}>{item.label}</Select.Option>
+            })}
+        </Select>
     </>
 }
 
@@ -217,6 +221,7 @@ export default () => {
             dataIndex: 'sku_icon',
             key: 'sku_icon',
             width: 100,
+            align: 'center',
             render: (text, record) => {
                 return (
                     <Image
@@ -229,8 +234,8 @@ export default () => {
                 );
             },
         },
-        { title: 'MSKU', dataIndex: 'msku', key: 'msku', width: 150 },
-        { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 150 },
+        { title: 'MSKU', dataIndex: 'msku', key: 'msku', width: 180, ellipsis: true },
+        { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 180, ellipsis: true },
         { title: 'FNSKU', dataIndex: 'fnsku', key: 'fnsku', width: 150 },
         {
             title: 'Quantity',
@@ -239,13 +244,13 @@ export default () => {
             width: 80
         },
         {
-            title: view ? 'Match' : <GetTitle title={'Match'} data={data} callBack={setData} />,
+            title: view ? 'Match' : <GetTitle title={'Match'} data={data} callBack={setData} width={70} />,
             dataIndex: 'atch',
             key: 'match',
-            width: 200,
+            width: 135,
             render: (_, record) => {
                 return (<>
-                    <Radio.Group disabled={view} value={record.match} onChange={(e) => {
+                    <Radio.Group style={{ width: '135px' }} disabled={view} value={record.match} onChange={(e) => {
                         changePop(e.target.value, 'match', record)
                     }}>
                         <Radio value={'1'}>Yes</Radio>
@@ -255,13 +260,14 @@ export default () => {
             }
         },
         {
-            title: view ? 'Condition' : <GetTitle title={'Condition'} data={data} callBack={setData} />,
+            title: view ? 'Condition' : <GetTitle title={'Condition'} data={data} callBack={setData} width={110} />,
             dataIndex: 'condition',
             key: 'condition',
-            width: 300,
+            width: 195,
+            align: 'center',
             render: (_, record) => {
                 return (<>
-                    <Select style={{ 'width': '140px' }} disabled={record.match !== '1'} value={record.condition} onChange={(val) => {
+                    <Select style={{ 'width': '110px', 'textAlign': 'left' }} disabled={record.match !== '1'} value={record.condition} onChange={(val) => {
                         changePop(val, 'condition', record)
                     }}>
                         {conditionProps.map(item => {
@@ -272,13 +278,14 @@ export default () => {
             }
         },
         {
-            title: view ? 'Claim' : <GetTitle title={'Claim'} data={data} callBack={setData} />,
+            title: view ? 'Claim' : <GetTitle title={'Claim'} data={data} callBack={setData} width={120} />,
             dataIndex: 'claim',
             key: 'claim',
-            width: 225,
+            width: 185,
+            align: 'center',
             render: (_, record) => {
                 return (<>
-                    <Select style={{ 'width': '140px' }} disabled={record.match !== '-1'} value={record.claim} onChange={(val) => {
+                    <Select style={{ 'width': '140px', 'textAlign': 'left' }} disabled={record.match !== '-1'} value={record.claim} onChange={(val) => {
                         changePop(val, 'claim', record)
                     }}>
                         {claimProps.map(item => {
@@ -303,6 +310,7 @@ export default () => {
             key: 'action',
             width: 120,
             align: 'center',
+            fixed: 'right',
             render: (_, record) => {
                 return (<>
                     <a onClick={() => {
@@ -349,6 +357,7 @@ export default () => {
                 id='uuid'
                 size='small'
                 pagination={false}
+                bordered
                 expandable={{
                     // 默认展开所有行
                     expandedRowKeys: data.map(item => item.uuid),

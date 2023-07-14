@@ -36,6 +36,7 @@ export type ResaleListItem = {
     purchase_price: number;
     unit_price: number;
     username: string;
+    exchange_rate: number;
     unitCost: number // 前端新增字段
 }
 
@@ -49,6 +50,14 @@ export async function getResaleList(params?: any) {
 // businessUnitData/updatePurchasePrice
 export async function updatePurchasePrice(params?: any) {
     return request('/api/businessUnitData/updatePurchasePrice', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// businessUnitData/editMemo
+export async function editMemo(params: { id: number, memo: string }) {
+    return request('/api/businessUnitData/editMemo', {
         method: 'POST',
         data: params
     });

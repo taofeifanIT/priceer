@@ -1,13 +1,13 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef, useState } from 'react';
-import { getResaleList, updatePurchasePrice } from '@/services/businessUnitData/productReactivationEvaluation';
+import { getResaleList, updatePurchasePrice, editMemo } from '@/services/businessUnitData/productReactivationEvaluation';
 import type { ResaleListItem } from '@/services/businessUnitData/productReactivationEvaluation';
-import { message, Spin, Typography, Select, Button } from 'antd';
-import { VerticalAlignBottomOutlined } from '@ant-design/icons';
+import { message, Spin, Typography, Select, Button, Input, Modal, Space, InputNumber } from 'antd';
+import { VerticalAlignBottomOutlined, EditTwoTone } from '@ant-design/icons';
 import { exportExcel } from '@/utils/excelHelper'
 import axions from 'axios';
-
+const { Paragraph } = Typography;
 
 const SetValueComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void }) => {
     const { id, editKey, value, api, refresh } = props
@@ -46,6 +46,46 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
     </>)
 }
 
+const InputMemoComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void }) => {
+    const { id, editKey, value, api, refresh } = props
+    const [paramValue, setParamValue] = useState(value)
+    const [visible, setVisible] = useState(false)
+    const [spinning, setSpinning] = useState(false)
+    const handleOk = () => {
+        setSpinning(true)
+        api({ id, [editKey]: paramValue }).then((res: any) => {
+            if (res.code) {
+                message.success(`${editKey} set successfully`)
+                setVisible(false)
+                refresh()
+            } else {
+                throw res.msg
+            }
+        }).catch((err: any) => {
+            message.error('Claim number set failed ' + err)
+        }).finally(() => {
+            setSpinning(false)
+        })
+    }
+    const handleCancel = () => {
+        setVisible(false)
+    }
+    const show = () => {
+        setVisible(true)
+    }
+    return (<>
+        <Modal title="Edit Comments" open={visible} confirmLoading={spinning} onOk={handleOk} onCancel={handleCancel}>
+            <Input.TextArea rows={4} value={paramValue} onChange={(e) => {
+                setParamValue(e.target.value)
+            }} />
+        </Modal>
+        <Space align='center'>
+            <Paragraph ellipsis={{ tooltip: value }} style={{ maxWidth: '110px', display: 'inline-block', marginBottom: -5 }}>{value}</Paragraph >
+            <EditTwoTone onClick={show} />
+        </Space>
+    </>)
+}
+
 
 let exportData: never[] = []
 
@@ -56,6 +96,7 @@ export default () => {
         label: string;
         value: string;
     }[]>()
+    const [profitPoint, setProfitPoint] = useState(0.1);
     const getRate = async () => {
         // if (USDRate) return USDRate
         let rate = 7.25;
@@ -69,20 +110,19 @@ export default () => {
         return rate
     }
 
-    const getPurchasePrice = (record: ResaleListItem, rate: number) => {
-        const { last_purchase_price = 0, us_tax_rate = 0, purchase_price = 0 } = record;
-        const price = purchase_price || last_purchase_price
-        const purchasePrice = (price / 1.13 / rate) * (1 + us_tax_rate)
-        return purchasePrice.toFixed(2)
-    }
+    // const getPurchasePrice = (record: ResaleListItem, rate: number) => {
+    //     const { last_purchase_price = 0, us_tax_rate = 0, purchase_price = 0 } = record;
+    //     const price = purchase_price || last_purchase_price
+    //     const purchasePrice = (price / 1.13 / rate) * (1 + us_tax_rate)
+    //     return purchasePrice.toFixed(2)
+    // }
 
     const getTargetPurchasePrice = (record: ResaleListItem) => {
-        console.log(record)
-        const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_tax_rate = 0 } = record;
+        const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_tax_rate = 0, exchange_rate } = record;
         const dividend = (sales_price * (1 - platform_fee) - ship_fee)
         const divisor = (1 + us_tax_rate)
         // const ts = dividend / divisor * (1 - 0.1) * USDRate * 1.13
-        const ts = dividend / divisor * (1 - 0.1) * USDRate
+        const ts = dividend / divisor * (1 - profitPoint) * exchange_rate
         // 保留两位小数
         return ts.toFixed(2)
     }
@@ -92,6 +132,7 @@ export default () => {
             dataIndex: 'index',
             valueType: 'indexBorder',
             key: 'index',
+            fixed: 'left',
             width: 48,
         },
         {
@@ -100,7 +141,9 @@ export default () => {
             key: 'asin',
             valueType: 'text',
             copyable: true,
-            width: 125,
+            fixed: 'left',
+            ellipsis: true,
+            width: 130,
         },
         // sku
         {
@@ -109,7 +152,8 @@ export default () => {
             key: 'sku',
             valueType: 'text',
             copyable: true,
-            width: 150,
+            ellipsis: true,
+            width: 160,
         },
         // brand
         {
@@ -215,26 +259,28 @@ export default () => {
             title: 'Operator',
             dataIndex: 'username',
             key: 'username',
+            ellipsis: true,
             copyable: true,
-            width: 80,
+            width: 90,
         },
         {
             // comments
             title: 'Comments',
-            dataIndex: 'comments',
-            key: 'comments',
+            dataIndex: 'memo',
+            key: 'memo',
             search: false,
-            width: 120,
+            width: 150,
+            render: (_, record) => [<InputMemoComponent key='memo' id={record.id} editKey='memo' value={record.memo} api={editMemo} refresh={() => actionRef.current?.reload()} />],
         },
         {
             title: 'Unit Cost(USD)',
-            dataIndex: 'unitCost',
-            key: 'unitCost',
+            dataIndex: 'unit_price',
+            key: 'unit_price',
             valueType: 'money',
             search: false,
             width: 120,
-            sorter: (a, b) => a.unitCost - b.unitCost,
-            render: (_, record) => [<span key='purchase_price'>${record.unitCost}</span>],
+            sorter: (a, b) => a.unit_price - b.unit_price,
+            render: (_, record) => [<span key='purchase_price'>${record.unit_price}</span>],
         },
         {
             title: 'Margin Rate',
@@ -244,7 +290,7 @@ export default () => {
             valueType: 'percent',
             sorter: (a, b) => a.margin_rate - b.margin_rate,
             fixed: 'right',
-            render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(2) + '%'}</span>],
+            render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(0) + '%'}</span>],
         },
     ];
     return (
@@ -255,7 +301,6 @@ export default () => {
             cardBordered
             headerTitle={`The current dollar rate is ${USDRate}`}
             request={async (params = {}, sort, filter) => {
-                // console.log(sort, filter);
                 const rate = await getRate()
                 setUSDRate(rate)
                 const response = await getResaleList({
@@ -270,7 +315,7 @@ export default () => {
                     return {
                         ...item,
                         target_price: getTargetPurchasePrice(item),
-                        unitCost: getPurchasePrice(item, rate)
+                        // unitCost: getPurchasePrice(item, rate)
                     }
                 })
                 setBrands(brandData)
@@ -321,16 +366,30 @@ export default () => {
                 pageSize: 15,
                 showQuickJumper: true,
                 pageSizeOptions: ['15', '30', '50', '100', '200', '300', '500'],
-                onChange: (page) => console.log(page),
+                // onChange: (page) => console.log(page),
             }}
             revalidateOnFocus={false}
             dateFormatter="string"
             toolBarRender={() => [
+                //    设置利润点
+                <Space key="profitPoint" >
+                    <span>Profit Point:</span>
+                    <InputNumber size='small' placeholder="Profit Point" step={0.01} value={profitPoint} style={{ width: '100px' }} onChange={(e) => {
+                        setProfitPoint(e)
+                    }} />
+                    <Button type='primary' size='small' onClick={() => {
+                        if (profitPoint) {
+                            actionRef.current?.reload()
+                        }
+                    }}>
+                        recalculation
+                    </Button>
+                </Space>,
                 <Button key="button" size='small' icon={<VerticalAlignBottomOutlined />} onClick={() => {
                     // excelColumns index不需要
                     const excelColumns = columns.filter(item => item.dataIndex !== 'index')
                     exportExcel(excelColumns, exportData, 'ProductReactivationEvaluation.xlsx')
-                }}>Download</Button>
+                }}>Download</Button>,
             ]}
         />
     );

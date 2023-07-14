@@ -129,6 +129,24 @@ export default () => {
             return <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />
         }
     }
+    const checkWhiteBackgroundAndProps = (whiteBackgroundAndProps: any) => {
+        return (whiteBackgroundAndProps?.url || whiteBackgroundAndProps?.memo)
+    }
+    const checkSizeAndNaterial = (sizeAndNaterial: any) => {
+        return (sizeAndNaterial?.url || sizeAndNaterial?.memo)
+    }
+    const checkAuxiliaryPicture = (auxiliaryPicture: any) => {
+        return (auxiliaryPicture?.sellingPoint?.length || auxiliaryPicture?.url.length || auxiliaryPicture?.memo)
+    }
+    const checkAuxiliaryPictureScene = (auxiliaryPictureScene: any) => {
+        return auxiliaryPictureScene?.length
+    }
+    const checkAPlus = (aPlus: any) => {
+        return aPlus?.aplusScene?.length
+    }
+    const checkDetailPicture = (detailPicture: any) => {
+        return detailPicture?.length
+    }
     useEffect(() => {
         initData()
     }, [])
@@ -139,9 +157,9 @@ export default () => {
                 <Text strong>Initiator：{designDetail?.username}</Text>
                 <Text strong>Date：{designDetail?.createTime}</Text>
             </Space>
-            <Title level={3}>主图</Title>
+            {(checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial)) && <Title level={3} style={{ 'marginTop': '20px' }}>主图</Title>}
             <div>
-                <div style={{ display: 'inline-block', verticalAlign: 'top' }}>
+                {checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
                     <Title level={5}>白底图 + 道具</Title>
                     <div>
                         {designDetail?.mainPicture.whiteBackgroundAndProps.url ? designDetail.mainPicture.whiteBackgroundAndProps.url.map((item, index) => {
@@ -154,8 +172,8 @@ export default () => {
                         <span>描述：</span>
                         <div style={{ width: ((designDetail?.mainPicture?.whiteBackgroundAndProps?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.mainPicture.whiteBackgroundAndProps.memo}</div>
                     </Space>
-                </div>
-                <div style={{ display: 'inline-block', verticalAlign: 'top' }}>
+                </div>)}
+                {checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
                     <Title level={5}>尺寸 + 材质</Title>
                     <div>
                         {designDetail?.mainPicture.sizeAndNaterial.url ? designDetail.mainPicture.sizeAndNaterial.url.map((item, index) => {
@@ -168,126 +186,128 @@ export default () => {
                         <span>描述：</span>
                         <div style={{ width: ((designDetail?.mainPicture?.sizeAndNaterial?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.mainPicture.sizeAndNaterial.memo}</div>
                     </Space>
-                </div>
+                </div>)}
             </div>
-            <Title level={3} style={{ 'marginTop': '20px' }}>副图</Title>
-            <div style={{ 'marginBottom': '20px' }}>
-                <div>
+            {checkAuxiliaryPicture(designDetail?.auxiliaryPicture) && (<><Title level={3} style={{ 'marginTop': '20px' }}>副图</Title>
+                <div style={{ 'marginBottom': '20px' }}>
                     <div>
-                        {designDetail?.auxiliaryPicture.url ? designDetail.auxiliaryPicture.url.map((item, index) => {
-                            return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.auxiliaryPicture?.url?.length ? 10 : 0 }}>
-                                {getImage(item, (designDetail?.auxiliaryPicture as any).thumbnail[index])}
-                            </div>
-                        }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
-                    </div>
-                    <div>
-                        <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                            <span>卖点：</span>
-                            <div>
-                                {designDetail?.auxiliaryPicture?.sellingPoint?.map((item, index) => {
-                                    return <Tag color={COLORS[index]} key={index}>{item}</Tag>
-                                })}
-                            </div>
-                        </Space>
-                    </div>
-                    <div>
-                        <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                            <span>描述：</span>
-                            <div style={{ width: ((designDetail?.auxiliaryPicture?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.auxiliaryPicture.memo}</div>
-                        </Space>
-                    </div>
-                </div>
-            </div>
-            {designDetail?.auxiliaryPictureScene?.length ? <Title level={3} style={{ 'marginTop': '20px' }}>副图场景</Title> : null}
-            <div>
-                {designDetail?.auxiliaryPictureScene?.map((item, index) => {
-                    return <div key={index} style={{ display: 'inline-block', verticalAlign: 'top' }}>
                         <div>
-                            {item.url ? item.url.map((subItem, subIndex) => {
-                                return <div key={subItem} style={{ display: 'inline-block', marginRight: subIndex !== item.url.length ? 10 : 0 }}>
-                                    {getImage(subItem, (item as any).thumbnail[subIndex])}
+                            {designDetail?.auxiliaryPicture.url ? designDetail.auxiliaryPicture.url.map((item, index) => {
+                                return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.auxiliaryPicture?.url?.length ? 10 : 0 }}>
+                                    {getImage(item, (designDetail?.auxiliaryPicture as any).thumbnail[index])}
                                 </div>
                             }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
                         </div>
                         <div>
                             <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                <span>场景{index + 1}：</span>
-                                <div style={{ width: 205, wordBreak: 'break-word' }}>{item.scene}</div>
+                                <span>卖点：</span>
+                                <div>
+                                    {designDetail?.auxiliaryPicture?.sellingPoint?.map((item, index) => {
+                                        return <Tag color={COLORS[index]} key={index}>{item}</Tag>
+                                    })}
+                                </div>
                             </Space>
                         </div>
                         <div>
                             <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
                                 <span>描述：</span>
-                                <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                <div style={{ width: ((designDetail?.auxiliaryPicture?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.auxiliaryPicture.memo}</div>
                             </Space>
                         </div>
                     </div>
-                })}
-            </div>
-            {/* <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title> */}
-            {designDetail?.aPlus.aplusScene ? <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title> : null}
-            <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
-                {designDetail?.aPlus.aplusScene?.map((item, index) => {
-                    return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
-                        <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                            {
-                                (item.url && item.url.length) ? item.url.map((subItem, subIndex) => {
-                                    return <div key={subItem}>
-                                        <div>{getImage(subItem, (item as any).thumbnail[subIndex])}</div>
-                                    </div>
-                                }) : <div>{getImage('', '')}</div>
-                            }
-                        </Space>
-                        <div>
+                </div></>)}
+            {
+                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}>副图场景</Title>
+                    <div>
+                        {designDetail?.auxiliaryPictureScene?.map((item, index) => {
+                            return <div key={index} style={{ display: 'inline-block', verticalAlign: 'top' }}>
+                                <div>
+                                    {item.url ? item.url.map((subItem, subIndex) => {
+                                        return <div key={subItem} style={{ display: 'inline-block', marginRight: subIndex !== item.url.length ? 10 : 0 }}>
+                                            {getImage(subItem, (item as any).thumbnail[subIndex])}
+                                        </div>
+                                    }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                                </div>
+                                <div>
+                                    <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                        <span>场景{index + 1}：</span>
+                                        <div style={{ width: 205, wordBreak: 'break-word' }}>{item.scene}</div>
+                                    </Space>
+                                </div>
+                                <div>
+                                    <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
+                                        <span>描述：</span>
+                                        <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                    </Space>
+                                </div>
+                            </div>
+                        })}
+                    </div></>)
+                    : null}
+            {checkAPlus(designDetail?.aPlus) ? (<>
+                <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title>
+                <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
+                    {designDetail?.aPlus.aplusScene?.map((item, index) => {
+                        return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
                             <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                <span>场景{index + 1}：</span>
-                                <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.scene}</div>
+                                {
+                                    (item.url && item.url.length) ? item.url.map((subItem, subIndex) => {
+                                        return <div key={subItem}>
+                                            <div>{getImage(subItem, (item as any).thumbnail[subIndex])}</div>
+                                        </div>
+                                    }) : <div>{getImage('', '')}</div>
+                                }
                             </Space>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                    <span>场景{index + 1}：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.scene}</div>
+                                </Space>
+                            </div>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                    <span>画面要求：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 80), wordBreak: 'break-word' }}>{item.pictureRequirement}</div>
+                                </Space>
+                            </div>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
+                                    <span>描述：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                </Space>
+                            </div>
                         </div>
-                        <div>
+                    })}
+                </div>
+            </>) : null}
+            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={3} style={{ 'marginTop': '20px' }}>细节</Title>
+                <div>
+                    {designDetail?.detailPicture?.map((item, index) => {
+                        return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
                             <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                <span>画面要求：</span>
-                                <div style={{ width: ((item.url.length || 1) * WIDTH - 80), wordBreak: 'break-word' }}>{item.pictureRequirement}</div>
+                                {
+                                    (item.url && item.url.length) ? item.url.map((subItem, subIndex) => {
+                                        return <div key={subItem}>
+                                            <div>{getImage(subItem, (item as any).thumbnail[subIndex])}</div>
+                                        </div>
+                                    }) : <div>{getImage('', '')}</div>
+                                }
                             </Space>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                    <span>细节需求点：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 90), wordBreak: 'break-word' }}>{item.detailRequirementPoint}</div>
+                                </Space>
+                            </div>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
+                                    <span>描述：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                </Space>
+                            </div>
                         </div>
-                        <div>
-                            <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                                <span>描述：</span>
-                                <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
-                            </Space>
-                        </div>
-                    </div>
-                })}
-            </div>
-            {/* <Title level={3} style={{ 'marginTop': '20px' }}>细节</Title> */}
-            {designDetail?.detailPicture.length ? <Title level={3} style={{ 'marginTop': '20px' }}>细节</Title> : null}
-            <div>
-                {designDetail?.detailPicture?.map((item, index) => {
-                    return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
-                        <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                            {
-                                (item.url && item.url.length) ? item.url.map((subItem, subIndex) => {
-                                    return <div key={subItem}>
-                                        <div>{getImage(subItem, (item as any).thumbnail[subIndex])}</div>
-                                    </div>
-                                }) : <div>{getImage('', '')}</div>
-                            }
-                        </Space>
-                        <div>
-                            <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                <span>细节需求点：</span>
-                                <div style={{ width: ((item.url.length || 1) * WIDTH - 90), wordBreak: 'break-word' }}>{item.detailRequirementPoint}</div>
-                            </Space>
-                        </div>
-                        <div>
-                            <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                                <span>描述：</span>
-                                <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
-                            </Space>
-                        </div>
-                    </div>
-                })}
-            </div>
+                    })}
+                </div></>) : null}
         </div>
         {/* 放一个按钮固定在右下角 */}
         <CheckForm check={check} />

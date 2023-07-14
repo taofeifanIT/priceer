@@ -40,7 +40,7 @@ export default () => {
             title: 'Progress',
             dataIndex: 'check_status',
             align: 'center',
-            width: 90,
+            width: 140,
             search: false,
             render: (_, record) => {
                 return (
@@ -55,7 +55,7 @@ export default () => {
             title: 'Request Date',
             dataIndex: 'request_date_timestamp',
             align: 'center',
-            width: 80,
+            width: 100,
             search: false,
             render: (_, record) => {
                 return (
@@ -68,14 +68,15 @@ export default () => {
             dataIndex: 'store_name',
             align: 'center',
             valueType: 'text',
-            width: 65,
+            width: 95,
             search: false,
         },
         {
             title: 'Order ID',
             dataIndex: 'order_id',
             search: false,
-            width: 80,
+            width: 120,
+            ellipsis: true,
             valueType: 'text',
         },
         {
@@ -112,8 +113,9 @@ export default () => {
             title: 'Tracking',
             dataIndex: 'tracking_number',
             valueType: 'text',
-            width: 150,
-            // ellipsis: true,
+            width: 195,
+            copyable: true,
+            ellipsis: true,
         },
         {
             // Progress
@@ -134,18 +136,20 @@ export default () => {
             title: 'Status',
             dataIndex: 'tracking_last_status',
             search: false,
-            width: 130,
+            width: 180,
+            ellipsis: true,
             valueType: 'text',
         },
         {
             title: 'PO',
             dataIndex: 'po',
-            width: 60,
+            width: 100,
+            ellipsis: true,
             search: false,
         },
         {
             title: 'Action',
-            width: 65,
+            width: 75,
             key: 'option',
             align: 'center',
             fixed: 'right',

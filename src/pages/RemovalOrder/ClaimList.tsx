@@ -1,7 +1,7 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { FormInstance } from 'antd';
-import { Image, message, Typography, Form, Modal, Input, InputNumber, Spin, Upload, Button } from 'antd';
+import { Image, message, Typography, Form, Modal, Input, InputNumber, Spin, Upload, Button, Popconfirm } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import { UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import {
@@ -201,9 +201,19 @@ const FailedComponent = (props: { id: number, shipment_status: number, refresh: 
         })
     }
     return (<>
-        <Button danger size='small' style={{ width: 180 }} disabled={shipment_status === 5} loading={loading} onClick={onClick}>
-            Failed
-        </Button>
+        <Popconfirm
+            title="Are you sure to fail?"
+            description="This operation will fail the claim, please confirm whether to continue?"
+            okText="Yes"
+            cancelText="No"
+            disabled={shipment_status === 5}
+            onConfirm={onClick}
+        >
+            <Button danger size='small' style={{ width: 180 }} disabled={shipment_status === 5} loading={loading}>
+                Failed
+            </Button>
+        </Popconfirm>
+
     </>)
 }
 
@@ -286,7 +296,7 @@ export default () => {
         {
             title: 'Claim Date',
             dataIndex: 'claim_date',
-            width: 90,
+            width: 110,
             search: false,
         },
         {
@@ -299,7 +309,8 @@ export default () => {
         {
             title: 'Order ID',
             dataIndex: 'order_id',
-            width: 100,
+            width: 120,
+            ellipsis: true,
             valueType: 'text',
         },
         {
@@ -319,6 +330,7 @@ export default () => {
             title: 'FNSKU',
             dataIndex: 'fnsku',
             width: 110,
+            ellipsis: true,
             valueType: 'text',
         },
         {
@@ -359,8 +371,9 @@ export default () => {
         {
             title: 'Tracking Number',
             dataIndex: 'tracking_number',
-            width: 155,
+            width: 175,
             valueType: 'text',
+            ellipsis: true,
             search: false,
         },
         {
@@ -411,9 +424,10 @@ export default () => {
         {
             title: 'Claim ID',
             dataIndex: 'claim_number',
-            width: 120,
+            width: 140,
             valueType: 'text',
             search: false,
+            ellipsis: true,
             render: (_, record) => {
                 return <SetValueComponent id={record.id} editKey={'claim_number'} value={record.claim_number} api={addClaimNumber} refresh={refresh} />
             }
@@ -421,9 +435,10 @@ export default () => {
         {
             title: 'Reimbursement ID',
             dataIndex: 'reimburse_number',
-            width: 180,
+            width: 140,
             valueType: 'text',
             search: false,
+            ellipsis: true,
             render: (_, record) => {
                 return <SetValueComponent id={record.id} editKey={'reimburse_number'} value={record.reimburse_number} api={addReimburseNumber} refresh={refresh} />
             }
@@ -434,6 +449,7 @@ export default () => {
             width: 180,
             valueType: 'text',
             search: false,
+            align: 'center',
             render: (_, record) => {
                 return <SetValueComponent id={record.id} editKey={'reimburse_money'} value={record.reimburse_money} api={addReimburseMoney} refresh={refresh} />
             }

@@ -52,3 +52,10 @@ export async function getSalesTargetList(params?: SalesTargetListParams) {
         data: params
     });
 }
+
+// salesTarget/getBrand
+export async function getSalesTargetBrand() {
+    return request('/api/salesTarget/getBrand', {
+        method: 'POST'
+    });
+}
