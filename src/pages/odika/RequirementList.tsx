@@ -1,4 +1,4 @@
-import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Image, Typography, Steps, Spin, Tooltip, Popconfirm } from 'antd';
+import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Typography, Steps, Spin, Tooltip, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
@@ -6,20 +6,29 @@ import { getSkuList, saveDesign, editDesign, getDesignList, getDesignDetail } fr
 import type { RequirementListItem, submitDesignParams, saveDesignParams } from '@/services/odika/requirementList';
 import { getToken } from '@/utils/token'
 import { getImageUrl } from '@/utils/utils'
+import { FormattedMessage, getLocale } from 'umi';
 import getInfoComponent from './components/getInfoComponent'
 const { Search } = Input;
 const { Text } = Typography;
 // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成
+
+const localFront = (key: string) => {
+    return <FormattedMessage id={`pages.odika.RequirementList.${key}`} />
+}
+
+const localFrontFromViewDesign = (key: string) => {
+    return <FormattedMessage id={`pages.odika.ViewDesign.${key}`} />
+}
+
 const ProcessItem = [
-    { value: 0, label: '全部' },
-    { value: 1, label: '编辑中' },
-    { value: 2, label: '待排序' },
-    { value: 3, label: '待审核' },
-    { value: 4, label: '审核' },
-    // { value: 4, label: '审核成功' },
-    { value: 5, label: '待排期' },
-    { value: 6, label: '制作中' },
-    { value: 7, label: '完成' },
+    { value: 0, label: localFront('All') },
+    { value: 1, label: localFront('InEditing') },
+    { value: 2, label: localFront('PendingSorting') },
+    { value: 3, label: localFront('PendingReview') },
+    { value: 4, label: localFront('Review') },
+    { value: 5, label: localFront('PendingScheduling') },
+    { value: 6, label: localFront('InProduction') },
+    { value: 7, label: localFront('Completed') },
 ]
 
 const SceneList = [
@@ -58,8 +67,8 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const aPlusType = Form.useWatch('aPlusType', form);
     const [editRecord, setEditRecord] = useState<RequirementListItem>({} as RequirementListItem);
     const [detailLoading, setDetailLoading] = useState(false);
-    const [checkStatus, setCheckStatus] = useState(false);
-
+    // const [checkStatus] = useState(false);
+    const checkStatus = false;
     const handleCancel = () => {
         setVisible(false);
         setEditRecord({} as RequirementListItem)
@@ -351,44 +360,44 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 }}
                 {...formItemLayout}
             >
-                <Divider plain>主图</Divider>
-                <Alert message="白底图 + 道具" type="info" style={{ marginBottom: '20px' }} />
+                <Divider plain>{localFrontFromViewDesign('mainPicture')}</Divider>
+                <Alert message={localFrontFromViewDesign('WhiteBackgroundPictureAndProps')} type="info" style={{ marginBottom: '20px' }} />
                 <Form.Item
                     name={'whiteBackgroundMemo'}
-                    label="备注"
+                    label={localFrontFromViewDesign('pictrueDesc')}
                     rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
-                    <Input.TextArea placeholder="请输入道具需求" />
+                    <Input.TextArea placeholder="请输入道具需求/Please enter props requirement" />
                 </Form.Item>
                 <Form.Item
                     name={'whiteBackgroundFile'}
                     valuePropName="fileList"
-                    label="图片"
+                    label={localFrontFromViewDesign('picture')}
                     getValueFromEvent={normFile}
                 >
                     {uploadComponent(20)}
                 </Form.Item>
-                <Alert message="尺寸 + 材质" type="info" style={{ marginBottom: '20px' }} />
+                <Alert message={localFrontFromViewDesign('sizeAndMaterial')} type="info" style={{ marginBottom: '20px' }} />
                 <Form.Item
                     name={'sizeAndNaterialMemo'}
-                    label="备注"
+                    label={localFrontFromViewDesign('pictrueDesc')}
                     rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
-                    <Input.TextArea placeholder="请输入需求" />
+                    <Input.TextArea placeholder="请输入需求/Please enter general requirement" />
                 </Form.Item>
                 <Form.Item
                     name={'sizeAndNaterialFile'}
                     valuePropName="fileList"
-                    label="图片"
+                    label={localFrontFromViewDesign('picture')}
                     getValueFromEvent={normFile}
                 >
                     {uploadComponent(20)}
                 </Form.Item>
-                <Divider plain>副图</Divider>
+                <Divider plain>{localFrontFromViewDesign('secondPicture')}</Divider>
                 <Form.Item
                     name={'auxiliaryPictureSellingPoint'}
-                    label="卖点"
-                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
+                    label={localFrontFromViewDesign('SellingPoint')}
+                    rules={[{ required: checkStatus, message: 'Missing Selling Point' }]}
                 >
                     <Select
                         mode="tags"
@@ -398,20 +407,20 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 </Form.Item>
                 <Form.Item
                     name={'auxiliaryPictureMemo'}
-                    label="备注"
+                    label={localFrontFromViewDesign('pictrueDesc')}
                     rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
-                    <Input.TextArea placeholder="请输入需求" />
+                    <Input.TextArea placeholder="请输入需求/Please enter general requirement" />
                 </Form.Item>
                 <Form.Item
                     name={'auxiliaryPictureFile'}
-                    label="图片"
+                    label={localFrontFromViewDesign('picture')}
                     valuePropName="fileList"
                     getValueFromEvent={normFile}
                 >
                     {uploadComponent(20)}
                 </Form.Item>
-                <Divider plain>副图场景</Divider>
+                <Divider plain>{localFrontFromViewDesign('subscene')}</Divider>
                 <Form.List
                     name="auxiliaryPictureScene">
                     {(fields, { add, remove }) => (
@@ -421,7 +430,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'scene']}
-                                        label={'场景' + (name + 1)}
+                                        label={<>{localFrontFromViewDesign('scene')}{name + 1}</>}
                                         rules={[{ required: checkStatus, message: 'Missing scene' }]}
                                     >
                                         <Select>
@@ -432,14 +441,14 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'memo']}
-                                        label={'需求'}
+                                        label={localFrontFromViewDesign('pictrueDesc')}
                                         rules={[{ required: checkStatus, message: 'Missing memo' }]}
                                     >
                                         <Input.TextArea placeholder="memo" />
                                     </Form.Item>
                                     <Form.Item
                                         name={[name, 'file']}
-                                        label="图片"
+                                        label={localFrontFromViewDesign('picture')}
                                         valuePropName="fileList"
                                         getValueFromEvent={normFile}
                                     >
@@ -449,7 +458,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    继续添加场景
+                                    {localFront('addScene')}
                                 </Button>
                             </Form.Item>
                         </>
@@ -478,7 +487,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'scene']}
-                                        label={'场景' + (name + 1)}
+                                        label={<>{localFrontFromViewDesign('scene')}{name + 1}</>}
                                         rules={[{ required: checkStatus, message: 'Missing scene' }]}
                                     >
                                         <Select>
@@ -489,22 +498,22 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'memo']}
-                                        label={'需求'}
+                                        label={localFrontFromViewDesign('pictrueDesc')}
                                         rules={[{ required: checkStatus, message: 'Missing memo' }]}
                                     >
-                                        <Input.TextArea placeholder="请输入文字需求" />
+                                        <Input.TextArea placeholder="请输入文字需求/Please enter text requirement" />
                                     </Form.Item>
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'pictureRequirement']}
-                                        label={'画面要求'}
+                                        label={localFrontFromViewDesign('pictureRequirement')}
                                         rules={[{ required: checkStatus, message: 'Missing pictureRequirement' }]}
                                     >
-                                        <Input.TextArea placeholder="请输入画面要求" />
+                                        <Input.TextArea placeholder="请输入画面要求/Please enter picture requirement" />
                                     </Form.Item>
                                     <Form.Item
                                         name={[name, 'file']}
-                                        label="图片"
+                                        label={localFrontFromViewDesign('picture')}
                                         valuePropName="fileList"
                                         getValueFromEvent={normFile}
                                     >
@@ -514,13 +523,13 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    继续添加{aPlusType}场景
+                                    {localFront('addMore')}{aPlusType}{localFrontFromViewDesign('scene')}
                                 </Button>
                             </Form.Item>
                         </>
                     )}
                 </Form.List>
-                <Divider plain>细节</Divider>
+                <Divider plain>{localFrontFromViewDesign('detail')}</Divider>
                 <Form.List
                     name="detailPicture">
                     {(fields, { add, remove }) => (
@@ -530,7 +539,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'detailRequirementPoint']}
-                                        label={'细节需求点' + (name + 1)}
+                                        label={<>{localFrontFromViewDesign('detailRequirementPoint')}{name + 1}</>}
                                         rules={[{ required: checkStatus, message: 'Missing detailRequirementPoint' }]}
                                     >
                                         <Input />
@@ -539,14 +548,14 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'memo']}
-                                        label={'画面需求'}
+                                        label={localFrontFromViewDesign('pictureRequirement')}
                                         rules={[{ required: checkStatus, message: 'Missing memo' }]}
                                     >
-                                        <Input.TextArea placeholder="请输入画面需求" />
+                                        <Input.TextArea placeholder="请输入画面需求/Please enter screen requirement" />
                                     </Form.Item>
                                     <Form.Item
                                         name={[name, 'file']}
-                                        label="图片"
+                                        label={localFrontFromViewDesign('picture')}
                                         valuePropName="fileList"
                                         getValueFromEvent={normFile}
                                     >
@@ -556,7 +565,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    继续添加
+                                    {localFront('addMore')}
                                 </Button>
                             </Form.Item>
                         </>
@@ -573,6 +582,7 @@ export default () => {
     const [data, setData] = useState<RequirementListItem[]>([]);
     const [keyword, setKeyword] = useState('');
     const [loading, setLoading] = useState(false);
+    const statusWidth = getLocale() === 'en-US' ? 900 : 660
     const onSearch = (value: string) => {
         setKeyword(value)
     };
@@ -585,8 +595,7 @@ export default () => {
 
     }
     const getStepComponent = (record: RequirementListItem) => {
-
-        return (<div style={{ 'width': '660px' }}>
+        return (<div style={{ 'width': statusWidth }}>
             <Steps
                 size="small"
                 current={record.status - 1}
@@ -612,40 +621,40 @@ export default () => {
 
     const columns: ColumnsType<RequirementListItem> = [
         {
-            title: '信息',
+            title: localFront('info'),
             dataIndex: 'info',
             key: 'info',
             width: 385,
             render: (text: any, record: any) => getInfoComponent(record)
         },
         {
-            title: '创建信息',
+            title: localFront('CreateInfo'),
             dataIndex: 'creator',
             key: 'creator',
-            width: 260,
+            width: 200,
             render: (text: any, record: any) => {
-                return <div style={{ 'width': '260px' }}>
-                    <div><Text type="secondary">创建人：</Text>{record.creator}</div>
-                    <div><Text type="secondary">创建时间：</Text>{record.createTime}</div>
+                return <div style={{ 'width': '200px' }}>
+                    <div><Text type="secondary">{localFront('creator')}：</Text>{record.creator}</div>
+                    <div><Text type="secondary">{localFront('creationTime')}：</Text>{record.createTime}</div>
                 </div>
             }
         },
         {
-            title: '状态',
+            title: localFront('status'),
             dataIndex: 'status',
             key: 'status',
-            width: 700,
+            width: statusWidth + 50,
             render: (text: any, record: any) => getStepComponent(record)
         },
         {
             // 预计完成时间
-            title: '预计完成时间',
+            title: localFront('EstimatedCompletionTime'),
             dataIndex: 'expectTime',
             key: 'expectTime',
             width: 250
         },
         {
-            title: '操作',
+            title: localFront('operation'),
             dataIndex: 'action',
             key: 'action',
             width: 140,
@@ -655,7 +664,7 @@ export default () => {
                 return <Space align='start'>
                     <Button type="link" disabled={disabled} style={{ color: color }} onClick={() => {
                         actionRef.current.showModal(record);
-                    }}>编辑</Button>
+                    }}>{localFront('Edit')}</Button>
                     {record.status === 7 ? <a target='blank' href={getCantoUrl(record.sku)}><img width={'25'} src='/canto.png' /></a> : ''}
                 </Space>
             }
@@ -681,14 +690,14 @@ export default () => {
     return (<div style={{ 'background': '#fff' }}>
         <Card
             size='small'
-            title={<Button type="primary" onClick={() => {
+            title={<Button size='small' type="primary" onClick={() => {
                 actionRef.current.showModal();
-            }}>创建需求</Button>}
+            }}>{localFront('CreateRequirement')}</Button>}
             extra={<>
-                <Radio.Group value={status} onChange={(e) => setStatus(e.target.value)}>
+                <Radio.Group size='small' value={status} onChange={(e) => setStatus(e.target.value)}>
                     {ProcessItem.map(item => <Radio.Button key={item.value} value={item.value}>{item.label}</Radio.Button>)}
                 </Radio.Group>
-                <Search placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />
+                <Search size='small' placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />
             </>}
         >
             <Table<RequirementListItem>

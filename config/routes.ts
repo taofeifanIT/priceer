@@ -150,6 +150,12 @@ export default [
         path: '/businessUnitData/ProductReactivationEvaluation',
         name: 'ProductReactivationEvaluation',
         component: './businessUnitData/ProductReactivationEvaluation',
+      },
+      // NewProducts
+      {
+        path: '/businessUnitData/NewProducts',
+        name: 'NewProducts',
+        component: './businessUnitData/NewProducts',
       }
     ]
   },

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getQueryVariable } from '@/utils/utils'
 import { getDesignDetail, checkDesign } from '@/services/odika/requirementList';
 import type { saveDesignParams } from '@/services/odika/requirementList';
+import { FormattedMessage } from 'umi';
 import { message, Space, Typography, Image, Empty, Tag, Button, Affix, Drawer, Form, Input, Radio } from 'antd';
 const { Text, Title } = Typography;
 
@@ -115,10 +116,10 @@ export default () => {
         }
         return width;
     }
+
     const getImage = (url: string, thumbUrl: string | undefined) => {
         if (url) {
             const imgUrl = 'http://api-rp.itmars.net/storage/' + url
-            // const thumb = 'http://api-rp.itmars.net/storage/' + thumbUrl
             return <Image
                 style={{ border: '4px solid #eee' }}
                 src={imgUrl}
@@ -126,7 +127,7 @@ export default () => {
                 height={HEIGHT}
                 width={WIDTH} />
         } else {
-            return <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />
+            return <Empty description={<FormattedMessage id={'pages.odika.ViewDesign.imageMessage'} />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />
         }
     }
     const checkWhiteBackgroundAndProps = (whiteBackgroundAndProps: any) => {
@@ -157,38 +158,38 @@ export default () => {
                 <Text strong>Initiator：{designDetail?.username}</Text>
                 <Text strong>Date：{designDetail?.createTime}</Text>
             </Space>
-            {(checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial)) && <Title level={3} style={{ 'marginTop': '20px' }}>主图</Title>}
+            {(checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial)) && <Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' /></Title>}
             <div>
                 {checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
-                    <Title level={5}>白底图 + 道具</Title>
+                    <Title level={5}><FormattedMessage id='pages.odika.ViewDesign.WhiteBackgroundPictureAndProps' /></Title>
                     <div>
                         {designDetail?.mainPicture.whiteBackgroundAndProps.url ? designDetail.mainPicture.whiteBackgroundAndProps.url.map((item, index) => {
                             return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.mainPicture?.whiteBackgroundAndProps?.url?.length ? 10 : 0 }}>
                                 {getImage(item, (designDetail?.mainPicture?.whiteBackgroundAndProps as any).thumbnail[index])}
                             </div>
-                        }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                        }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
                     </div>
                     <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                        <span>描述：</span>
+                        <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
                         <div style={{ width: ((designDetail?.mainPicture?.whiteBackgroundAndProps?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.mainPicture.whiteBackgroundAndProps.memo}</div>
                     </Space>
                 </div>)}
                 {checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
-                    <Title level={5}>尺寸 + 材质</Title>
+                    <Title level={5}><FormattedMessage id='pages.odika.ViewDesign.sizeAndMaterial' /></Title>
                     <div>
                         {designDetail?.mainPicture.sizeAndNaterial.url ? designDetail.mainPicture.sizeAndNaterial.url.map((item, index) => {
                             return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.mainPicture?.sizeAndNaterial?.url?.length ? 10 : 0 }}>
                                 {getImage(item, (designDetail?.mainPicture?.sizeAndNaterial as any).thumbnail[index])}
                             </div>
-                        }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                        }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
                     </div>
                     <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                        <span>描述：</span>
+                        <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
                         <div style={{ width: ((designDetail?.mainPicture?.sizeAndNaterial?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.mainPicture.sizeAndNaterial.memo}</div>
                     </Space>
                 </div>)}
             </div>
-            {checkAuxiliaryPicture(designDetail?.auxiliaryPicture) && (<><Title level={3} style={{ 'marginTop': '20px' }}>副图</Title>
+            {checkAuxiliaryPicture(designDetail?.auxiliaryPicture) && (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.secondPicture' /></Title>
                 <div style={{ 'marginBottom': '20px' }}>
                     <div>
                         <div>
@@ -196,11 +197,11 @@ export default () => {
                                 return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.auxiliaryPicture?.url?.length ? 10 : 0 }}>
                                     {getImage(item, (designDetail?.auxiliaryPicture as any).thumbnail[index])}
                                 </div>
-                            }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                            }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
                         </div>
                         <div>
                             <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                <span>卖点：</span>
+                                <span><FormattedMessage id='pages.odika.ViewDesign.SellingPoint' />：</span>
                                 <div>
                                     {designDetail?.auxiliaryPicture?.sellingPoint?.map((item, index) => {
                                         return <Tag color={COLORS[index]} key={index}>{item}</Tag>
@@ -210,14 +211,14 @@ export default () => {
                         </div>
                         <div>
                             <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                                <span>描述：</span>
+                                <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
                                 <div style={{ width: ((designDetail?.auxiliaryPicture?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.auxiliaryPicture.memo}</div>
                             </Space>
                         </div>
                     </div>
                 </div></>)}
             {
-                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}>副图场景</Title>
+                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.subscene' /></Title>
                     <div>
                         {designDetail?.auxiliaryPictureScene?.map((item, index) => {
                             return <div key={index} style={{ display: 'inline-block', verticalAlign: 'top' }}>
@@ -226,17 +227,17 @@ export default () => {
                                         return <div key={subItem} style={{ display: 'inline-block', marginRight: subIndex !== item.url.length ? 10 : 0 }}>
                                             {getImage(subItem, (item as any).thumbnail[subIndex])}
                                         </div>
-                                    }) : <Empty description='没有图片' style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                                    }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
                                 </div>
                                 <div>
                                     <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                        <span>场景{index + 1}：</span>
+                                        <span><FormattedMessage id='pages.odika.ViewDesign.scene' />{index + 1}：</span>
                                         <div style={{ width: 205, wordBreak: 'break-word' }}>{item.scene}</div>
                                     </Space>
                                 </div>
                                 <div>
                                     <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                                        <span>描述：</span>
+                                        <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
                                         <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
                                     </Space>
                                 </div>
@@ -260,19 +261,19 @@ export default () => {
                             </Space>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                    <span>场景{index + 1}：</span>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.scene' />{index + 1}：</span>
                                     <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.scene}</div>
                                 </Space>
                             </div>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                    <span>画面要求：</span>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.pictureRequirement' />：</span>
                                     <div style={{ width: ((item.url.length || 1) * WIDTH - 80), wordBreak: 'break-word' }}>{item.pictureRequirement}</div>
                                 </Space>
                             </div>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                                    <span>描述：</span>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
                                     <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
                                 </Space>
                             </div>
@@ -280,7 +281,7 @@ export default () => {
                     })}
                 </div>
             </>) : null}
-            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={3} style={{ 'marginTop': '20px' }}>细节</Title>
+            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.detail' /></Title>
                 <div>
                     {designDetail?.detailPicture?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
@@ -295,13 +296,13 @@ export default () => {
                             </Space>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                    <span>细节需求点：</span>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.detailRequirementPoint' />：</span>
                                     <div style={{ width: ((item.url.length || 1) * WIDTH - 90), wordBreak: 'break-word' }}>{item.detailRequirementPoint}</div>
                                 </Space>
                             </div>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
-                                    <span>描述：</span>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
                                     <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
                                 </Space>
                             </div>

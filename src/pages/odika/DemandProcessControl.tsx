@@ -12,6 +12,8 @@ import weekday from 'dayjs/plugin/weekday'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import weekYear from 'dayjs/plugin/weekYear'
 import getInfoComponent from './components/getInfoComponent'
+import { FormattedMessage, getLocale } from 'umi';
+
 dayjs.extend(customParseFormat)
 dayjs.extend(advancedFormat)
 dayjs.extend(weekday)
@@ -21,7 +23,13 @@ dayjs.extend(weekYear)
 const { Text } = Typography;
 const { Search } = Input;
 
+const localFrontFromRequirementList = (key: string) => {
+    return <FormattedMessage id={`pages.odika.RequirementList.${key}`} />
+}
 
+const localFront = (key: string) => {
+    return <FormattedMessage id={`pages.odika.requirementSortList.${key}`} />
+}
 
 const TimeEditComponent = (props: { record: RequirementListItem, refresh: () => void }) => {
     const { record, refresh } = props
@@ -72,19 +80,41 @@ const App: React.FC = () => {
     const [dataSource, setDataSource] = useState<any>([]);
     const [keyword, setKeyword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            current: 1,
+            pageSize: 30,
+            total: 0,
+        },
+    });
+    const StatusWidth = getLocale() === 'zh-CN' ? 240 : 420
     const onSearch = (value: string) => {
         setKeyword(value)
     };
     const initData = () => {
         setLoading(true);
-        getListForPlan({ keyword: keyword || undefined }).then(res => {
+        getListForPlan({
+            keyword: keyword || undefined, ...{
+                len: tableParams.pagination?.pageSize,
+                page: tableParams.pagination?.current
+            }
+        }).then(res => {
             if (res.code) {
                 const sourceData = res.data.data
                 // 数据拆分priority大于0的升序，等于0的跟在后面
-                const tempData1 = sourceData.filter((item: any) => item.priority > 0).sort((a: any, b: any) => a.priority - b.priority)
-                const tempData2 = sourceData.filter((item: any) => item.priority === 0)
-                const newData = tempData1.concat(tempData2)
-                setDataSource(newData)
+                // const tempData1 = sourceData.filter((item: any) => item.close_sort > 0).sort((a: any, b: any) => a.close_sort - b.close_sort)
+                // const tempData2 = sourceData.filter((item: any) => item.close_sort === 0)
+                // const newData = tempData1.concat(tempData2)
+                setDataSource(sourceData)
+                setTableParams({
+                    ...tableParams,
+                    pagination: {
+                        ...tableParams.pagination,
+                        total: res.data.total,
+                        // 200 is mock data, you should read it from server
+                        // total: data.totalCount,
+                    },
+                });
             } else {
                 throw res.msg
             }
@@ -94,6 +124,23 @@ const App: React.FC = () => {
             message.error(err)
         })
     }
+
+    const handleTableChange = (
+        pagination: any,
+        filters: Record<string, any>,
+        sorter: any,
+    ) => {
+        setTableParams({
+            pagination,
+            filters,
+            ...sorter,
+        });
+
+        // `dataSource` is useless since `pageSize` changed
+        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+            setDataSource([]);
+        }
+    };
     const editPlanStutas = (id: number, status: number) => {
         editPlan({ id, status }).then(res => {
             if (res.code) {
@@ -107,36 +154,43 @@ const App: React.FC = () => {
     }
     const columns: ColumnsType<RequirementListItem> = [
         {
-            title: '信息',
+            title: localFrontFromRequirementList('info'),
             dataIndex: 'info',
             key: 'info',
             width: 385,
             render: (text: any, record: any) => getInfoComponent(record)
         },
         {
-            title: '创建信息',
+            title: localFrontFromRequirementList('CreateInfo'),
             dataIndex: 'creator',
             key: 'creator',
+            width: 195,
             render: (text: any, record: any) => {
-                return <div style={{ 'width': '210px' }}>
-                    <div><Text type="secondary">创建人：</Text>{record.creator}</div>
-                    <div><Text type="secondary">创建时间：</Text>{record.createTime}</div>
+                return <div style={{ 'width': 195 }}>
+                    <div><Text type="secondary">{localFrontFromRequirementList('creator')}：</Text>{record.creator}</div>
+                    <div><Text type="secondary">{localFrontFromRequirementList('creationTime')}：</Text>{record.createTime}</div>
                 </div>
             }
         },
         {
-            title: '优先级',
+            title: localFront('priority'),
             dataIndex: 'close_sort',
             key: 'close_sort',
+            width: 90,
+            align: 'center',
+            render: (text: any, record: any) => {
+                return record.close_sort === 0 ? null : record.close_sort
+            }
         },
         {
             // 状态
-            title: '状态',
+            title: localFront('status'),
             dataIndex: 'status',
             key: 'status',
+            width: StatusWidth,
             render: (_, record: any) => {
                 // 黄红绿
-                const getColor = (status: number, optionStatus: number, front: string) => {
+                const getColor = (status: number, optionStatus: number, front: string | JSX.Element) => {
                     let color = ''
                     if (record.status === optionStatus) {
                         switch (status) {
@@ -162,15 +216,15 @@ const App: React.FC = () => {
                     }}
                     options={[
                         {
-                            label: getColor(record.status, 5, '待排期'),
+                            label: getColor(record.status, 5, localFrontFromRequirementList('PendingScheduling')),
                             value: 5,
                         },
                         {
-                            label: getColor(record.status, 6, '制作中'),
+                            label: getColor(record.status, 6, localFrontFromRequirementList('InProduction')),
                             value: 6,
                         },
                         {
-                            label: getColor(record.status, 7, '已完成'),
+                            label: getColor(record.status, 7, localFrontFromRequirementList('Completed')),
                             value: 7,
                         },
                     ]}
@@ -179,41 +233,47 @@ const App: React.FC = () => {
         },
         {
             // 预计完成时间
-            title: '预计完成时间',
+            title: localFrontFromRequirementList('EstimatedCompletionTime'),
             dataIndex: 'expectTime',
             key: 'expectTime',
+            width: 200,
             render: (_, record) => {
                 return <TimeEditComponent record={record} refresh={initData} />
             }
         },
         {
-            title: '操作',
+            title: <FormattedMessage id='pages.odika.RequirementList.operation' />,
             dataIndex: 'action',
             key: 'action',
+            width: 80,
+            align: 'center',
             fixed: 'right',
             render: (_, record) => {
                 return <>
                     <Button type="link" onClick={() => {
                         window.open(`/odika/ViewDesign?id=${record.id}`)
-                    }}>View</Button>
+                    }}><FormattedMessage id='pages.layouts.View' /></Button>
                 </>
             }
         }
     ]
     useEffect(() => {
         initData()
-    }, [keyword])
+    }, [keyword, JSON.stringify(tableParams)])
     return (
         <Card
             size='small'
             title={<Search placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />}
-            extra={<Button type="primary" onClick={initData}>刷新</Button>}
+            extra={<Button type="primary" onClick={initData}><FormattedMessage id='pages.layouts.Refresh' /></Button>}
         >
             <Table
                 loading={loading}
                 rowKey="id"
+                scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
                 columns={columns}
+                pagination={tableParams.pagination}
                 dataSource={dataSource}
+                onChange={handleTableChange}
             />
         </Card>
     );

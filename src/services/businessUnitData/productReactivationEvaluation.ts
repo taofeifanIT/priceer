@@ -37,6 +37,7 @@ export type ResaleListItem = {
     unit_price: number;
     username: string;
     exchange_rate: number;
+    memo: string;
     unitCost: number // 前端新增字段
 }
 
@@ -61,4 +62,21 @@ export async function editMemo(params: { id: number, memo: string }) {
         method: 'POST',
         data: params
     });
+}
+
+// businessUnitData/batchEdit
+// export async function batchEdit(file: any) {
+//     const formData = new FormData();
+//     formData.append('file', file);
+//     return request('/api/businessUnitData/batchEdit', formData);
+// }
+
+// http://api-rp.itmars.net/businessUnitData/batchEdit
+export function batchEdit() {
+    return 'http://api-rp.itmars.net/businessUnitData/batchEdit'
+}
+
+// downloadTemplate
+export function downloadTemplate() {
+    return "http://api-rp.itmars.net/example/business.xlsx"
 }

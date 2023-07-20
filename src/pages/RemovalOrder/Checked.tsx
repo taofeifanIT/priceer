@@ -8,6 +8,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { VerticalAlignBottomOutlined, PlusOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'
 import { exportPDFWithFont } from '@/utils/utils';
+
 const claimProps = [
     { label: 'Wrong Brand', value: 'Worng Brand' },
     { label: 'Wrong Product', value: 'Wrong Product' },
@@ -109,12 +110,7 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
                 disabled={isView}
                 onPreview={handlePreview}
                 onChange={handleChange}
-                style={{ minWidth: '30px' }}
                 maxCount={100}
-            // previewFile={(file) => {
-            //     console.log(file.name)
-            //     return getImageUrl(file.name)
-            // }}
             >
                 <div>
                     <PlusOutlined />
