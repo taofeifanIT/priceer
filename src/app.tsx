@@ -204,6 +204,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const authHeader = token ? { token: token } : {};
   let lastUrl = url;
   lastUrl = `http://api-rp.itmars.net${url.replace('/api', '')}`;
+  // lastUrl = `http://n.demo.com${url.replace('/api', '')}`;
   const additionalData = getGlobalParams();
   const config = JSON.parse(JSON.stringify(options));
   const { method } = config;

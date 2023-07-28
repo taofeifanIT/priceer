@@ -1,5 +1,6 @@
 import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Typography, Steps, Spin, Tooltip, Popconfirm } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { getSkuList, saveDesign, editDesign, getDesignList, getDesignDetail } from '@/services/odika/requirementList';
@@ -67,7 +68,6 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const aPlusType = Form.useWatch('aPlusType', form);
     const [editRecord, setEditRecord] = useState<RequirementListItem>({} as RequirementListItem);
     const [detailLoading, setDetailLoading] = useState(false);
-    // const [checkStatus] = useState(false);
     const checkStatus = false;
     const handleCancel = () => {
         setVisible(false);
@@ -94,6 +94,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     }
 
     const setDetail = (data: submitDesignParams) => {
+        console.log(data.mainPicture.whiteBackgroundAndProps)
         const formParams = {
             whiteBackgroundMemo: data.mainPicture?.whiteBackgroundAndProps.memo,
             whiteBackgroundFile: data.mainPicture?.whiteBackgroundAndProps?.url ? data.mainPicture?.whiteBackgroundAndProps?.url.map((url: string, index: number) => ({
@@ -123,7 +124,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 thumbUrl: getImageUrl(data.auxiliaryPicture?.thumbnail[index]),
                 url: getImageUrl(url)
             })) : [],
-            auxiliaryPictureScene: data.auxiliaryPictureScene.map((item, index) => ({
+            auxiliaryPictureScene: data?.auxiliaryPictureScene?.map((item, index) => ({
                 scene: item.scene,
                 memo: item.memo,
                 file: item.url ? item.url.map((url: string, i: number) => ({
@@ -136,7 +137,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 })) : [],
             })),
             aPlusType: data.aPlus?.type,
-            aplusScene: data.aPlus?.aplusScene.map((item, index) => ({
+            aplusScene: data.aPlus?.aplusScene?.map((item, index) => ({
                 scene: item.scene,
                 memo: item.memo,
                 pictureRequirement: item.pictureRequirement,
@@ -149,7 +150,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                     url: getImageUrl(url)
                 })) : []
             })),
-            detailPicture: data.detailPicture.map((item, index) => ({
+            detailPicture: data.detailPicture?.map((item, index) => ({
                 detailRequirementPoint: item.detailRequirementPoint,
                 memo: item.memo,
                 file: item.url ? item.url.map((url: string, i: number) => ({
@@ -169,12 +170,14 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         setDetailLoading(true);
         getDesignDetail({ id }).then(res => {
             if (!res.code) {
+                console.log(res)
                 throw res.msg
             } else {
                 setDetail(res.data)
             }
         }).catch(err => {
-            message.error(err)
+            console.log(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setDetailLoading(false);
         })
@@ -185,11 +188,6 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             message.error('请选择SKU!')
             return
         }
-        // if (type === 'submit') {
-        //     setCheckStatus(true)
-        // } else {
-        //     setCheckStatus(false)
-        // }
         form.validateFields().then(values => {
             console.log(values)
             const params: saveDesignParams = {
@@ -209,21 +207,21 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                     memo: values.auxiliaryPictureMemo,
                     url: (values.auxiliaryPictureFile && values.auxiliaryPictureFile.length) ? values?.auxiliaryPictureFile.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : '',
                 },
-                auxiliaryPictureScene: values.auxiliaryPictureScene.map((item: { scene: any; memo: any; file: any; }) => ({
+                auxiliaryPictureScene: values.auxiliaryPictureScene?.map((item: { scene: any; memo: any; file: any; }) => ({
                     scene: item.scene,
                     memo: item.memo,
                     url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : ''
                 })),
                 aPlus: {
                     type: values.aPlusType,
-                    aplusScene: values.aplusScene.map((item: { scene: any; memo: any; pictureRequirement: any; file: any; }) => ({
+                    aplusScene: values.aplusScene?.map((item: { scene: any; memo: any; pictureRequirement: any; file: any; }) => ({
                         scene: item.scene,
                         memo: item.memo,
                         pictureRequirement: item.pictureRequirement,
                         url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : ''
                     }))
                 },
-                detailPicture: values.detailPicture.map((item: { detailRequirementPoint: any; memo: any; file: any; }) => ({
+                detailPicture: values.detailPicture?.map((item: { detailRequirementPoint: any; memo: any; file: any; }) => ({
                     detailRequirementPoint: item.detailRequirementPoint,
                     memo: item.memo,
                     url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : ''
@@ -353,10 +351,10 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 name="dynamic_form_nest_item"
                 autoComplete="off"
                 initialValues={{
-                    auxiliaryPictureScene: [{ scene: '', memo: '' }],
+                    // auxiliaryPictureScene: [{ scene: '', memo: '' }],
                     aPlusType: 'A+',
-                    aplusScene: [{ scene: '', memo: '', pictureRequirement: '' }],
-                    detailPicture: [{ detailRequirementPoint: '', memo: '' }],
+                    // aplusScene: [{ scene: '', memo: '', pictureRequirement: '' }],
+                    // detailPicture: [{ detailRequirementPoint: '', memo: '' }],
                 }}
                 {...formItemLayout}
             >
@@ -582,9 +580,98 @@ export default () => {
     const [data, setData] = useState<RequirementListItem[]>([]);
     const [keyword, setKeyword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [tableParams, setTableParams] = useState({
+        pagination: {
+            showSizeChanger: true,
+            showQuickJumper: true,
+            current: 1,
+            total: 0,
+            pageSize: 10,
+        },
+    });
     const statusWidth = getLocale() === 'en-US' ? 900 : 660
+
+    const initData = () => {
+        setLoading(true);
+        getDesignList({
+            status: status || undefined, keyword: keyword || undefined, ...{
+                len: tableParams.pagination?.pageSize,
+                page: tableParams.pagination?.current
+            }
+        }).then(res => {
+            if (res.code) {
+                setData(res.data.data)
+                setTableParams({
+                    ...tableParams,
+                    pagination: {
+                        ...tableParams.pagination,
+                        total: res.data.total,
+                    },
+                });
+            } else {
+                throw res.msg
+            }
+        }).finally(() => {
+            setLoading(false);
+        }).catch(err => {
+            message.error(err)
+        })
+    }
+    const getParams = (changeParams: any) => {
+        const params = {
+            status: status || undefined, keyword: keyword || undefined, ...{
+                len: tableParams.pagination?.pageSize,
+                page: tableParams.pagination?.current
+            },
+            ...changeParams
+        }
+        return params
+    }
+    const newInitData = (params: any) => {
+        setLoading(true);
+        getDesignList(params).then(res => {
+            if (res.code) {
+                setData(res.data.data)
+                setTableParams({
+                    ...tableParams,
+                    pagination: {
+                        ...tableParams.pagination,
+                        total: res.data.total,
+                    },
+                });
+            } else {
+                throw res.msg
+            }
+        }).finally(() => {
+            setLoading(false);
+        }).catch(err => {
+            message.error(err)
+        })
+    }
+    const handleTableChange = (
+        pagination: TablePaginationConfig,
+        filters: Record<string, FilterValue>,
+        sorter: SorterResult<any>,
+    ) => {
+        setTableParams({
+            pagination,
+            filters,
+            ...sorter,
+        });
+        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+            setData([]);
+        }
+    };
+
     const onSearch = (value: string) => {
         setKeyword(value)
+        setTableParams({
+            ...tableParams,
+            pagination: {
+                ...tableParams.pagination,
+                current: 1
+            }
+        })
     };
     const getErrorMsg = (record: RequirementListItem, currentStatus: { value: number, label: string }) => {
         if (currentStatus.value === 4 && record.reason && record.status === 4) {
@@ -618,7 +705,6 @@ export default () => {
     const getCantoUrl = (sku: string) => {
         return `https://telstraight.canto.com/library?keyword=${sku}&viewIndex=0&gSortingForward=false&gOrderProp=uploadDate&display=fitView&from=fitView`
     }
-
     const columns: ColumnsType<RequirementListItem> = [
         {
             title: localFront('info'),
@@ -670,23 +756,11 @@ export default () => {
             }
         }
     ]
-    const initData = () => {
-        setLoading(true);
-        getDesignList({ status: status || undefined, keyword: keyword || undefined }).then(res => {
-            if (res.code) {
-                setData(res.data.data)
-            } else {
-                throw res.msg
-            }
-        }).finally(() => {
-            setLoading(false);
-        }).catch(err => {
-            message.error(err)
-        })
-    }
+
     useEffect(() => {
-        initData()
-    }, [status, keyword])
+        newInitData(getParams({ 'init': undefined }))
+    }, [JSON.stringify(tableParams.pagination), keyword, status])
+
     return (<div style={{ 'background': '#fff' }}>
         <Card
             size='small'
@@ -694,7 +768,16 @@ export default () => {
                 actionRef.current.showModal();
             }}>{localFront('CreateRequirement')}</Button>}
             extra={<>
-                <Radio.Group size='small' value={status} onChange={(e) => setStatus(e.target.value)}>
+                <Radio.Group size='small' value={status} onChange={(e) => {
+                    setStatus(e.target.value)
+                    setTableParams({
+                        ...tableParams,
+                        pagination: {
+                            ...tableParams.pagination,
+                            current: 1
+                        }
+                    })
+                }}>
                     {ProcessItem.map(item => <Radio.Button key={item.value} value={item.value}>{item.label}</Radio.Button>)}
                 </Radio.Group>
                 <Search size='small' placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />
@@ -704,6 +787,8 @@ export default () => {
                 loading={loading}
                 columns={columns}
                 scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
+                pagination={tableParams.pagination}
+                onChange={handleTableChange}
                 dataSource={data} />
         </Card>
         <ActionModel refresh={initData} ref={actionRef} />

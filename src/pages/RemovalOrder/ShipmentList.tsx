@@ -2,10 +2,11 @@ import { useRef } from 'react';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { FormInstance } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
-import { Button } from 'antd';
+import { Button, Modal, Typography } from 'antd';
 import { getShipmentList } from '@/services/removalOrder'
 import type { TableListItem } from '@/services/removalOrder'
 import Dayjs from 'dayjs';
+const { Paragraph } = Typography;
 
 
 
@@ -149,7 +150,7 @@ export default () => {
         },
         {
             title: 'Action',
-            width: 75,
+            width: 80,
             key: 'option',
             align: 'center',
             fixed: 'right',
@@ -165,6 +166,31 @@ export default () => {
                 }
             },
         },
+        {
+            title: 'Logistics Claim',
+            dataIndex: 'option',
+            valueType: 'option',
+            width: 100,
+            align: 'center',
+            fixed: 'right',
+            render: (_, record) => {
+                return <Button size='small' key="checked" onClick={() => {
+                    Modal.confirm({
+                        title: 'Logistics Claim',
+                        okText: "Check",
+                        cancelText: "Cancel",
+                        content: (
+                            <div>
+                                <Paragraph style={{ fontSize: '24px' }} copyable>{record.tracking_number}</Paragraph>
+                            </div>
+                        ),
+                        onOk() {
+                            window.open(`/RemovalOrder/Checked?tracking_number=${record.tracking_number}&claim=true`)
+                        },
+                    });
+                }}>Lost</Button>
+            }
+        }
     ];
     return (<>
         <ProTable<TableListItem>

@@ -119,6 +119,12 @@ export default [
         name: 'Checked details',
         target: '_blank',
         component: './RemovalOrder/Checked',
+      },
+      // RemovalOrderLog
+      {
+        path: '/RemovalOrder/RemovalOrderLog',
+        name: 'RemovalOrderLog',
+        component: './RemovalOrder/RemovalOrderLog',
       }
     ],
   },
@@ -156,6 +162,12 @@ export default [
         path: '/businessUnitData/NewProducts',
         name: 'NewProducts',
         component: './businessUnitData/NewProducts',
+      },
+      // CheckProduct
+      {
+        path: '/businessUnitData/CheckProduct',
+        name: 'CheckProduct',
+        component: './businessUnitData/CheckProduct',
       }
     ]
   },

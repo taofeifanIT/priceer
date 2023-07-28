@@ -1,94 +1,16 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef, useState } from 'react';
-import { getResaleList, updatePurchasePrice, editMemo, batchEdit, downloadTemplate } from '@/services/businessUnitData/productReactivationEvaluation';
+import { getResaleList, updatePurchasePrice, editMemo, batchEdit } from '@/services/businessUnitData/productReactivationEvaluation';
 import type { ResaleListItem } from '@/services/businessUnitData/productReactivationEvaluation';
-import { message, Spin, Typography, Select, Button, Input, Modal, Space, InputNumber, Table } from 'antd';
-import { VerticalAlignBottomOutlined, VerticalAlignTopOutlined, EditTwoTone } from '@ant-design/icons';
+import { message, Select, Button, Space, InputNumber, Table } from 'antd';
+import { VerticalAlignBottomOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { exportExcel } from '@/utils/excelHelper'
 import { getToken } from '@/utils/token';
 import axions from 'axios';
-import { useEffect } from 'react';
-const { Paragraph } = Typography;
+import SetValueComponent from './components/SetValueComponent';
+import InputMemoComponent from './components/InputMemoComponent';
 
-const SetValueComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void }) => {
-    const { id, editKey, value, api, refresh } = props
-    const [paramValue, setParamValue] = useState(value)
-    const [spinning, setSpinning] = useState(false)
-    useEffect(() => {
-        setParamValue(value)
-    }, [value])
-    return (<>
-        <Spin spinning={spinning}>
-            {(editKey === 'reimburse_money' && value) && '$'}
-            <Typography.Text editable={{
-                onChange(val) {
-                    // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                    if (!val || val === paramValue) {
-                        return
-                    }
-                    setSpinning(true)
-                    api({ id, [editKey]: val }).then((res: any) => {
-                        if (res.code) {
-                            message.success(`${editKey} set successfully`)
-                            setParamValue(val)
-                            refresh()
-                        } else {
-                            throw res.msg
-                        }
-                    }).catch((err: any) => {
-                        message.error('Claim number set failed ' + err)
-                    }).finally(() => {
-                        setSpinning(false)
-                    })
-                }
-            }} >
-                {paramValue}
-            </Typography.Text>
-        </Spin>
-
-    </>)
-}
-
-const InputMemoComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void }) => {
-    const { id, editKey, value, api, refresh } = props
-    const [paramValue, setParamValue] = useState(value)
-    const [visible, setVisible] = useState(false)
-    const [spinning, setSpinning] = useState(false)
-    const handleOk = () => {
-        setSpinning(true)
-        api({ id, [editKey]: paramValue }).then((res: any) => {
-            if (res.code) {
-                message.success(`${editKey} set successfully`)
-                setVisible(false)
-                refresh()
-            } else {
-                throw res.msg
-            }
-        }).catch((err: any) => {
-            message.error('Claim number set failed ' + err)
-        }).finally(() => {
-            setSpinning(false)
-        })
-    }
-    const handleCancel = () => {
-        setVisible(false)
-    }
-    const show = () => {
-        setVisible(true)
-    }
-    return (<>
-        <Modal title="Edit Comments" open={visible} confirmLoading={spinning} onOk={handleOk} onCancel={handleCancel}>
-            <Input.TextArea rows={4} value={paramValue} onChange={(e) => {
-                setParamValue(e.target.value)
-            }} />
-        </Modal>
-        <Space align='center'>
-            <Paragraph ellipsis={{ tooltip: value }} style={{ maxWidth: '110px', display: 'inline-block', marginBottom: -5 }}>{value}</Paragraph >
-            <EditTwoTone onClick={show} />
-        </Space>
-    </>)
-}
 
 
 let exportData: never[] = []
@@ -182,7 +104,7 @@ export default () => {
             })
         }
         return (<>
-            <Button key="BatchEdit" size='small' icon={<VerticalAlignTopOutlined />} type='dashed' onClick={() => {
+            <Button key="BatchEdit" size='small' icon={<FileExcelOutlined />} type='dashed' onClick={() => {
                 // 打开上传文件
                 const input = document.createElement('input')
                 input.type = 'file'
@@ -263,14 +185,14 @@ export default () => {
             dataIndex: 'us_sales_target',
             key: 'us_sales_target',
             search: false,
-            width: 120,
+            width: 121,
         },
         {
             title: 'Estd Sales Price',
             dataIndex: 'sales_price',
             key: 'sales_price',
             search: false,
-            width: 120,
+            width: 124,
             render: (_, record) => [<span key='sales_price'>${record.sales_price}</span>],
         },
         {
@@ -286,7 +208,7 @@ export default () => {
             dataIndex: 'ship_fee',
             key: 'ship_fee',
             search: false,
-            width: 110,
+            width: 80,
             render: (_, record) => [<span key='ship_fee'>${record.ship_fee}</span>],
         },
         {
@@ -294,7 +216,7 @@ export default () => {
             dataIndex: 'platform_fee',
             key: 'platform_fee',
             search: false,
-            width: 120,
+            width: 180,
             // 保留两位小数
             render: (_, record) => [<span key='platform_fee'>{(record.platform_fee * 100).toFixed(2)}%</span>],
         },
@@ -304,7 +226,7 @@ export default () => {
             key: 'target_price',
             valueType: 'money',
             search: false,
-            width: 160,
+            width: 162,
         },
         {
             title: 'Last Purchase Price',
@@ -317,11 +239,11 @@ export default () => {
         },
         {
             // purchase price
-            title: 'Purchase Price',
+            title: 'Purchase Price(CNY)',
             dataIndex: 'purchase_price',
             key: 'purchase_price',
             search: false,
-            width: 120,
+            width: 158,
             render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePrice} refresh={() => actionRef.current?.reload()} />],
         },
         {
@@ -347,14 +269,23 @@ export default () => {
             key: 'unit_price',
             valueType: 'money',
             search: false,
-            width: 120,
+            width: 135,
             sorter: (a, b) => a.unit_price - b.unit_price,
             render: (_, record) => [<span key='purchase_price'>${record.unit_price}</span>],
+        },
+        // updated_at
+        {
+            title: 'Update Time',
+            dataIndex: 'updated_at',
+            key: 'updated_at',
+            valueType: 'text',
+            width: 120,
+            search: false,
         },
         {
             title: 'Margin Rate',
             dataIndex: 'margin_rate',
-            width: 95,
+            width: 111,
             key: 'margin_rate',
             valueType: 'percent',
             sorter: (a, b) => a.margin_rate - b.margin_rate,

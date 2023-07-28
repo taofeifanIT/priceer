@@ -191,3 +191,21 @@ export async function editLpn(params: { id: number, lpn: string }) {
         data: params
     });
 }
+
+export type HistoryLogItem = {
+    id: number;
+    admin_id: number;
+    username: string;
+    name: string;
+    before: string;
+    after: string;
+    create_time: string;
+}
+
+// /removalOrder/getHistoryLog
+export async function getHistoryLog(params: any) {
+    return request('/api/removalOrder/getHistoryLog', {
+        method: 'POST',
+        data: params
+    });
+}

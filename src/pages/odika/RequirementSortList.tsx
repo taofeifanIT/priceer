@@ -34,8 +34,10 @@ const App: React.FC = () => {
     const [sorts, setSorts] = useState<number[]>([]);
     const [tableParams, setTableParams] = useState<TableParams>({
         pagination: {
+            showSizeChanger: true,
+            showQuickJumper: true,
             current: 1,
-            pageSize: 30,
+            pageSize: 10,
         },
     });
     // 设置页数
@@ -64,8 +66,6 @@ const App: React.FC = () => {
                     pagination: {
                         ...tableParams.pagination,
                         total: res.data.total,
-                        // 200 is mock data, you should read it from server
-                        // total: data.totalCount,
                     },
                 });
             } else {

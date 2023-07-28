@@ -38,7 +38,7 @@ export type ResaleListItem = {
     username: string;
     exchange_rate: number;
     memo: string;
-    unitCost: number // 前端新增字段
+    unitCost: number; // 前端新增字段
 }
 
 export async function getResaleList(params?: any) {

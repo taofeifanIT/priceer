@@ -1,5 +1,5 @@
 import { getQueryVariable } from '@/utils/utils'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import type { ShipmentDetailsItem } from '@/services/removalOrder'
 import { getShipmentDetails, checkShipment, saveCheck } from '@/services/removalOrder'
 import { Radio, message, Upload, Modal, Button, Table, Image, Select, Space, Spin } from 'antd';
@@ -8,6 +8,56 @@ import type { ColumnsType } from 'antd/es/table';
 import { VerticalAlignBottomOutlined, PlusOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'
 import { exportPDFWithFont } from '@/utils/utils';
+import type { SelectProps } from 'antd/es/select';
+import debounce from 'lodash/debounce';
+
+
+export interface DebounceSelectProps<ValueType = any>
+    extends Omit<SelectProps<ValueType | ValueType[]>, 'options' | 'children'> {
+    fetchOptions: (search: string) => Promise<ValueType[]>;
+    debounceTimeout?: number;
+}
+
+
+function DebounceSelect<
+    ValueType extends { key?: string; label: React.ReactNode; value: string | number } = any,
+>({ fetchOptions, debounceTimeout = 800, ...props }: DebounceSelectProps<ValueType>) {
+    const [fetching, setFetching] = useState(false);
+    const [options, setOptions] = useState<ValueType[]>([]);
+    const fetchRef = useRef(0);
+
+    const debounceFetcher = useMemo(() => {
+        const loadOptions = (value: string) => {
+            fetchRef.current += 1;
+            const fetchId = fetchRef.current;
+            setOptions([]);
+            setFetching(true);
+
+            fetchOptions(value).then((newOptions) => {
+                if (fetchId !== fetchRef.current) {
+                    // for fetch callback order
+                    return;
+                }
+
+                setOptions(newOptions);
+                setFetching(false);
+            });
+        };
+
+        return debounce(loadOptions, debounceTimeout);
+    }, [fetchOptions, debounceTimeout]);
+
+    return (
+        <Select
+            labelInValue
+            filterOption={false}
+            onSearch={debounceFetcher}
+            notFoundContent={fetching ? <Spin size="small" /> : null}
+            {...props}
+            options={options}
+        />
+    );
+}
 
 const claimProps = [
     { label: 'Wrong Brand', value: 'Worng Brand' },
@@ -125,9 +175,10 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
 };
 
 
-const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void, width: number }) => {
-    const { title, data, callBack, width = 120 } = props
+const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void, width: number, titleValue?: any }) => {
+    const { title, data, callBack, width = 120, titleValue } = props
     const [titleObj] = useState<any>({ pops: title === 'Match' ? matchProps : title === 'Claim' ? claimProps : conditionProps })
+    const [value, setValue] = useState<string>(titleValue)
     const changeAllPop = (value: string) => {
         const tempData = data.map(item => {
             return {
@@ -137,9 +188,14 @@ const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?
         })
         callBack(tempData)
     }
+    useEffect(() => {
+        setValue(titleValue)
+        changeAllPop(titleValue)
+    }, [titleValue])
     return <>
         <span style={{ 'paddingRight': '2%' }}>{title}</span>
-        <Select allowClear size='small' style={{ 'width': width }} onChange={(val) => {
+        <Select allowClear size='small' style={{ 'width': width }} value={value} onChange={(val) => {
+            setValue(val)
             changeAllPop(val)
         }}>
             {titleObj.pops.map((item: any) => {
@@ -156,6 +212,7 @@ export default () => {
     const [trackingNumber] = useState<string>(getQueryVariable('tracking_number'))
     // view
     const [view] = useState<boolean>(getQueryVariable('view') === 'true')
+    const [claim] = useState<boolean>(getQueryVariable('claim') === 'true')
     const [data, setData] = useState<ShipmentDetailsItem[]>([])
     const [dataLoading, setDataLoading] = useState<boolean>(false)
     const [saveLoading, setSaveLoading] = useState<boolean>(false)
@@ -230,8 +287,8 @@ export default () => {
                 );
             },
         },
-        { title: 'MSKU', dataIndex: 'msku', key: 'msku', width: 180, ellipsis: true },
-        { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 180, ellipsis: true },
+        { title: 'MSKU(Amazon)', dataIndex: 'msku', key: 'msku', width: 180, ellipsis: true },
+        { title: 'SKU(NetSuite)', dataIndex: 'sku', key: 'sku', width: 180, ellipsis: true },
         { title: 'FNSKU', dataIndex: 'fnsku', key: 'fnsku', width: 150 },
         {
             title: 'Quantity',
@@ -240,8 +297,8 @@ export default () => {
             width: 80
         },
         {
-            title: view ? 'Match' : <GetTitle title={'Match'} data={data} callBack={setData} width={70} />,
-            dataIndex: 'atch',
+            title: view ? 'Match' : <GetTitle title={'Match'} data={data} callBack={setData} width={70} titleValue={claim ? '-1' : ''} />,
+            dataIndex: 'match',
             key: 'match',
             width: 135,
             render: (_, record) => {
@@ -274,7 +331,7 @@ export default () => {
             }
         },
         {
-            title: view ? 'Claim' : <GetTitle title={'Claim'} data={data} callBack={setData} width={120} />,
+            title: view ? 'Claim' : <GetTitle title={'Claim'} data={data} callBack={setData} width={120} titleValue={claim ? 'Invalid Tracking' : ''} />,
             dataIndex: 'claim',
             key: 'claim',
             width: 185,
@@ -325,6 +382,8 @@ export default () => {
                     return {
                         ...item,
                         key: item.uuid,
+                        match: claim ? '-1' : item.match,
+                        claim: claim ? 'Invalid Tracking' : item.claim,
                         claimData: [{ claim: '', image: [] }],
                         conditionData: [{ condition: '' }],
                     }
@@ -369,7 +428,7 @@ export default () => {
                     }}>Save</Button>
                     <Button type="primary" onClick={() => {
                         handleOk('submit')
-                    }}>submit</Button>
+                    }}>Submit</Button>
                 </Space>)}
             </div>
         </Spin>

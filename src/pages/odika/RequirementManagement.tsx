@@ -1,5 +1,6 @@
 import { Button, Card, Table, Input, message, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import React, { useState, useEffect } from 'react';
 import { getListForCheck } from '@/services/odika/requirementList';
 import type { RequirementListItem } from '@/services/odika/requirementList';
@@ -7,6 +8,13 @@ import getInfoComponent from './components/getInfoComponent'
 import { FormattedMessage } from 'umi';
 const { Text } = Typography;
 const { Search } = Input;
+
+interface TableParams {
+    pagination?: TablePaginationConfig;
+    sortField?: string;
+    sortOrder?: string;
+    filters?: Record<string, FilterValue>;
+}
 
 const localFrontFromRequirementList = (key: string) => {
     return <FormattedMessage id={`pages.odika.RequirementList.${key}`} />
@@ -62,16 +70,52 @@ const App: React.FC = () => {
     const [dataSource, setDataSource] = useState<any>([]);
     const [keyword, setKeyword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [tableParams, setTableParams] = useState<TableParams>({
+        pagination: {
+            showSizeChanger: true,
+            showQuickJumper: true,
+            current: 1,
+            pageSize: 5,
+        },
+    });
+    const handleTableChange = (
+        pagination: TablePaginationConfig,
+        filters: Record<string, FilterValue>,
+        sorter: SorterResult<any>,
+    ) => {
+        setTableParams({
+            pagination,
+            filters,
+            ...sorter,
+        });
+
+        // `dataSource` is useless since `pageSize` changed
+        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
+            setDataSource([]);
+        }
+    };
     const onSearch = (value: string) => {
         setKeyword(value)
     };
     const initData = () => {
         setLoading(true);
-        getListForCheck({ keyword: keyword || undefined }).then(res => {
+        getListForCheck({
+            keyword: keyword || undefined, ...{
+                len: tableParams.pagination?.pageSize,
+                page: tableParams.pagination?.current
+            }
+        }).then(res => {
             if (res.code) {
                 const sourceData = res.data.data
                 // sourceData.sort((a: any, b: any) => { return a.close_sort - b.close_sort })
                 setDataSource(sourceData)
+                setTableParams({
+                    ...tableParams,
+                    pagination: {
+                        ...tableParams.pagination,
+                        total: res.data.total,
+                    },
+                });
             } else {
                 throw res.msg
             }
@@ -83,7 +127,7 @@ const App: React.FC = () => {
     }
     useEffect(() => {
         initData()
-    }, [keyword])
+    }, [keyword, JSON.stringify(tableParams)])
     return (
         <Card
             size='small'
@@ -95,6 +139,8 @@ const App: React.FC = () => {
                 rowKey="id"
                 columns={columns}
                 dataSource={dataSource}
+                pagination={tableParams.pagination}
+                onChange={handleTableChange}
             />
         </Card>
     );
