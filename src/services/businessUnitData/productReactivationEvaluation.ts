@@ -39,6 +39,10 @@ export type ResaleListItem = {
     exchange_rate: number;
     memo: string;
     unitCost: number; // 前端新增字段
+    person_sales_price: number;
+    sales_target: number;
+    status: number;
+    tax_rate: number;
 }
 
 export async function getResaleList(params?: any) {
@@ -64,19 +68,44 @@ export async function editMemo(params: { id: number, memo: string }) {
     });
 }
 
-// businessUnitData/batchEdit
-// export async function batchEdit(file: any) {
-//     const formData = new FormData();
-//     formData.append('file', file);
-//     return request('/api/businessUnitData/batchEdit', formData);
-// }
-
-// http://api-rp.itmars.net/businessUnitData/batchEdit
 export function batchEdit() {
-    return 'http://api-rp.itmars.net/businessUnitData/batchEdit'
+    return `${API_URL}/businessUnitData/batchEdit`
 }
 
 // downloadTemplate
 export function downloadTemplate() {
-    return "http://api-rp.itmars.net/example/business.xlsx"
+    return `${API_URL}/example/business.xlsx`
+}
+
+// updatePurchasePrice
+export async function updateSalesPrice(params: { id: number, sales_price: number }) {
+    return request('/api/businessUnitData/updateSalesPrice', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// updateSalesTarget
+export async function updateSalesTarget(params: { id: number, sales_target: number }) {
+    return request('/api/businessUnitData/updateSalesTarget', {
+        method: 'POST',
+        data: params
+    });
+
+}
+
+// updateState
+export async function updateState(params: { id: number, status: number }) {
+    return request('/api/businessUnitData/updateState', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// businessUnitData/updateTax
+export async function updateTax(params: { id: number, tax: number }) {
+    return request('/api/businessUnitData/updateTax', {
+        method: 'POST',
+        data: params
+    });
 }

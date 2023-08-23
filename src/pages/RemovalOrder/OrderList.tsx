@@ -4,6 +4,7 @@ import type { FormInstance } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import { getList } from '@/services/removalOrder'
 import moment from 'moment';
+import { doc } from 'prettier';
 
 export type TableListItem = {
     store_name: string;
@@ -129,7 +130,7 @@ export default () => {
             pagination={{
                 showQuickJumper: true,
             }}
-            scroll={{ x: columns.reduce((total, item) => total + Number(item.width || 0), 0) }}
+            scroll={{ x: columns.reduce((total, item) => total + Number(item.width || 0), 0), y: document.body.clientHeight - 325 }}
             search={{
                 labelWidth: 'auto',
             }}

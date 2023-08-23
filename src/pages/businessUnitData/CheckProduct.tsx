@@ -9,10 +9,9 @@ import InputMemoComponent from './components/InputMemoComponent';
 import { statusConfig } from './config'
 import axios from 'axios'
 
-
 const options: any = {
-    1: 'Pass',
-    2: 'No Pass'
+    1: 'Approve',
+    2: 'Reject'
 }
 
 const EditStatusComponent = (props: { id: number, value: any, type: number, refresh: () => void, targetValue: any }) => {
@@ -59,6 +58,7 @@ export default () => {
     const actionRef = useRef<ActionType>();
     const [brands, setBrands] = useState([])
     const [profitPoint, setProfitPoint] = useState(0.1);
+    const [USDRate, setUSDRate] = useState(0);
     const getBrand = async () => {
         if (brands.length) return
         let brandData: any = []
@@ -118,7 +118,7 @@ export default () => {
             dataIndex: 'username',
             key: 'username',
             valueType: 'text',
-            width: 120,
+            width: 105,
             search: false,
         },
         // sku
@@ -184,7 +184,7 @@ export default () => {
             dataIndex: 'sales_price',
             key: 'sales_price',
             search: false,
-            width: 120,
+            width: 125,
             render: (_, record) => [<span key='sales_price'>{record.sales_price && '$'}{record.sales_price}</span>],
         },
         {
@@ -193,7 +193,7 @@ export default () => {
             key: 'us_tax_rate',
             search: false,
             width: 120,
-            render: (_, record) => [<span key='us_tax_rate'>{(record.us_import_tax * 100).toFixed(2)}%</span>],
+            render: (_, record) => [<span key='us_tax_rate'>{(record.us_import_tax)}</span>],
         },
         {
             title: 'Ship Fee',
@@ -208,24 +208,24 @@ export default () => {
             dataIndex: 'platform_fee',
             key: 'platform_fee',
             search: false,
-            width: 120,
+            width: 180,
             // 保留两位小数
             render: (_, record) => [<span key='platform_fee'>{(record.platform_fee * 100).toFixed(2)}%</span>],
         },
         {
-            title: 'Target Purchase Price',
+            title: 'Target Purchase Price(CNY)',
             dataIndex: 'target_price',
             key: 'target_price',
             valueType: 'money',
             search: false,
-            width: 160,
+            width: 205,
         },
         {
-            title: 'Purchase Price',
+            title: 'Purchase Price(CNY)',
             dataIndex: 'purchase_price',
             key: 'purchase_price',
             search: false,
-            width: 120,
+            width: 160,
         },
         {
             title: 'Unit Cost(USD)',
@@ -256,7 +256,7 @@ export default () => {
             dataIndex: 'status',
             key: 'status',
             valueType: 'select',
-            width: 175,
+            width: 110,
             valueEnum: statusConfig,
         },
         // first_status: number; // pm审核的
@@ -325,8 +325,8 @@ export default () => {
             title: 'Upload Time',
             dataIndex: 'created_at',
             key: 'created_at',
-            valueType: 'dateTime',
-            width: 160,
+            align: 'center',
+            width: 100,
             search: false,
         },
         {
@@ -346,21 +346,22 @@ export default () => {
             size='small'
             columns={columns}
             actionRef={actionRef}
-            // headerTitle="History Log"
+            headerTitle={`The current dollar rate is ${USDRate}`}
             cardBordered
             request={async (params = {}, sort, filter) => {
                 await getBrand()
-                const USDRate = await getRate()
                 const tempParams = { ...params, ...filter, ...sort, margin_rate: params.margin_rate ? (params.margin_rate / 100) : undefined, len: params.pageSize, page: params.current }
                 const res = await getCheckList(tempParams)
                 const { data, code } = res
                 const resultData = data.data.map((item: NewProductsItem) => {
-                    item.exchange_rate = USDRate
+                    // item.exchange_rate = USDRate
                     return {
                         ...item,
                         target_price: getTargetPurchasePrice(item)
                     }
                 })
+                const rate = resultData[0]?.exchange_rate || await getRate()
+                setUSDRate(rate)
                 return {
                     data: resultData,
                     success: !!code,
@@ -397,8 +398,8 @@ export default () => {
             dateFormatter="string"
             toolBarRender={() => [
                 <Space key="profitPoint" >
-                    <span>Profit Point:</span>
-                    <InputNumber placeholder="Profit Point" size='small' step={0.01} value={profitPoint} style={{ width: '65px' }} onChange={(e) => {
+                    <span>Profit Percentage:</span>
+                    <InputNumber placeholder="Profit Percentage" size='small' step={0.01} value={profitPoint} style={{ width: '65px' }} onChange={(e) => {
                         setProfitPoint(e)
                     }} />
                     <Button type='primary' size='small' onClick={() => {
@@ -406,7 +407,7 @@ export default () => {
                             actionRef.current?.reload()
                         }
                     }}>
-                        Recalculation
+                        Calculate
                     </Button>
                 </Space>
             ]}

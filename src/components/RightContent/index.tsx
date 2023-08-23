@@ -60,6 +60,7 @@ const GlobalHeaderRight: React.FC = () => {
   }, [visible]);
   return (
     <Space className={className}>
+      {REACT_APP_ENV === 'dev' ? <Tag color="blue">Pro</Tag> : <Tag color="#f50">{REACT_APP_ENV}</Tag>}
       {storeName && <Tag color={colorByStoreName}>{storeName}</Tag>}
       <Popover
         id="popPopover"
@@ -82,7 +83,7 @@ const GlobalHeaderRight: React.FC = () => {
             >
               {Object.keys(configInfo).map((key) => {
                 return (
-                  <Form.Item name={key + '_id'} label={key}>
+                  <Form.Item name={key + '_id'} key={key + '_id'} label={key}>
                     <Select
                       size="small"
                       style={{ width: '150px' }}

@@ -200,12 +200,12 @@ const App: React.FC = () => {
             render: (_, record) => {
                 return <Space>
                     {record.status !== 7 ? (<>
-                        <Switch style={{ width: '70px' }} checkedChildren={localFront('locked')} unCheckedChildren={localFront('lock')} disabled={!!record.close_sort || record.status === 7} checked={!!record.close_sort || record.status === 7} onChange={val => {
-                            if (checkSort(record.priority)) {
+                        <Switch style={{ width: '70px' }} checkedChildren={localFront('locked')} unCheckedChildren={localFront('lock')} disabled={record.status > 5} checked={!!record.close_sort || record.status === 7} onChange={val => {
+                            if (checkSort(record.priority) && val) {
                                 message.error('This priority is already in use!')
                                 return false
                             }
-                            editSortV3({ id: record.id, no: record.priority, is_lock: 1 }).then(res => {
+                            editSortV3({ id: record.id, no: record.priority, is_lock: val ? 1 : 0 }).then(res => {
                                 if (res.code) {
                                     initData()
                                 } else {

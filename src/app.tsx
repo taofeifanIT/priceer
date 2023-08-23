@@ -5,7 +5,7 @@ import { PageLoading } from '@ant-design/pro-components';
 // @ts-ignore
 import { getConfig } from '@/services/basePop';
 import { getGlobalParams } from '@/utils/globalParams';
-import { getMenu, throwMenu } from '@/utils/utils';
+import { getMenu, throwMenu, findIndexPage } from '@/utils/utils';
 import { notification } from 'antd';
 import type { RequestConfig, RunTimeLayoutConfig } from 'umi';
 import { history } from 'umi';
@@ -102,7 +102,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
           hasPage = result?.path === jumpPath;
         }
         if (!hasPage) {
-          history.push('/403');
+          // 如果没有权限，重定向到一个带权限的页面 
+          const indexPage = findIndexPage(initialState.currentUser?.menu);
+          if (indexPage) {
+            history.push(indexPage);
+          } else {
+            history.push('/403');
+          }
         }
       }
       // 如果没有登录，重定向到 login
@@ -203,8 +209,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const token: string | undefined = getToken() || '';
   const authHeader = token ? { token: token } : {};
   let lastUrl = url;
-  lastUrl = `http://api-rp.itmars.net${url.replace('/api', '')}`;
-  // lastUrl = `http://n.demo.com${url.replace('/api', '')}`;
+  lastUrl = `${API_URL}${url.replace('/api', '')}`;
   const additionalData = getGlobalParams();
   const config = JSON.parse(JSON.stringify(options));
   const { method } = config;

@@ -42,6 +42,7 @@ export type TableListItem = {
 }
 
 export type ShipmentDetailsItem = {
+    sku: any;
     id: number;
     uuid: string;
     msku: string;
@@ -57,6 +58,8 @@ export type ShipmentDetailsItem = {
     images: { thumb_name: string, file_name: string }[];
     bar_code: string;
     memo_images: string;
+    store_id: number;
+    type: 1 | 2; // 1 旧数据 2 新数据
 }
 
 export type actionItems = {
@@ -124,8 +127,7 @@ export async function addReimbursement(params: { id: number, reimburse_number: s
 
 // downloadInfo
 export function downloadInfo(id: number, type?: number) {
-    // return `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}`
-    return type ? `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}&type=${type}` : `http://api-rp.itmars.net/removalOrder/downloadInfo?id=${id}`
+    return type ? `${API_URL}/removalOrder/downloadInfo?id=${id}&type=${type}` : `${API_URL}/removalOrder/downloadInfo?id=${id}`
 }
 
 // addReimburseMoney
@@ -200,11 +202,20 @@ export type HistoryLogItem = {
     before: string;
     after: string;
     create_time: string;
+    created_at: number;
 }
 
 // /removalOrder/getHistoryLog
 export async function getHistoryLog(params: any) {
     return request('/api/removalOrder/getHistoryLog', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// /removalOrder/getMskuList
+export async function getMskuList(params: { sku: string, store_id: number }) {
+    return request('/api/removalOrder/getMskuList', {
         method: 'POST',
         data: params
     });

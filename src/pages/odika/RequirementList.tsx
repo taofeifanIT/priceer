@@ -8,6 +8,7 @@ import type { RequirementListItem, submitDesignParams, saveDesignParams } from '
 import { getToken } from '@/utils/token'
 import { getImageUrl } from '@/utils/utils'
 import { FormattedMessage, getLocale } from 'umi';
+import { FilePdfOutlined } from '@ant-design/icons';
 import getInfoComponent from './components/getInfoComponent'
 const { Search } = Input;
 const { Text } = Typography;
@@ -65,15 +66,14 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const [skuList, setSkuList] = useState([]);
     const [skuListLoading, setSkuListLoading] = useState(false);
     const [currentSku, setCurrentSku] = useState('');
-    const aPlusType = Form.useWatch('aPlusType', form);
     const [editRecord, setEditRecord] = useState<RequirementListItem>({} as RequirementListItem);
     const [detailLoading, setDetailLoading] = useState(false);
     const checkStatus = false;
     const handleCancel = () => {
         setVisible(false);
         setEditRecord({} as RequirementListItem)
-        setCurrentSku('')
-        form.resetFields();
+        // setCurrentSku('')
+        // form.resetFields();
     };
 
     const onChange = (value: string) => {
@@ -94,8 +94,19 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     }
 
     const setDetail = (data: submitDesignParams) => {
-        console.log(data.mainPicture.whiteBackgroundAndProps)
         const formParams = {
+            competitor: data.competitor || undefined,
+            mainPictures: data.mainPictures?.map((item, index) => ({
+                memo: item.memo,
+                file: item.url ? item.url.map((url: string, i: number) => ({
+                    uid: 'mainPictures' + index + i,
+                    name: 'image.png',
+                    status: 'done',
+                    response: { data: { file_name: url } },
+                    thumbUrl: getImageUrl(item.thumbnail[i]),
+                    url: getImageUrl(url)
+                })) : [],
+            })),
             whiteBackgroundMemo: data.mainPicture?.whiteBackgroundAndProps.memo,
             whiteBackgroundFile: data.mainPicture?.whiteBackgroundAndProps?.url ? data.mainPicture?.whiteBackgroundAndProps?.url.map((url: string, index: number) => ({
                 uid: '1' + index,
@@ -124,6 +135,18 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 thumbUrl: getImageUrl(data.auxiliaryPicture?.thumbnail[index]),
                 url: getImageUrl(url)
             })) : [],
+            auxiliaryPictures: data.auxiliaryPictures?.map((item, index) => ({
+                sellingPoint: item.sellingPoint,
+                memo: item.memo,
+                file: item.url ? item.url.map((url: string, i: number) => ({
+                    uid: 'auxiliaryPictures' + index + i,
+                    name: 'image.png',
+                    status: 'done',
+                    response: { data: { file_name: url } },
+                    thumbUrl: getImageUrl(item.thumbnail[i]),
+                    url: getImageUrl(url)
+                })) : [],
+            })),
             auxiliaryPictureScene: data?.auxiliaryPictureScene?.map((item, index) => ({
                 scene: item.scene,
                 memo: item.memo,
@@ -189,9 +212,13 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             return
         }
         form.validateFields().then(values => {
-            console.log(values)
             const params: saveDesignParams = {
                 sku: currentSku,
+                competitor: values.competitor || '',
+                mainPictures: values.mainPictures?.map((item: { memo: any; file: any; }) => ({
+                    memo: item.memo,
+                    url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
+                })),
                 mainPicture: {
                     whiteBackgroundAndProps: {
                         memo: values.whiteBackgroundMemo,
@@ -207,10 +234,15 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                     memo: values.auxiliaryPictureMemo,
                     url: (values.auxiliaryPictureFile && values.auxiliaryPictureFile.length) ? values?.auxiliaryPictureFile.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : '',
                 },
+                auxiliaryPictures: values.auxiliaryPictures?.map((item: { sellingPoint: string; memo: any; file: any; }) => ({
+                    sellingPoint: item.sellingPoint,
+                    memo: item.memo,
+                    url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
+                })),
                 auxiliaryPictureScene: values.auxiliaryPictureScene?.map((item: { scene: any; memo: any; file: any; }) => ({
                     scene: item.scene,
                     memo: item.memo,
-                    url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : ''
+                    url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
                 })),
                 aPlus: {
                     type: values.aPlusType,
@@ -218,13 +250,13 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                         scene: item.scene,
                         memo: item.memo,
                         pictureRequirement: item.pictureRequirement,
-                        url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : ''
+                        url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
                     }))
                 },
                 detailPicture: values.detailPicture?.map((item: { detailRequirementPoint: any; memo: any; file: any; }) => ({
                     detailRequirementPoint: item.detailRequirementPoint,
                     memo: item.memo,
-                    url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : ''
+                    url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
                 }))
 
             }
@@ -245,6 +277,8 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             }).finally(() => {
                 loading(false);
                 handleCancel()
+                setCurrentSku('')
+                form.resetFields();
                 refresh()
             })
         })
@@ -299,7 +333,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const uploadComponent = (num = 1) => {
         return <Upload
             accept=".jpg, .jpeg, .png"
-            action="http://api-rp.itmars.net/design/uploadImage"
+            action={`${API_URL}/design/uploadImage`}
             headers={{ authorization: 'authorization-text', token: getToken() }}
             listType="picture-card"
             maxCount={num}
@@ -312,6 +346,13 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         </Upload>
     }
 
+    const getTitle = (title: any, size: any, more?: any) => {
+        return <div>
+            <Typography.Title level={4} style={{ marginBottom: 0 }}>{title}</Typography.Title>
+            <div style={{ color: 'gray' }}>{size}</div>
+            {more}
+        </div>
+    }
     useImperativeHandle(ref, () => ({
         showModal(record?: RequirementListItem) {
             setVisible(true);
@@ -320,6 +361,9 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 setEditRecord(record)
                 setCurrentSku(record.sku)
                 getDetail(record.id)
+            } else {
+                setCurrentSku('')
+                form.resetFields();
             }
         }
     }));
@@ -328,6 +372,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         width={800}
         title={modelTitle}
         open={visible}
+        maskClosable={false}
         onCancel={handleCancel}
         footer={[
             <Button key="back" onClick={handleCancel}>Cancel</Button>,
@@ -335,8 +380,8 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             <Popconfirm
                 key={'submit'}
                 placement="top"
-                title={'确认提交？'}
-                description={'提交后不可修改'}
+                title={'Confirm submission?'}
+                description={'It cannot be modified after submission'}
                 onConfirm={() => onFinish('submit')}
                 okText="Yes"
                 cancelText="No"
@@ -351,30 +396,62 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 name="dynamic_form_nest_item"
                 autoComplete="off"
                 initialValues={{
-                    // auxiliaryPictureScene: [{ scene: '', memo: '' }],
-                    aPlusType: 'A+',
-                    // aplusScene: [{ scene: '', memo: '', pictureRequirement: '' }],
-                    // detailPicture: [{ detailRequirementPoint: '', memo: '' }],
+                    aPlusType: 'A++',
                 }}
                 {...formItemLayout}
             >
-                <Divider plain>{localFrontFromViewDesign('mainPicture')}</Divider>
-                <Alert message={localFrontFromViewDesign('WhiteBackgroundPictureAndProps')} type="info" style={{ marginBottom: '20px' }} />
+                <Divider plain>{localFront('CompetitiveAsin')}</Divider>
                 <Form.Item
-                    name={'whiteBackgroundMemo'}
-                    label={localFrontFromViewDesign('pictrueDesc')}
+                    name={'competitor'}
+                    label={" "}
+                    colon={false}
                     rules={[{ required: checkStatus, message: 'Missing Memo' }]}
                 >
-                    <Input.TextArea placeholder="请输入道具需求/Please enter props requirement" />
+                    <Select
+                        mode="tags"
+                        placeholder="Add Asin"
+                    />
                 </Form.Item>
-                <Form.Item
-                    name={'whiteBackgroundFile'}
-                    valuePropName="fileList"
-                    label={localFrontFromViewDesign('picture')}
-                    getValueFromEvent={normFile}
-                >
-                    {uploadComponent(20)}
-                </Form.Item>
+                <Divider plain>
+                    {getTitle(localFrontFromViewDesign('mainPicture'), '2000:2000')}
+                </Divider>
+                <Alert message={localFrontFromViewDesign('WhiteBackgroundPictureAndProps')} type="info" style={{ marginBottom: '20px' }} />
+                <Form.List
+                    name="mainPictures">
+                    {(fields, { add, remove }) => (
+                        <>
+                            {fields.map(({ key, name, ...restField }) => (
+                                <div key={key} style={{ marginBottom: 8, position: 'relative' }}>
+                                    <Form.Item
+                                        {...restField}
+                                        name={[name, 'memo']}
+                                        label={localFrontFromViewDesign('pictrueDesc')}
+                                        rules={[{ required: checkStatus, message: 'Missing memo' }]}
+                                    >
+                                        <Input.TextArea placeholder="memo" />
+                                    </Form.Item>
+                                    <MinusCircleOutlined onClick={() => remove(name)} style={{ position: 'absolute', right: 90, top: 7 }} />
+                                    <Form.Item
+                                        name={[name, 'file']}
+                                        label={localFrontFromViewDesign('picture')}
+                                        valuePropName="fileList"
+                                        getValueFromEvent={normFile}
+                                    >
+                                        {uploadComponent(50)}
+                                    </Form.Item>
+                                </div>
+                            ))}
+                            <Form.Item label={" "} colon={false}>
+                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                                    {localFront('addNewMainPicture')}
+                                </Button>
+                            </Form.Item>
+                        </>
+                    )}
+                </Form.List>
+                <Divider plain>
+                    {getTitle(localFrontFromViewDesign('subscene'), '2000:2000')}
+                </Divider>
                 <Alert message={localFrontFromViewDesign('sizeAndMaterial')} type="info" style={{ marginBottom: '20px' }} />
                 <Form.Item
                     name={'sizeAndNaterialMemo'}
@@ -391,34 +468,54 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 >
                     {uploadComponent(20)}
                 </Form.Item>
-                <Divider plain>{localFrontFromViewDesign('secondPicture')}</Divider>
-                <Form.Item
-                    name={'auxiliaryPictureSellingPoint'}
-                    label={localFrontFromViewDesign('SellingPoint')}
-                    rules={[{ required: checkStatus, message: 'Missing Selling Point' }]}
-                >
-                    <Select
-                        mode="tags"
-                        style={{ width: '100%' }}
-                        placeholder="Tags Mode"
-                    />
-                </Form.Item>
-                <Form.Item
-                    name={'auxiliaryPictureMemo'}
-                    label={localFrontFromViewDesign('pictrueDesc')}
-                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
-                >
-                    <Input.TextArea placeholder="请输入需求/Please enter general requirement" />
-                </Form.Item>
-                <Form.Item
-                    name={'auxiliaryPictureFile'}
-                    label={localFrontFromViewDesign('picture')}
-                    valuePropName="fileList"
-                    getValueFromEvent={normFile}
-                >
-                    {uploadComponent(20)}
-                </Form.Item>
-                <Divider plain>{localFrontFromViewDesign('subscene')}</Divider>
+                <Divider plain>{getTitle(localFrontFromViewDesign('secondPicture'), localFront('pictureTextDetailsIcon'), <span style={{ color: 'gray' }}>2000:2000</span>)}</Divider>
+                <Form.List
+                    name="auxiliaryPictures">
+                    {(fields, { add, remove }) => (
+                        <>
+                            {fields.map(({ key, name, ...restField }) => (
+                                <div key={key} style={{ marginBottom: 8, position: 'relative' }}>
+                                    <Form.Item
+                                        {...restField}
+                                        name={[name, 'sellingPoint']}
+                                        label={<>{localFrontFromViewDesign('SellingPoint')}{name + 1}</>}
+                                        rules={[{ required: checkStatus, message: 'Missing SellingPoint' }]}
+                                    >
+                                        <Select
+                                            mode="tags"
+                                            style={{ width: '100%' }}
+                                            placeholder="Tags Mode"
+                                        />
+                                    </Form.Item>
+                                    <MinusCircleOutlined onClick={() => remove(name)} style={{ position: 'absolute', right: 90, top: 7 }} />
+                                    <Form.Item
+                                        {...restField}
+                                        name={[name, 'memo']}
+                                        label={localFrontFromViewDesign('pictrueDesc')}
+                                        rules={[{ required: checkStatus, message: 'Missing memo' }]}
+                                    >
+                                        <Input.TextArea placeholder="memo" />
+                                    </Form.Item>
+                                    <Form.Item
+                                        name={[name, 'file']}
+                                        label={localFrontFromViewDesign('picture')}
+                                        valuePropName="fileList"
+                                        getValueFromEvent={normFile}
+                                    >
+                                        {uploadComponent(50)}
+                                    </Form.Item>
+                                </div>
+                            ))}
+                            <Form.Item label={" "} colon={false}>
+                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                                    {localFrontFromViewDesign('addNewSellingPoint')}
+                                </Button>
+                            </Form.Item>
+                        </>
+                    )}
+                </Form.List>
+                {/* 卖点图 */}
+                <Divider plain>{getTitle(localFront('sceneGraph'), "")}</Divider>
                 <Form.List
                     name="auxiliaryPictureScene">
                     {(fields, { add, remove }) => (
@@ -470,8 +567,8 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             label=""
                             rules={[{ required: checkStatus, message: 'Missing aPlusType' }]}>
                             <Select style={{ 'width': '150px', 'position': 'relative', 'top': '10px' }}>
-                                <Select.Option value={'A+'}>A+(970x600)</Select.Option>
-                                <Select.Option value={'A++'}>A++(1464x600)</Select.Option>
+                                <Select.Option value={'A++'}>A++ {localFront('template')}</Select.Option>
+                                <Select.Option value={'A+'}>A+ {localFront('template')}</Select.Option>
                             </Select>
                         </Form.Item>
                     </Divider>
@@ -521,13 +618,13 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    {localFront('addMore')}{aPlusType}{localFrontFromViewDesign('scene')}
+                                    {localFront('sceneRotograph')} (1464:600)
                                 </Button>
                             </Form.Item>
                         </>
                     )}
                 </Form.List>
-                <Divider plain>{localFrontFromViewDesign('detail')}</Divider>
+                {/* <Divider plain>{localFrontFromViewDesign('detail')}</Divider> */}
                 <Form.List
                     name="detailPicture">
                     {(fields, { add, remove }) => (
@@ -563,7 +660,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    {localFront('addMore')}
+                                    {localFront('detailMapPresentation')}  (650:350)
                                 </Button>
                             </Form.Item>
                         </>
@@ -743,19 +840,33 @@ export default () => {
             title: localFront('operation'),
             dataIndex: 'action',
             key: 'action',
-            width: 140,
+            width: 160,
             fixed: 'right',
             render: (text: any, record) => {
                 const { disabled, color } = getOperationEdit(record)
                 return <Space align='start'>
-                    <Button type="link" disabled={disabled} style={{ color: color }} onClick={() => {
+                    {!disabled && <Button type="link" style={{ color: color }} onClick={() => {
                         actionRef.current.showModal(record);
-                    }}>{localFront('Edit')}</Button>
+                    }}>{localFront('Edit')}</Button>}
+                    <Button type="link" onClick={() => {
+                        window.open(`/odika/ViewDesign?id=${record.id}`)
+                    }}><FormattedMessage id='pages.layouts.View' /></Button>
                     {record.status === 7 ? <a target='blank' href={getCantoUrl(record.sku)}><img width={'25'} src='/canto.png' /></a> : ''}
                 </Space>
             }
         }
     ]
+
+    const titleCpmponent = () => {
+        return <>
+            <Button size='small' type="primary" onClick={() => {
+                actionRef.current.showModal();
+            }}>{localFront('CreateRequirement')}</Button>
+            {/* <Button size='small' type="primary" style={{ marginLeft: '5px' }} icon={<FilePdfOutlined />} onClick={() => {
+                // window.open(`/odika/ViewDesign`)
+            }}>{localFront('viewTemplate')}</Button> */}
+        </>
+    }
 
     useEffect(() => {
         newInitData(getParams({ 'init': undefined }))
@@ -764,9 +875,7 @@ export default () => {
     return (<div style={{ 'background': '#fff' }}>
         <Card
             size='small'
-            title={<Button size='small' type="primary" onClick={() => {
-                actionRef.current.showModal();
-            }}>{localFront('CreateRequirement')}</Button>}
+            title={titleCpmponent()}
             extra={<>
                 <Radio.Group size='small' value={status} onChange={(e) => {
                     setStatus(e.target.value)

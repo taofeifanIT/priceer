@@ -1,19 +1,46 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { useRef, useState } from 'react';
-import { getResaleList, updatePurchasePrice, editMemo, batchEdit } from '@/services/businessUnitData/productReactivationEvaluation';
+import { useEffect, useRef, useState } from 'react';
+import { getResaleList, updatePurchasePrice, editMemo, batchEdit, updateSalesPrice, updateSalesTarget, updateState, updateTax } from '@/services/businessUnitData/productReactivationEvaluation';
 import type { ResaleListItem } from '@/services/businessUnitData/productReactivationEvaluation';
-import { message, Select, Button, Space, InputNumber, Table } from 'antd';
+import { message, Select, Button, Space, InputNumber, Table, Typography } from 'antd';
 import { VerticalAlignBottomOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { exportExcel } from '@/utils/excelHelper'
 import { getToken } from '@/utils/token';
 import axions from 'axios';
 import SetValueComponent from './components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
-
+import TestComputer from './components/TestComputer';
 
 
 let exportData: never[] = []
+
+const StatusButton = (props: { id: number, status: number, refresh: () => void }) => {
+    const { id, status, refresh } = props
+    const [spinning, setSpinning] = useState(false)
+    const [statusValue, setStatusValue] = useState(status)
+    const saveValue = (val: any) => {
+        setSpinning(true)
+        updateState({ id, status: val }).then((res: any) => {
+            if (res.code) {
+                message.success(`Status set successfully`)
+                refresh()
+            } else {
+                throw res.msg
+            }
+        }).catch((err: any) => {
+            message.error('Status set failed ' + err)
+        }).finally(() => {
+            setSpinning(false)
+        })
+    }
+    useEffect(() => {
+        setStatusValue(status)
+    }, [status])
+    return <Button size='small' type={statusValue === 1 ? 'primary' : 'default'} loading={spinning} disabled={statusValue === 2} onClick={() => {
+        saveValue(2)
+    }}>Confirm</Button>
+}
 
 export default () => {
     const actionRef = useRef<ActionType>();
@@ -45,9 +72,11 @@ export default () => {
     // }
 
     const getTargetPurchasePrice = (record: ResaleListItem) => {
-        const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_tax_rate = 0, exchange_rate } = record;
-        const dividend = (sales_price * (1 - platform_fee) - ship_fee)
-        const divisor = (1 + us_tax_rate)
+        const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_tax_rate = 0, exchange_rate, person_sales_price = 0, tax_rate = 0 } = record;
+        const targetSalesPrice = person_sales_price > 0 ? person_sales_price : sales_price
+        const targetTaxRate = tax_rate > 0 ? tax_rate : us_tax_rate
+        const dividend = (targetSalesPrice * (1 - platform_fee) - ship_fee)
+        const divisor = (1 + targetTaxRate)
         // const ts = dividend / divisor * (1 - 0.1) * USDRate * 1.13
         const ts = dividend / divisor * (1 - profitPoint) * exchange_rate
         // 保留两位小数
@@ -126,15 +155,36 @@ export default () => {
             fixed: 'left',
             width: 48,
         },
+        // status  1： 未确认 2：已确认  英文展示
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            valueType: 'select',
+            width: 100,
+            hideInTable: true,
+            valueEnum: {
+                1: { text: 'Unconfirmed', status: 'Default' },
+                2: { text: 'Confirmed', status: 'Success' },
+            }
+        },
         {
             title: 'ASIN',
             dataIndex: 'asin',
             key: 'asin',
             valueType: 'text',
-            copyable: true,
             fixed: 'left',
             ellipsis: true,
             width: 130,
+            render: (_, record) => {
+                return <Typography.Text
+                    copyable={{
+                        text: record.asin,
+                    }}
+                >
+                    <a href={`https://www.amazon.com/dp/${record.asin}`} target='blank'>{record.asin}</a>
+                </Typography.Text>
+            }
         },
         // sku
         {
@@ -187,6 +237,25 @@ export default () => {
             search: false,
             width: 121,
         },
+        // sales_target
+        {
+            title: 'New Sales Target',
+            dataIndex: 'sales_target',
+            key: 'sales_target',
+            search: false,
+            width: 135,
+            render: (_, record) => {
+                return <SetValueComponent
+                    id={record.id}
+                    editKey='sales_target'
+                    value={record.sales_target}
+                    api={updateSalesTarget}
+                    refresh={() => actionRef.current?.reload()}
+                    type='number'
+                    disabled={record.status === 2}
+                />
+            }
+        },
         {
             title: 'Estd Sales Price',
             dataIndex: 'sales_price',
@@ -195,13 +264,52 @@ export default () => {
             width: 124,
             render: (_, record) => [<span key='sales_price'>${record.sales_price}</span>],
         },
+        // person_sales_price
+        {
+            title: 'Mannual Sales Price(USD)',
+            dataIndex: 'person_sales_price',
+            key: 'person_sales_price',
+            search: false,
+            width: 192,
+            render: (_, record) => {
+                return <SetValueComponent
+                    id={record.id}
+                    editKey='sales_price'
+                    value={record.person_sales_price}
+                    api={updateSalesPrice}
+                    refresh={() => actionRef.current?.reload()}
+                    type='number'
+                    disabled={record.status === 2}
+                />
+            },
+        },
         {
             title: 'US Import Tax',
             dataIndex: 'us_tax_rate',
             key: 'us_tax_rate',
             search: false,
             width: 120,
-            render: (_, record) => [<span key='us_tax_rate'>{(record.us_tax_rate * 100).toFixed(2)}%</span>],
+            render: (_, record) => [<span key='us_tax_rate'>{record.us_tax_rate}</span>],
+        },
+        // 人工填写的关税
+        {
+            title: 'Mannual Import Tax',
+            dataIndex: 'tax_rate',
+            key: 'tax_rate',
+            search: false,
+            width: 150,
+            render: (_, record) => {
+                return <SetValueComponent
+                    id={record.id}
+                    editKey='tax'
+                    value={record.tax_rate}
+                    api={updateTax}
+                    refresh={() => actionRef.current?.reload()}
+                    type='number'
+                    disabled={record.status === 2}
+                    numberStep={0.01}
+                />
+            }
         },
         {
             title: 'Ship Fee',
@@ -244,7 +352,7 @@ export default () => {
             key: 'purchase_price',
             search: false,
             width: 158,
-            render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePrice} refresh={() => actionRef.current?.reload()} />],
+            render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePrice} refresh={() => actionRef.current?.reload()} type='number' disabled={record.status === 2} />],
         },
         {
             title: 'Operator',
@@ -279,7 +387,7 @@ export default () => {
             dataIndex: 'updated_at',
             key: 'updated_at',
             valueType: 'text',
-            width: 120,
+            width: 100,
             search: false,
         },
         {
@@ -288,10 +396,26 @@ export default () => {
             width: 111,
             key: 'margin_rate',
             valueType: 'percent',
+            align: 'center',
             sorter: (a, b) => a.margin_rate - b.margin_rate,
             fixed: 'right',
             render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(0) + '%'}</span>],
         },
+        // action
+        {
+            title: 'Action',
+            dataIndex: 'option',
+            valueType: 'option',
+            width: (REACT_APP_ENV === 'devLocal' || REACT_APP_ENV === 'test') ? 170 : 100,
+            align: 'center',
+            fixed: 'right',
+            render: (_, record) => {
+                return <Space>
+                    <StatusButton key='status' id={record.id} status={record.status} refresh={() => actionRef.current?.reload()} />
+                    <TestComputer key='TestComputer' sales_price={record.sales_price} person_sales_price={record.person_sales_price} us_tax_rate={record.us_tax_rate} tax_rate={record.tax_rate} ship_fee={record.ship_fee} platform_fee={record.platform_fee} last_purchase_price={record.last_purchase_price} purchase_price={record.purchase_price} exchange_rate={record.exchange_rate} profitPoint={profitPoint} />
+                </Space>
+            },
+        }
     ];
     return (
         <ProTable<ResaleListItem>
@@ -301,18 +425,22 @@ export default () => {
                 // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
                 // 注释该行则默认不显示下拉选项
                 selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-                defaultSelectedRowKeys: [1],
-                selectedRowKeys: selectedRows.map((item) => item.id),
-                onChange: (_, rows) => {
-                    setSelectedRows(rows);
-                }
+                // defaultSelectedRowKeys: [1],
+                selectedRowKeys: selectedRows.map(item => item.id),
+                onChange: (RowKeys, rows) => {
+                    if (!rows.length) {
+                        setSelectedRows([])
+                        return
+                    }
+                    setSelectedRows(selectedRows.concat(rows.filter(item => !selectedRows.includes(item))));
+                },
             }}
             actionRef={actionRef}
             cardBordered
             headerTitle={`The current dollar rate is ${USDRate}`}
             request={async (params = {}, sort, filter) => {
-                const rate = await getRate()
-                setUSDRate(rate)
+                // const rate = await getRate()
+                // setUSDRate(rate)
                 const response = await getResaleList({
                     ...params,
                     margin_rate: params.margin_rate ? params.margin_rate / 100 : undefined,
@@ -322,12 +450,14 @@ export default () => {
                 const { data, total } = response.data.content
                 const brandData = response.data.brand.map((item: { brand: string }) => ({ label: item.brand, value: item.brand }))
                 const resultData = data.map((item: ResaleListItem) => {
+                    // item.exchange_rate = rate
                     return {
                         ...item,
                         target_price: getTargetPurchasePrice(item),
-                        // unitCost: getPurchasePrice(item, rate)
                     }
                 })
+                const rate = resultData[0]?.exchange_rate || await getRate()
+                setUSDRate(rate)
                 setBrands(brandData)
                 exportData = resultData
                 if (sort?.margin_rate) {
@@ -376,8 +506,8 @@ export default () => {
             toolBarRender={() => [
                 //    设置利润点
                 <Space key="profitPoint" >
-                    <span>Profit Point:</span>
-                    <InputNumber size='small' placeholder="Profit Point" step={0.01} value={profitPoint} style={{ width: '100px' }} onChange={(e) => {
+                    <span>Profit Percentage:</span>
+                    <InputNumber size='small' placeholder="Profit Percentage" step={0.01} value={profitPoint} style={{ width: '100px' }} onChange={(e) => {
                         setProfitPoint(e)
                     }} />
                     <Button type='primary' size='small' onClick={() => {
@@ -385,13 +515,13 @@ export default () => {
                             actionRef.current?.reload()
                         }
                     }}>
-                        recalculation
+                        Calculate
                     </Button>
                 </Space>,
                 <Button key="button" size='small' icon={<VerticalAlignBottomOutlined />} onClick={() => {
                     // excelColumns index不需要
                     const excelColumns = columns.filter(item => item.dataIndex !== 'index')
-                    exportExcel(excelColumns, exportData, 'ProductReactivationEvaluation.xlsx')
+                    exportExcel(excelColumns, selectedRows.length ? selectedRows : exportData, 'ProductReactivationEvaluation.xlsx')
                 }}>Download</Button>,
                 <BatchEditComponent key='BatchEditComponent' />,
                 // <a key="template" href={downloadTemplate()} target='blank' >Download template</a>,

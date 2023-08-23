@@ -8,7 +8,7 @@ const { REACT_APP_ENV } = process.env;
 
 export default defineConfig({
     define: {
-        API_URL: 'http://api-rp.itmars.net',
-        REACT_APP_ENV: REACT_APP_ENV || false
+        API_URL: 'http://staging.itmars.net', // API地址
+        REACT_APP_ENV: REACT_APP_ENV || false,
     },
 });

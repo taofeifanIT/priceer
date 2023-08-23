@@ -5,6 +5,11 @@ export interface saveDesignParams {
     username?: string;
     createTime?: string;
     sku: string;
+    competitor: string;
+    mainPictures: {
+        url: string[];
+        memo: string;
+    }[];
     mainPicture: {
         whiteBackgroundAndProps: {
             url: string[];
@@ -23,6 +28,12 @@ export interface saveDesignParams {
         memo: string;
         thumbnail?: string[];
     },
+    auxiliaryPictures: {
+        sellingPoint: string[];
+        url: string[];
+        memo: string;
+        thumbnail?: string[];
+    }[],
     auxiliaryPictureScene: {
         scene: string;
         url: string[];
@@ -48,6 +59,12 @@ export interface saveDesignParams {
 }
 export interface submitDesignParams {
     sku: string;
+    competitor: string;
+    mainPictures: {
+        url: string[];
+        memo: string;
+        thumbnail: string[];
+    }[];
     mainPicture: {
         whiteBackgroundAndProps: {
             url: any;
@@ -66,6 +83,12 @@ export interface submitDesignParams {
         thumbnail: string;
         memo: string;
     },
+    auxiliaryPictures: {
+        sellingPoint: string[];
+        url: any;
+        thumbnail: string;
+        memo: string;
+    }[],
     auxiliaryPictureScene: {
         scene: string;
         url: any;
@@ -99,6 +122,11 @@ export type RequirementListItem = {
     creator: string;
     memo: string;
     creator_id: number;
+    mainPictures: {
+        url: string[];
+        memo: string;
+        thunmb_url: string[];
+    }[];
     mainPicture: {
         whiteBackgroundAndProps: {
             url: string;
@@ -106,6 +134,7 @@ export type RequirementListItem = {
         },
         sizeAndNaterial: {
             url: string;
+            thunmb_url: string;
             memo: string;
         }
     };

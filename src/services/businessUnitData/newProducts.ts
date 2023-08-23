@@ -36,7 +36,7 @@ export async function getNewProduct(params?: any) {
 
 // businessUnitData/addProductByFile
 export function addProductByFile() {
-    return 'http://api-rp.itmars.net/businessUnitData/addProductByFile'
+    return `${API_URL}/businessUnitData/addProductByFile`
 }
 
 

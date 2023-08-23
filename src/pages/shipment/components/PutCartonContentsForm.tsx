@@ -141,7 +141,7 @@ const PutCartonContentsForm = (props: PutCartonContentsFormProps) => {
   const fileProps: UploadProps = {
     name: 'file',
     multiple: false,
-    action: 'http://api-rp.itmars.net/shipment/submitDataByFile',
+    action: `${API_URL}/shipment/submitDataByFile`,
     maxCount: 1,
     data: {
       shipment_id: shipmentId,

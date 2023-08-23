@@ -1,7 +1,7 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { FormInstance } from 'antd';
-import { Image, message, Typography, Form, Modal, Input, InputNumber, Spin, Upload, Button, Popconfirm } from 'antd';
+import { Image, message, Form, Modal, Input, InputNumber, Upload, Button, Popconfirm } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
 import { UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import {
@@ -20,6 +20,7 @@ import {
     from '@/services/removalOrder'
 import moment from 'moment';
 import { getToken } from '@/utils/token'
+import SetValueComponent from '@/pages/businessUnitData/components/SetValueComponent';
 
 export type TableListItem = {
     id: number,
@@ -136,42 +137,6 @@ const ActionModel = forwardRef((props: { callback: () => void }, ref) => {
     );
 });
 
-const SetValueComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void }) => {
-    const { id, editKey, value, api, refresh } = props
-    const [paramValue, setParamValue] = useState(value)
-    const [spinning, setSpinning] = useState(false)
-    return (<>
-        <Spin spinning={spinning}>
-            {/* reimburse_money */}
-            {(editKey === 'reimburse_money' && value) && '$'}
-            <Typography.Text editable={{
-                onChange(val) {
-                    // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                    if (!val || val === paramValue) {
-                        return
-                    }
-                    setSpinning(true)
-                    api({ id, [editKey]: val }).then((res: any) => {
-                        if (res.code) {
-                            message.success(`${editKey} set successfully`)
-                            setParamValue(val)
-                            refresh()
-                        } else {
-                            throw res.msg
-                        }
-                    }).catch((err: any) => {
-                        message.error('Claim number set failed ' + err)
-                    }).finally(() => {
-                        setSpinning(false)
-                    })
-                },
-            }} >
-                {paramValue}
-            </Typography.Text>
-        </Spin>
-
-    </>)
-}
 
 const DownloadComponent = (props: { id: number, type?: number }) => {
     const { id, type } = props
@@ -227,7 +192,7 @@ const UploadCommonImage = (props: { record: TableListItem, refresh: () => void }
             uid: index,
             name: fileName,
             status: 'done',
-            url: `http://api-rp.itmars.net/storage/${item}`,
+            url: `${API_URL}/storage/${item}`,
             response: {
                 data: {
                     file_name: item
@@ -250,12 +215,28 @@ const UploadCommonImage = (props: { record: TableListItem, refresh: () => void }
                 }
             }).catch((err: any) => {
                 message.error('Upload failed ' + err)
+                // 请求失败恢复原来的状态
+                setFileList([...record.memo_images.map((item: string, index: number) => {
+                    // 获取文件名
+                    const fileName = item.split('/').pop()
+                    return {
+                        uid: index,
+                        name: fileName,
+                        status: 'done',
+                        url: `${API_URL}/storage/${item}`,
+                        response: {
+                            data: {
+                                file_name: item
+                            }
+                        }
+                    }
+                })])
             })
         }
     }
     return (<Upload
         accept=".jpg, .jpeg, .png"
-        action="http://api-rp.itmars.net/removalOrder/uploadImage"
+        action={`${API_URL}/removalOrder/uploadImage`}
         headers={{ authorization: 'authorization-text', token: getToken() }}
         fileList={fileList}
         data={{ id: record.id }}
@@ -264,7 +245,7 @@ const UploadCommonImage = (props: { record: TableListItem, refresh: () => void }
         onChange={onChange}
         maxCount={50}
     >
-        <Button icon={<UploadOutlined />} size='small' disabled={record.shipment_status !== 3} style={{ width: "180px", marginBottom: '5px' }}>Upload Images</Button>
+        <Button icon={<UploadOutlined />} size='small' disabled={(record.shipment_status !== 3 && record.shipment_status !== 2) || !record.memo} style={{ width: "180px", marginBottom: '5px' }}>Upload Images</Button>
     </Upload>)
 
 }
@@ -291,6 +272,14 @@ export default () => {
             render: (_, record) => {
                 return ShipmentStatusGroup.find((item) => item.value === record.shipment_status)?.text
             }
+        },
+        {
+            // record.id
+            title: 'Record Number',
+            dataIndex: 'id',
+            width: 120,
+            search: false,
+            align: 'center',
         },
         // claim_date
         {
@@ -357,7 +346,8 @@ export default () => {
         {
             title: 'QTY',
             dataIndex: 'shipped_quantity',
-            width: 135,
+            width: 60,
+            align: 'center',
             valueType: 'digit',
             search: false,
         },
@@ -406,7 +396,7 @@ export default () => {
                         <div style={{ width: record.image.length * 54 }}>
                             <Image.PreviewGroup>
                                 {record.thumb.map((image: string, index: number) => (
-                                    <span key={image} style={{ 'marginRight': index !== record.image.length ? 4 : 0 }}><Image width={50} preview={{ src: `http://api-rp.itmars.net/storage/${record.image[index]}` }} key={image} src={`http://api-rp.itmars.net/storage/${image}`} /></span>
+                                    <span key={image} style={{ 'marginRight': index !== record.image.length ? 4 : 0 }}><Image width={50} preview={{ src: `${API_URL}/storage/${record.image[index]}` }} key={image} src={`${API_URL}/storage/${image}`} /></span>
                                 ))}
                             </Image.PreviewGroup>
                         </div>
@@ -444,7 +434,7 @@ export default () => {
             }
         },
         {
-            title: 'Reimbursement Amount',
+            title: 'Reimbursement Amount(USD)',
             dataIndex: 'reimburse_money',
             width: 180,
             valueType: 'text',
@@ -476,7 +466,7 @@ export default () => {
                         <div style={{ width: record.memo_thumb.length * 54 }}>
                             <Image.PreviewGroup>
                                 {record.memo_thumb.map((image: string, index: number) => (
-                                    <span key={image} style={{ 'marginRight': index !== record.memo_thumb.length ? 4 : 0 }}><Image width={50} preview={{ src: `http://api-rp.itmars.net/storage/${record.memo_images[index]}` }} key={image} src={`http://api-rp.itmars.net/storage/${image}`} /></span>
+                                    <span key={image} style={{ 'marginRight': index !== record.memo_thumb.length ? 4 : 0 }}><Image width={50} preview={{ src: `${API_URL}/storage/${record.memo_images[index]}` }} key={image} src={`${API_URL}/storage/${image}`} /></span>
                                 ))}
                             </Image.PreviewGroup>
                         </div>
@@ -528,11 +518,12 @@ export default () => {
             rowKey="id"
             pagination={{
                 showQuickJumper: true,
+                pageSize: 10,
             }}
             search={{
                 labelWidth: 'auto',
             }}
-            scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
+            scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0), y: document.body.clientHeight - 340 }}
             size="small"
             bordered
             dateFormatter="string"

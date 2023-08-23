@@ -12,6 +12,7 @@ import weekday from 'dayjs/plugin/weekday'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import weekYear from 'dayjs/plugin/weekYear'
 import getInfoComponent from './components/getInfoComponent'
+import { useModel } from 'umi';
 import { FormattedMessage, getLocale } from 'umi';
 
 dayjs.extend(customParseFormat)
@@ -76,6 +77,41 @@ const TimeEditComponent = (props: { record: RequirementListItem, refresh: () => 
     </div>
 }
 
+// 黄红绿
+const getColor = (status: number, optionStatus: number, front: string | JSX.Element) => {
+    let color = ''
+    if (status === optionStatus) {
+        switch (status) {
+            case 5:
+                color = '#f39f6c'
+                break;
+            case 6:
+                color = 'blue'
+                break;
+            case 7:
+                color = 'green'
+                break;
+        }
+    }
+    // 字体加粗
+    return <span style={{ color: color, fontWeight: status === optionStatus ? 'bold' : 'normal' }}>{front}</span>
+}
+
+const getSegmentOptions = (record: RequirementListItem) => [
+    {
+        label: getColor(record.status, 5, localFrontFromRequirementList('PendingScheduling')),
+        value: 5,
+    },
+    {
+        label: getColor(record.status, 6, localFrontFromRequirementList('InProduction')),
+        value: 6,
+    },
+    {
+        label: getColor(record.status, 7, localFrontFromRequirementList('Completed')),
+        value: 7,
+    },
+]
+
 const App: React.FC = () => {
     const [dataSource, setDataSource] = useState<any>([]);
     const [keyword, setKeyword] = useState('');
@@ -87,6 +123,9 @@ const App: React.FC = () => {
             total: 0,
         },
     });
+    const { initialState } = useModel('@@initialState');
+    const { currentUser } = initialState || {};
+    const isDesigner = currentUser?.authGroup.title === 'Designer'
     const StatusWidth = getLocale() === 'zh-CN' ? 240 : 420
     const onSearch = (value: string) => {
         setKeyword(value)
@@ -96,7 +135,8 @@ const App: React.FC = () => {
         getListForPlan({
             keyword: keyword || undefined, ...{
                 len: tableParams.pagination?.pageSize,
-                page: tableParams.pagination?.current
+                page: tableParams.pagination?.current,
+                priority: isDesigner ? 1 : undefined
             }
         }).then(res => {
             if (res.code) {
@@ -178,7 +218,7 @@ const App: React.FC = () => {
             key: 'close_sort',
             width: 90,
             align: 'center',
-            render: (text: any, record: any) => {
+            render: (_, record) => {
                 return record.close_sort === 0 ? null : record.close_sort
             }
         },
@@ -188,25 +228,10 @@ const App: React.FC = () => {
             dataIndex: 'status',
             key: 'status',
             width: StatusWidth,
-            render: (_, record: any) => {
-                // 黄红绿
-                const getColor = (status: number, optionStatus: number, front: string | JSX.Element) => {
-                    let color = ''
-                    if (record.status === optionStatus) {
-                        switch (status) {
-                            case 5:
-                                color = '#f39f6c'
-                                break;
-                            case 6:
-                                color = 'blue'
-                                break;
-                            case 7:
-                                color = 'green'
-                                break;
-                        }
-                    }
-                    // 字体加粗
-                    return <span style={{ color: color, fontWeight: record.status === optionStatus ? 'bold' : 'normal' }}>{front}</span>
+            render: (_, record) => {
+                // 如果是设计师，只能看查看状态不能修改
+                if (isDesigner) {
+                    return getSegmentOptions(record).find(item => item.value === record.status)?.label || null
                 }
                 return <Segmented
                     size='large'
@@ -214,20 +239,7 @@ const App: React.FC = () => {
                     onChange={(value: any) => {
                         editPlanStutas(record.id, value)
                     }}
-                    options={[
-                        {
-                            label: getColor(record.status, 5, localFrontFromRequirementList('PendingScheduling')),
-                            value: 5,
-                        },
-                        {
-                            label: getColor(record.status, 6, localFrontFromRequirementList('InProduction')),
-                            value: 6,
-                        },
-                        {
-                            label: getColor(record.status, 7, localFrontFromRequirementList('Completed')),
-                            value: 7,
-                        },
-                    ]}
+                    options={getSegmentOptions(record)}
                 />
             }
         },
@@ -238,6 +250,7 @@ const App: React.FC = () => {
             key: 'expectTime',
             width: 200,
             render: (_, record) => {
+                if (isDesigner) return record.expectTime
                 return <TimeEditComponent record={record} refresh={initData} />
             }
         },

@@ -10,7 +10,6 @@ const COLORS = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#f50', '#2db7f5', '#87
 
 
 const CheckForm = (props: { check?: string }) => {
-
     const { check } = props;
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -119,7 +118,7 @@ export default () => {
 
     const getImage = (url: string, thumbUrl: string | undefined) => {
         if (url) {
-            const imgUrl = 'http://api-rp.itmars.net/storage/' + url
+            const imgUrl = API_URL + '/storage/' + url
             return <Image
                 style={{ border: '4px solid #eee' }}
                 src={imgUrl}
@@ -127,7 +126,7 @@ export default () => {
                 height={HEIGHT}
                 width={WIDTH} />
         } else {
-            return <Empty description={<FormattedMessage id={'pages.odika.ViewDesign.imageMessage'} />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />
+            return <Empty description={<FormattedMessage id={'pages.odika.ViewDesign.imageMessage'} />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image={`${API_URL}/example/default.png`} />
         }
     }
     const checkWhiteBackgroundAndProps = (whiteBackgroundAndProps: any) => {
@@ -135,9 +134,6 @@ export default () => {
     }
     const checkSizeAndNaterial = (sizeAndNaterial: any) => {
         return (sizeAndNaterial?.url || sizeAndNaterial?.memo)
-    }
-    const checkAuxiliaryPicture = (auxiliaryPicture: any) => {
-        return (auxiliaryPicture?.sellingPoint?.length || auxiliaryPicture?.url.length || auxiliaryPicture?.memo)
     }
     const checkAuxiliaryPictureScene = (auxiliaryPictureScene: any) => {
         return auxiliaryPictureScene?.length
@@ -147,6 +143,12 @@ export default () => {
     }
     const checkDetailPicture = (detailPicture: any) => {
         return detailPicture?.length
+    }
+    const checkMainPictures = (mainPictures: any) => {
+        return mainPictures?.length
+    }
+    const checkAuxiliaryPictures = (auxiliaryPictures: any) => {
+        return auxiliaryPictures?.length
     }
     useEffect(() => {
         initData()
@@ -158,6 +160,42 @@ export default () => {
                 <Text strong>Initiator：{designDetail?.username}</Text>
                 <Text strong>Date：{designDetail?.createTime}</Text>
             </Space>
+            {designDetail?.competitor && (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.RequirementList.CompetitiveAsin' /></Title>
+                <div style={{ 'marginBottom': '20px' }}>
+                    <div>
+                        <div>
+                            <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                <div>
+                                    {designDetail?.competitor.map((item) => {
+                                        return <Tag key={item}>{item}</Tag>
+                                    })}
+                                </div>
+                            </Space>
+                        </div>
+                    </div>
+                </div></>)}
+            {checkMainPictures(designDetail?.mainPictures) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' />(2000:2000)</Title>
+                <div>
+                    {designDetail?.mainPictures?.map((item, index) => {
+                        return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.mainPictures?.length ? 10 : 0 }} key={index}>
+                            <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                {
+                                    (item.url && item.url.length) ? item.url.map((subItem, subIndex) => {
+                                        return <div key={subItem}>
+                                            <div>{getImage(subItem, (item as any).thumbnail[subIndex])}</div>
+                                        </div>
+                                    }) : <div>{getImage('', '')}</div>
+                                }
+                            </Space>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
+                                </Space>
+                            </div>
+                        </div>
+                    })}
+                </div></>) : null}
             {(checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial)) && <Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' /></Title>}
             <div>
                 {checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
@@ -167,29 +205,29 @@ export default () => {
                             return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.mainPicture?.whiteBackgroundAndProps?.url?.length ? 10 : 0 }}>
                                 {getImage(item, (designDetail?.mainPicture?.whiteBackgroundAndProps as any).thumbnail[index])}
                             </div>
-                        }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                        }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image={`${API_URL}/example/default.png`} />}
                     </div>
                     <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
                         <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                        <div style={{ width: ((designDetail?.mainPicture?.whiteBackgroundAndProps?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.mainPicture.whiteBackgroundAndProps.memo}</div>
+                        <div style={{ width: ((designDetail?.mainPicture?.whiteBackgroundAndProps?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{designDetail?.mainPicture.whiteBackgroundAndProps.memo}</div>
                     </Space>
                 </div>)}
                 {checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
-                    <Title level={5}><FormattedMessage id='pages.odika.ViewDesign.sizeAndMaterial' /></Title>
+                    <Title level={3}><FormattedMessage id='pages.odika.ViewDesign.subscene' />(2000:2000)</Title>
                     <div>
                         {designDetail?.mainPicture.sizeAndNaterial.url ? designDetail.mainPicture.sizeAndNaterial.url.map((item, index) => {
                             return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.mainPicture?.sizeAndNaterial?.url?.length ? 10 : 0 }}>
                                 {getImage(item, (designDetail?.mainPicture?.sizeAndNaterial as any).thumbnail[index])}
                             </div>
-                        }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                        }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image={`${API_URL}/example/default.png`} />}
                     </div>
                     <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
                         <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                        <div style={{ width: ((designDetail?.mainPicture?.sizeAndNaterial?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.mainPicture.sizeAndNaterial.memo}</div>
+                        <div style={{ width: ((designDetail?.mainPicture?.sizeAndNaterial?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{designDetail?.mainPicture.sizeAndNaterial.memo}</div>
                     </Space>
                 </div>)}
             </div>
-            {checkAuxiliaryPicture(designDetail?.auxiliaryPicture) && (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.secondPicture' /></Title>
+            {/* {checkAuxiliaryPicture(designDetail?.auxiliaryPicture) && (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.secondPicture' /></Title>
                 <div style={{ 'marginBottom': '20px' }}>
                     <div>
                         <div>
@@ -197,7 +235,7 @@ export default () => {
                                 return <div key={index} style={{ display: 'inline-block', marginRight: index !== designDetail?.auxiliaryPicture?.url?.length ? 10 : 0 }}>
                                     {getImage(item, (designDetail?.auxiliaryPicture as any).thumbnail[index])}
                                 </div>
-                            }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                            }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image={`${API_URL}/example/default.png`} />}
                         </div>
                         <div>
                             <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
@@ -212,13 +250,45 @@ export default () => {
                         <div>
                             <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
                                 <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                                <div style={{ width: ((designDetail?.auxiliaryPicture?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{designDetail?.auxiliaryPicture.memo}</div>
+                                <div style={{ width: ((designDetail?.auxiliaryPicture?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{designDetail?.auxiliaryPicture.memo}</div>
                             </Space>
                         </div>
                     </div>
-                </div></>)}
+                </div></>)} */}
+            {checkAuxiliaryPictures(designDetail?.auxiliaryPictures) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.secondPicture' />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.pictureTextDetailsIcon' />（2000:2000）</Title>
+                <div>
+                    {designDetail?.auxiliaryPictures?.map((item, index) => {
+                        return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.auxiliaryPictures?.length ? 10 : 0 }} key={index}>
+                            <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                {
+                                    (item.url && item.url.length) ? item.url.map((subItem, subIndex) => {
+                                        return <div key={subItem}>
+                                            <div>{getImage(subItem, (item as any).thumbnail[subIndex])}</div>
+                                        </div>
+                                    }) : <div>{getImage('', '')}</div>
+                                }
+                            </Space>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.SellingPoint' />：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50) }}>
+                                        {item?.sellingPoint?.map((point, pointIndex) => {
+                                            return <Tag color={COLORS[pointIndex]} key={point}>{point}</Tag>
+                                        })}
+                                    </div>
+                                </Space>
+                            </div>
+                            <div>
+                                <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
+                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
+                                </Space>
+                            </div>
+                        </div>
+                    })}
+                </div></>) : null}
             {
-                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.subscene' /></Title>
+                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.RequirementList.sceneGraph' /></Title>
                     <div>
                         {designDetail?.auxiliaryPictureScene?.map((item, index) => {
                             return <div key={index} style={{ display: 'inline-block', verticalAlign: 'top' }}>
@@ -227,7 +297,7 @@ export default () => {
                                         return <div key={subItem} style={{ display: 'inline-block', marginRight: subIndex !== item.url.length ? 10 : 0 }}>
                                             {getImage(subItem, (item as any).thumbnail[subIndex])}
                                         </div>
-                                    }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image='http://api-rp.itmars.net/example/default.png' />}
+                                    }) : <Empty description={<FormattedMessage id='pages.odika.ViewDesign.imageMessage' />} style={{ 'width': '250px', height: 200, paddingTop: 40 }} image={`${API_URL}/example/default.png`} />}
                                 </div>
                                 <div>
                                     <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
@@ -238,7 +308,7 @@ export default () => {
                                 <div>
                                     <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
                                         <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                                        <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                        <div style={{ width: ((item?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
                                     </Space>
                                 </div>
                             </div>
@@ -246,7 +316,8 @@ export default () => {
                     </div></>)
                     : null}
             {checkAPlus(designDetail?.aPlus) ? (<>
-                <Title level={3} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}{designDetail?.aPlus.type === 'A+' ? '(970x600)' : '(1464x600)'}</Title>
+                <Title level={5} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.template' /></Title>
+                <Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' /></Title>
                 <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
                     {designDetail?.aPlus.aplusScene?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
@@ -262,26 +333,26 @@ export default () => {
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
                                     <span><FormattedMessage id='pages.odika.ViewDesign.scene' />{index + 1}：</span>
-                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.scene}</div>
+                                    <div style={{ width: ((item?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.scene}</div>
                                 </Space>
                             </div>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
                                     <span><FormattedMessage id='pages.odika.ViewDesign.pictureRequirement' />：</span>
-                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 80), wordBreak: 'break-word' }}>{item.pictureRequirement}</div>
+                                    <div style={{ width: ((item?.url?.length || 1) * WIDTH - 80), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.pictureRequirement}</div>
                                 </Space>
                             </div>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
                                     <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                    <div style={{ width: ((item?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
                                 </Space>
                             </div>
                         </div>
                     })}
                 </div>
             </>) : null}
-            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.detail' /></Title>
+            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.detail' /></Title>
                 <div>
                     {designDetail?.detailPicture?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
@@ -296,16 +367,16 @@ export default () => {
                             </Space>
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
-                                    <span><FormattedMessage id='pages.odika.ViewDesign.detailRequirementPoint' />：</span>
-                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 90), wordBreak: 'break-word' }}>{item.detailRequirementPoint}</div>
+                                    <span><FormattedMessage id='pages.odika.ViewDesign.detailRequirementPoint' />{index + 1}：</span>
+                                    <div style={{ width: ((item?.url?.length || 1) * WIDTH - 90), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.detailRequirementPoint}</div>
                                 </Space>
                             </div>
-                            <div>
+                            {item.memo && <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
                                     <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word' }}>{item.memo}</div>
+                                    <div style={{ width: ((item?.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
                                 </Space>
-                            </div>
+                            </div>}
                         </div>
                     })}
                 </div></>) : null}

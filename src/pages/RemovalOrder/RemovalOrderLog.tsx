@@ -1,32 +1,100 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getHistoryLog } from '@/services/removalOrder'
+import { Select } from 'antd';
 import type { HistoryLogItem } from '@/services/removalOrder'
+import moment_tz from 'moment-timezone'
 
-// id: number;
-// admin_id: number;
-// username: string;
-// name: string;
-// before: string;
-// after: string;
-// create_time: string;
+const { Option } = Select;
+// 不同时区的时间转换
+const regions = [
+    { name: 'Eastern Time', value: 'America/New_York' },
+    { name: 'Central Time', value: 'America/Chicago' },
+    { name: 'Mountain Time', value: 'America/Denver' },
+    { name: 'Pacific Time', value: 'America/Los_Angeles' },
+    { name: 'China Standard Time', value: 'Asia/Shanghai' },
+]
+
+// 获取当前时区 判断当前是冬令时还是夏令时
+// const getTimeZone = () => {
+//     const date = new Date()
+//     const month = date.getMonth() + 1
+//     const day = date.getDate()
+//     const hours = date.getHours()
+//     const minutes = date.getMinutes()
+//     const seconds = date.getSeconds()
+//     const time = `${month}/${day}/2021 ${hours}:${minutes}:${seconds}`
+//     const timeArr = region.map(item => {
+//         return {
+//             ...item,
+//             time: new Date(time).toLocaleString('en-US', { timeZone: item.value })
+//         }
+//     })
+//     const timeObj = timeArr.find(item => item.time === timeArr[0].time)
+//     return timeObj
+// }
+
+// 传入时间戳，当前时区，返回对应时区的时间并区分冬令时和夏令时
+const getTime = (timeUnix: number, region: string) => {
+    // const time = moment_tz(timeUnix).tz(region).format('YYYY-MM-DD HH:mm:ss')
+    const timeArr = regions.map(item => {
+        return {
+            ...item,
+            time: moment_tz(timeUnix).tz(region).format('YYYY-MM-DD HH:mm:ss')
+        }
+    })
+    const timeObj: any = timeArr.find(item => item.time === timeArr[0].time)
+    // return `${timeObj.name}(${timeObj.value}) ${timeObj.time}`
+    return timeObj.time
+}
+
+
+const Index = (props: {
+    region: string
+}) => {
+    const [time, setTime] = useState('');
+    let timer = useRef();
+    // 点击开始
+    const start = () => {
+        setTime('')
+        timer.current = setInterval(() => {
+            setTime(getTime(Date.now(), props.region) + ' ' + props.region)
+        }, 1000)
+    }
+    const clean = () => {
+        clearInterval(timer.current);
+    }
+    useEffect(() => {
+        clean()
+        start()
+        return () => {
+            clearInterval(timer.current);
+        };
+    }, [props.region])
+    return (
+        <div>
+            <div>{time}</div>
+        </div>
+    )
+}
 
 export default () => {
     const actionRef = useRef<ActionType>();
+    const [region, setRegion] = useState(regions[4].value)
     const columns: ProColumns<HistoryLogItem>[] = [
         {
-            dataIndex: 'index',
-            valueType: 'indexBorder',
-            key: 'index',
-            fixed: 'left',
-            width: 48,
+            title: 'Operation Time',
+            dataIndex: 'create_time',
+            key: 'create_time',
+            width: 120,
+            search: false,
         },
         {
             title: 'Username',
             dataIndex: 'username',
             key: 'username',
-            width: 120,
+            width: 100,
             search: false,
         },
         {
@@ -40,7 +108,7 @@ export default () => {
             title: 'Before',
             dataIndex: 'before',
             key: 'before',
-            width: 200,
+            width: 260,
             ellipsis: true,
             search: false,
         },
@@ -48,30 +116,34 @@ export default () => {
             title: 'Operating Result',
             dataIndex: 'after',
             key: 'after',
-            width: 120,
-            search: false,
-        },
-        {
-            title: 'Operation Time',
-            dataIndex: 'create_time',
-            key: 'create_time',
-            width: 120,
+            width: 260,
+            ellipsis: true,
             search: false,
         }
     ];
+    useEffect(() => {
+        actionRef.current?.reload()
+    }, [region])
     return (
         <ProTable<HistoryLogItem>
             size='small'
             columns={columns}
             actionRef={actionRef}
-            headerTitle="History Log"
+            headerTitle={<Index region={region} />}
             cardBordered
             request={async (params = {}, sort, filter) => {
                 const tempParams = { ...params, ...filter, ...sort, len: params.pageSize, page: params.current }
                 const res = await getHistoryLog(tempParams)
                 const { data, code } = res
+                // 根据所选择的时区转换时间
+                const newData = data.data.map((item: HistoryLogItem) => {
+                    return {
+                        ...item,
+                        create_time: getTime(item.created_at * 1000, region)
+                    }
+                })
                 return {
-                    data: data.data,
+                    data: newData,
                     success: !!code,
                     total: res.data.total,
                 }
@@ -105,6 +177,18 @@ export default () => {
             }}
             revalidateOnFocus={false}
             dateFormatter="string"
+            toolBarRender={() => [
+                <Select
+                    key='select'
+                    value={region}
+                    style={{ width: 270 }}
+                    onChange={(value) => {
+                        console.log(value)
+                        setRegion(value)
+                    }}>
+                    {regions.map(item => <Option key={item.value} value={item.value}>{item.name}+({item.value})</Option>)}
+                </Select>
+            ]}
         />
     );
 };

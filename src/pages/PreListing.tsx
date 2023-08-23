@@ -220,7 +220,7 @@ export default () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
     const props: UploadProps = {
         name: 'name',
-        action: 'http://api-rp.itmars.net/pre_listing/import',
+        action: `${API_URL}/pre_listing/import`,
         headers: {
             authorization: 'authorization-text',
             token: getToken()
@@ -443,6 +443,7 @@ export default () => {
             headerTitle="Pre-listing"
             toolBarRender={() => [
                 <Button
+                    key="batch"
                     disabled={!selectedRowKeys.length}
                     onClick={() => {
                         listingModelRef.current.showModal()
@@ -454,12 +455,12 @@ export default () => {
                     <Button icon={<UploadOutlined />}>Click to Upload</Button>
                 </Upload>,
                 <Button key="primary" onClick={() => {
-                    const url = `http://api-rp.itmars.net/example/vendor_import.csv`;
+                    const url = `${API_URL}/example/vendor_import.csv`;
                     createDownload('test.csv', url);
                 }}>
                     download the template
                 </Button>,
-                <Button type='primary' icon={<PlusOutlined />} onClick={() => {
+                <Button key="add" type='primary' icon={<PlusOutlined />} onClick={() => {
                     actionModelRef.current.showModal()
                 }}>Add</Button>
             ]}

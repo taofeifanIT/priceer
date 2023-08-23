@@ -29,6 +29,9 @@ const checkProgress = (check_status: number): any => {
         case 5:
             text = 'Done'
             break;
+        case 6:
+            text = 'Missing Sales Order'
+            break;
     }
     return text
 }
@@ -56,7 +59,7 @@ export default () => {
             title: 'Request Date',
             dataIndex: 'request_date_timestamp',
             align: 'center',
-            width: 100,
+            width: 110,
             search: false,
             render: (_, record) => {
                 return (
@@ -86,14 +89,14 @@ export default () => {
             align: 'center',
             valueType: 'text',
             search: false,
-            width: 40,
+            width: 50,
         },
         {
             title: 'Shipped-Quantity',
             dataIndex: 'shipped_quantity',
             align: 'center',
             valueType: 'digit',
-            width: 100,
+            width: 135,
             search: false,
         },
         {
@@ -101,7 +104,7 @@ export default () => {
             dataIndex: 'shipment_date_timestamp',
             align: 'center',
             valueType: 'dateRange',
-            width: 100,
+            width: 115,
             render(_, record) {
                 return (
                     <div>
@@ -131,6 +134,7 @@ export default () => {
                 3: { text: 'Need to Finish', status: 'Processing' },
                 4: { text: 'Need to Claim', status: 'Processing' },
                 5: { text: 'Done', status: 'Success' },
+                6: { text: 'Missing Sales Order', status: 'Error' },
             },
         },
         {
@@ -170,7 +174,7 @@ export default () => {
             title: 'Logistics Claim',
             dataIndex: 'option',
             valueType: 'option',
-            width: 100,
+            width: 118,
             align: 'center',
             fixed: 'right',
             render: (_, record) => {
@@ -223,7 +227,7 @@ export default () => {
             search={{
                 labelWidth: 'auto',
             }}
-            scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
+            scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0), y: document.body.clientHeight - 320 }}
             size="small"
             bordered
             dateFormatter="string"

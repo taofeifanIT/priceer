@@ -11,10 +11,11 @@ import {
   ProFormText,
 } from '@ant-design/pro-components';
 import { Alert, message, Tabs } from 'antd';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore
-import { FormattedMessage, history, SelectLang, useIntl, useModel } from 'umi';
+import { FormattedMessage, history, SelectLang, useIntl, useModel, setLocale, getLocale } from 'umi';
 import styles from './index.less';
+
 
 const LoginMessage: React.FC<{
   content: string;
@@ -51,6 +52,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // 登录
+      console.log('API_URL', API_URL)
       const msg: API.LoginResult = await login(values);
       if (msg.code) {
         const defaultLoginSuccessMessage = intl.formatMessage({
@@ -72,6 +74,7 @@ const Login: React.FC = () => {
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
     } catch (error) {
+      console.log('API_URL', API_URL)
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',
         defaultMessage: '登录失败，请重试！',
@@ -79,6 +82,12 @@ const Login: React.FC = () => {
       message.error(defaultLoginFailureMessage);
     }
   };
+  useEffect(() => {
+    // 设置默认英文
+    if (getLocale() !== 'en-US') {
+      setLocale('en-US', false);
+    }
+  }, []);
   return (
     <div className={styles.container}>
       <div className={styles.lang} data-lang>

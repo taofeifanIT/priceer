@@ -1,63 +1,108 @@
 import { getQueryVariable } from '@/utils/utils'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import type { ShipmentDetailsItem } from '@/services/removalOrder'
-import { getShipmentDetails, checkShipment, saveCheck } from '@/services/removalOrder'
-import { Radio, message, Upload, Modal, Button, Table, Image, Select, Space, Spin } from 'antd';
+import { getShipmentDetails, checkShipment, saveCheck, getMskuList } from '@/services/removalOrder'
+import { Radio, message, Upload, Modal, Button, Table, Image, Select, Space, Spin, InputNumber, Popconfirm } from 'antd';
 import type { RcFile, UploadFile } from 'antd/es/upload/interface';
 import type { ColumnsType } from 'antd/es/table';
 import { VerticalAlignBottomOutlined, PlusOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'
 import { exportPDFWithFont } from '@/utils/utils';
 import type { SelectProps } from 'antd/es/select';
-import debounce from 'lodash/debounce';
+import styles from './checked.less'
+import { getImageUrl } from '@/utils/utils'
+import e from 'express';
 
 
-export interface DebounceSelectProps<ValueType = any>
-    extends Omit<SelectProps<ValueType | ValueType[]>, 'options' | 'children'> {
-    fetchOptions: (search: string) => Promise<ValueType[]>;
-    debounceTimeout?: number;
-}
 
 
-function DebounceSelect<
-    ValueType extends { key?: string; label: React.ReactNode; value: string | number } = any,
->({ fetchOptions, debounceTimeout = 800, ...props }: DebounceSelectProps<ValueType>) {
-    const [fetching, setFetching] = useState(false);
-    const [options, setOptions] = useState<ValueType[]>([]);
-    const fetchRef = useRef(0);
+const SearchInput: React.FC<{ placeholder: string; style: React.CSSProperties, record: ShipmentDetailsItem, changePop: Function }> = (props) => {
+    const [data, setData] = useState<SelectProps['options']>([]);
+    const [value, setValue] = useState<string>(props.record.sku);
+    const [fetching, setFetching] = useState<boolean>(false);
+    let timeout: ReturnType<typeof setTimeout> | null;
+    let currentValue: string = '';
 
-    const debounceFetcher = useMemo(() => {
-        const loadOptions = (value: string) => {
-            fetchRef.current += 1;
-            const fetchId = fetchRef.current;
-            setOptions([]);
-            setFetching(true);
 
-            fetchOptions(value).then((newOptions) => {
-                if (fetchId !== fetchRef.current) {
-                    // for fetch callback order
-                    return;
+    async function fetchMskuList(sku: string): Promise<mskuItem[]> {
+        setFetching(true);
+        const res = await getMskuList({ sku: sku, store_id: props.record.store_id })
+        setFetching(false);
+        if (res.code) {
+            return res.data.map((item: mskuItem) => {
+                return {
+                    label: item.sku,
+                    value: item.sku,
+                    fnSkus: item.fnsku,
                 }
+            })
+        }
+        return []
+    }
 
-                setOptions(newOptions);
-                setFetching(false);
-            });
+    const handleChange = (newValue: string) => {
+        setValue(newValue);
+        props.changePop({
+            sku: newValue,
+            fnsku: data.find(item => item.value === newValue)?.fnSkus
+        }, props.record)
+    };
+    const fetch = (searchValue: string, callback: Function) => {
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        currentValue = searchValue;
+        const fake = async () => {
+            const list = await fetchMskuList(searchValue);
+            if (currentValue === searchValue) {
+                const result = list.map((item) => ({
+                    value: item.value,
+                    text: item.label,
+                    fnSkus: item.fnSkus,
+                }));
+                callback(result);
+            }
+
         };
-
-        return debounce(loadOptions, debounceTimeout);
-    }, [fetchOptions, debounceTimeout]);
-
+        if (searchValue) {
+            timeout = setTimeout(fake, 300);
+        } else {
+            callback([]);
+        }
+    };
+    const handleSearch = (newValue: string) => {
+        fetch(newValue, setData);
+    };
     return (
         <Select
-            labelInValue
+            showSearch
+            value={value}
+            placeholder={props.placeholder}
+            style={props.style}
+            defaultActiveFirstOption={false}
+            showArrow={false}
             filterOption={false}
-            onSearch={debounceFetcher}
+            onSearch={handleSearch}
+            onChange={handleChange}
             notFoundContent={fetching ? <Spin size="small" /> : null}
-            {...props}
-            options={options}
+            options={(data || []).map((d) => ({
+                value: d.value,
+                label: d.text,
+            }))}
         />
     );
+};
+
+// Usage of DebounceSelect
+interface mskuItem {
+    fnSkus: any;
+    value: any;
+    label: any;
+    sku: string;
+    fnsku: string;
 }
+
 
 const claimProps = [
     { label: 'Wrong Brand', value: 'Worng Brand' },
@@ -90,10 +135,6 @@ const matchProps = [
 //     { name: 'image6', title: 'Damaged photo' },
 // ]
 
-const getImageUrl = (baseUrl: string) => {
-    return 'http://api-rp.itmars.net/storage/' + baseUrl
-}
-
 const getBase64 = (file: RcFile): Promise<string> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -109,7 +150,7 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
     const [previewTitle, setPreviewTitle] = useState('');
     const [fileList, setFileList] = useState<any>([...record.images.map((item: any, index: number) => {
         // 获取文件名
-        const fileName = item.file_name.split('/').pop();
+        const fileName = item.file_name?.split('/').pop() || 'img';
         return {
             uid: index,
             name: fileName,
@@ -136,7 +177,9 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
                 }
             })
             callback(tempData, 'images', record)
+            return
         }
+        callback(newFileList, 'images', record)
     }
     const handleCancel = () => setPreviewOpen(false);
     const handlePreview = async (file: UploadFile) => {
@@ -151,13 +194,13 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
         <>
             <Upload
                 accept=".jpg, .jpeg, .png"
-                action="http://api-rp.itmars.net/removalOrder/uploadImage"
+                action={`${API_URL}/removalOrder/uploadImage`}
                 headers={{ authorization: 'authorization-text', token: getToken() }}
                 data={{ id: record?.uuid }}
                 fileList={fileList}
                 listType="picture-card"
                 multiple={true}
-                disabled={isView}
+                disabled={isView || !record.id}
                 onPreview={handlePreview}
                 onChange={handleChange}
                 maxCount={100}
@@ -175,12 +218,45 @@ const UploadImageModel = (props: { record: ShipmentDetailsItem, callback: (value
 };
 
 
-const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void, width: number, titleValue?: any }) => {
-    const { title, data, callBack, width = 120, titleValue } = props
+const GetTitle = (props: { title: string, externalData: ShipmentDetailsItem[], callBack?: (data: ShipmentDetailsItem[]) => void, width: number, titleValue?: any }) => {
+    const { title, externalData, callBack, width = 120, titleValue } = props
     const [titleObj] = useState<any>({ pops: title === 'Match' ? matchProps : title === 'Claim' ? claimProps : conditionProps })
     const [value, setValue] = useState<string>(titleValue)
+    const [data, setData] = useState<ShipmentDetailsItem[]>(externalData)
     const changeAllPop = (value: string) => {
-        const tempData = data.map(item => {
+        const tempData = externalData?.map(item => {
+            // 如果key === match ,value === 1,清空claim
+            if (title === 'Match' && value === '1') {
+                return {
+                    ...item,
+                    [title.toLocaleLowerCase()]: value,
+                    claim: '',
+                }
+            }
+            // 如果key === match ,value === -1,清空condition
+            if (title === 'Match' && value === '-1') {
+                return {
+                    ...item,
+                    [title.toLocaleLowerCase()]: value,
+                    condition: '',
+                }
+            }
+            // 如果key === claim 清空condition
+            if (title === 'Claim') {
+                return {
+                    ...item,
+                    [title.toLocaleLowerCase()]: item.match === '-1' ? value : '',
+                    condition: item.match === '-1' ? '' : item.condition,
+                }
+            }
+            // 如果key === condition 清空claim
+            if (title === 'Condition') {
+                return {
+                    ...item,
+                    [title.toLocaleLowerCase()]: item.match === '1' ? value : '',
+                    claim: item.match === '1' ? '' : item.claim,
+                }
+            }
             return {
                 ...item,
                 [title.toLocaleLowerCase()]: value,
@@ -190,7 +266,6 @@ const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?
     }
     useEffect(() => {
         setValue(titleValue)
-        changeAllPop(titleValue)
     }, [titleValue])
     return <>
         <span style={{ 'paddingRight': '2%' }}>{title}</span>
@@ -210,6 +285,9 @@ const GetTitle = (props: { title: string, data: ShipmentDetailsItem[], callBack?
 export default () => {
     // 读取链接中的参数
     const [trackingNumber] = useState<string>(getQueryVariable('tracking_number'))
+    // 修改history中State的值
+    history.replaceState(null, '', `?tracking_number=${trackingNumber}&view=${getQueryVariable('view')}&claim=${getQueryVariable('claim')}`)
+
     // view
     const [view] = useState<boolean>(getQueryVariable('view') === 'true')
     const [claim] = useState<boolean>(getQueryVariable('claim') === 'true')
@@ -219,6 +297,22 @@ export default () => {
     const changePop = (value: string, key: string, record: ShipmentDetailsItem) => {
         const tempData = data.map(item => {
             if (item.uuid === record.uuid) {
+                // 如果key === match ,value === 1,清空claim
+                if (key === 'match' && value === '1') {
+                    return {
+                        ...item,
+                        [key]: value,
+                        claim: '',
+                    }
+                }
+                // 如果key === match ,value === -1,清空condition
+                if (key === 'match' && value === '-1') {
+                    return {
+                        ...item,
+                        [key]: value,
+                        condition: '',
+                    }
+                }
                 return {
                     ...item,
                     [key]: value,
@@ -228,7 +322,43 @@ export default () => {
         })
         setData(tempData)
     }
-
+    const changePops = (params: any, record: ShipmentDetailsItem) => {
+        const tempData = data.map(item => {
+            if (item.uuid === record.uuid) {
+                return {
+                    ...item,
+                    ...params,
+                }
+            }
+            return item
+        })
+        setData(tempData)
+    }
+    const initData = () => {
+        setDataLoading(true)
+        getShipmentDetails({ tracking_number: trackingNumber }).then(res => {
+            if (res.code) {
+                const tempData = res.data.map((item: ShipmentDetailsItem) => {
+                    return {
+                        ...item,
+                        key: item.uuid,
+                        match: (claim && item.id) ? '-1' : item.match,
+                        claim: (claim && item.id) ? 'Invalid Tracking' : item.claim,
+                        claimData: [{ claim: '', image: [] }],
+                        conditionData: [{ condition: '' }],
+                        isNew: false
+                    }
+                })
+                setData(tempData)
+            } else {
+                throw res.msg
+            }
+        }).catch((e) => {
+            message.error(e)
+        }).finally(() => {
+            setDataLoading(false)
+        })
+    }
     const handleOk = (type: 'save' | 'submit') => {
         const api = type === 'save' ? saveCheck : checkShipment
         const tempData = {
@@ -239,6 +369,10 @@ export default () => {
                     match: item.match,
                     claim: item.claim,
                     condition: item.condition,
+                    quantity: item.shipped_quantity,
+                    sku: item.sku,
+                    fnsku: item.fnsku,
+                    type: item.type,
                     images: item.images?.map((imgItem: any) => {
                         return imgItem.file_name
                     })
@@ -249,6 +383,7 @@ export default () => {
         api(tempData).then(res => {
             if (res.code) {
                 message.success(res.msg)
+                initData()
             } else {
                 throw res.msg
             }
@@ -276,6 +411,9 @@ export default () => {
             width: 100,
             align: 'center',
             render: (text, record) => {
+                if (record.type === 2) {
+                    return <img style={{ width: '80px' }} src='/productNew.png' />
+                }
                 return (
                     <Image
                         width={50}
@@ -287,17 +425,43 @@ export default () => {
                 );
             },
         },
-        { title: 'MSKU(Amazon)', dataIndex: 'msku', key: 'msku', width: 180, ellipsis: true },
-        { title: 'SKU(NetSuite)', dataIndex: 'sku', key: 'sku', width: 180, ellipsis: true },
+        {
+            title: 'MSKU(Amazon)',
+            dataIndex: 'msku',
+            key: 'msku',
+            width: 180,
+            ellipsis: true,
+        },
+        {
+            title: 'SKU(NetSuite)',
+            dataIndex: 'sku',
+            key: 'sku',
+            width: 180,
+            ellipsis: true,
+            render: (_, record) => {
+                if (!record.id) {
+                    return <SearchInput key={record.uuid} placeholder="Please input" style={{ width: '100%' }} record={record} changePop={changePops} />
+                }
+                return <>{record.sku}</>
+            }
+        },
         { title: 'FNSKU', dataIndex: 'fnsku', key: 'fnsku', width: 150 },
         {
             title: 'Quantity',
             dataIndex: 'shipped_quantity',
             key: 'quantity',
-            width: 80
+            width: 80,
+            render: (_, record) => {
+                if (!record.id) {
+                    return <InputNumber style={{ width: 70 }} min={0} value={record.shipped_quantity} onChange={(val: any) => {
+                        changePop(val, 'shipped_quantity', record)
+                    }} />
+                }
+                return record.shipped_quantity
+            }
         },
         {
-            title: view ? 'Match' : <GetTitle title={'Match'} data={data} callBack={setData} width={70} titleValue={claim ? '-1' : ''} />,
+            title: view ? 'Match' : <GetTitle title={'Match'} externalData={data} callBack={setData} width={70} titleValue={claim ? '-1' : ''} />,
             dataIndex: 'match',
             key: 'match',
             width: 135,
@@ -313,7 +477,7 @@ export default () => {
             }
         },
         {
-            title: view ? 'Condition' : <GetTitle title={'Condition'} data={data} callBack={setData} width={110} />,
+            title: view ? 'Condition' : <GetTitle title={'Condition'} externalData={data} callBack={setData} width={110} />,
             dataIndex: 'condition',
             key: 'condition',
             width: 195,
@@ -331,7 +495,7 @@ export default () => {
             }
         },
         {
-            title: view ? 'Claim' : <GetTitle title={'Claim'} data={data} callBack={setData} width={120} titleValue={claim ? 'Invalid Tracking' : ''} />,
+            title: view ? 'Claim' : <GetTitle title={'Claim'} externalData={data} callBack={setData} width={120} titleValue={claim ? 'Invalid Tracking' : ''} />,
             dataIndex: 'claim',
             key: 'claim',
             width: 185,
@@ -366,37 +530,50 @@ export default () => {
             fixed: 'right',
             render: (_, record) => {
                 return (<>
-                    <a onClick={() => {
+                    {record.msku && <a onClick={() => {
                         exportPDFWithFont([record.msku], { width: 66.675, height: 25.4 });
-                    }}>Print Barcode</a>
+                    }}>Print Barcode</a>}
+                    {
+                        record.id === 0 && <Popconfirm
+                            title="Delete the data"
+                            description="Are you sure to delete this data?"
+                            okText="Yes"
+                            cancelText="No"
+                            onConfirm={() => {
+                                const tempData = data.filter(item => item.uuid !== record.uuid)
+                                setData(tempData)
+                            }}
+                        >
+                            <a style={{ color: 'red', display: 'block' }}>Delete</a>
+                        </Popconfirm>
+                    }
                 </>)
             }
         }
     ];
-
-    const initData = () => {
-        setDataLoading(true)
-        getShipmentDetails({ tracking_number: trackingNumber }).then(res => {
-            if (res.code) {
-                const tempData = res.data.map((item: ShipmentDetailsItem) => {
-                    return {
-                        ...item,
-                        key: item.uuid,
-                        match: claim ? '-1' : item.match,
-                        claim: claim ? 'Invalid Tracking' : item.claim,
-                        claimData: [{ claim: '', image: [] }],
-                        conditionData: [{ condition: '' }],
-                    }
-                })
-                setData(tempData)
-            } else {
-                throw res.msg
-            }
-        }).catch((e) => {
-            message.error(e)
-        }).finally(() => {
-            setDataLoading(false)
+    const handleAdd = () => {
+        const tempData = [...data]
+        tempData.push({
+            uuid: Math.random().toString(36),
+            match: '1',
+            claim: '',
+            claimData: [{ claim: '', image: [] }],
+            conditionData: [{ condition: '' }],
+            type: 2,
+            id: 0,
+            msku: '',
+            fnsku: '',
+            shipped_quantity: 1,
+            sku_icon: '',
+            sku_image: '',
+            condition: '',
+            images: [],
+            bar_code: '',
+            memo_images: '',
+            sku: '',
+            store_id: data[0].store_id,
         })
+        setData(tempData)
     }
 
     useEffect(() => {
@@ -413,16 +590,25 @@ export default () => {
                 size='small'
                 pagination={false}
                 bordered
+                rowClassName={(record) => {
+                    if (record.type === 2) {
+                        return styles.newProduct
+                    }
+                    return ''
+                }}
                 expandable={{
                     // 默认展开所有行
-                    expandedRowKeys: data.map(item => item.uuid),
-                    expandIcon: () => null
+                    // expandedRowKeys: data.map(item => item.uuid),
+                    // expandIcon: () => null
                 }}
                 scroll={{ x: columns.reduce((total, item) => total + Number(item.width || 0), 0) }}
                 dataSource={data}
             />
             <div style={{ 'textAlign': 'right', 'marginTop': '10px' }}>
                 {!view && (<Space >
+                    <Button type='primary' icon={<PlusOutlined />} onClick={() => {
+                        handleAdd()
+                    }}>Add</Button>
                     <Button onClick={() => {
                         handleOk('save')
                     }}>Save</Button>

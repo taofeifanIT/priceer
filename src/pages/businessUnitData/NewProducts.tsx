@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import { getToken } from '@/utils/token';
 import { exportExcel } from '@/utils/excelHelper'
 import { statusConfig } from './config'
-
+import TestComputer from './components/TestComputer';
 
 const DownloadTemplate = () => {
     const downloadTemplateLocal = () => {
@@ -193,6 +193,7 @@ export default () => {
         // const ts = dividend / divisor * (1 - 0.1) * USDRate * 1.13
         const ts = dividend / divisor * (1 - profitPoint) * exchange_rate
         // 保留两位小数
+        console.log(sales_price, platform_fee, ship_fee, us_import_tax, exchange_rate)
         return ts.toFixed(2)
     }
     const getBrand = async () => {
@@ -246,7 +247,7 @@ export default () => {
             dataIndex: 'username',
             key: 'username',
             valueType: 'text',
-            width: 120,
+            width: 105,
             search: false,
         },
         // sku
@@ -314,7 +315,7 @@ export default () => {
             dataIndex: 'status',
             key: 'status',
             valueType: 'select',
-            width: 175,
+            width: 135,
             valueEnum: statusConfig,
         },
         {
@@ -322,7 +323,7 @@ export default () => {
             dataIndex: 'sales_price',
             key: 'sales_price',
             search: false,
-            width: 120,
+            width: 125,
             render: (_, record) => [<span key='sales_price'>${record.sales_price}</span>],
         },
         {
@@ -349,7 +350,7 @@ export default () => {
             dataIndex: 'ship_fee',
             key: 'ship_fee',
             search: false,
-            width: 110,
+            width: 80,
             render: (_, record) => [<span key='ship_fee'>${record.ship_fee}</span>],
         },
         {
@@ -357,26 +358,26 @@ export default () => {
             dataIndex: 'platform_fee',
             key: 'platform_fee',
             search: false,
-            width: 120,
+            width: 180,
             // 保留两位小数
             render: (_, record) => [<span key='platform_fee'>{(record.platform_fee * 100).toFixed(2)}%</span>],
         },
         {
-            title: 'Target Purchase Price',
+            title: 'Target Purchase Price(CNY)',
             dataIndex: 'target_price',
             key: 'target_price',
             valueType: 'money',
             search: false,
-            width: 160,
+            width: 205,
         },
         {
             // purchase price
-            title: 'Purchase Price',
+            title: 'Purchase Price(CNY)',
             dataIndex: 'purchase_price',
             key: 'purchase_price',
             search: false,
             align: 'center',
-            width: 120,
+            width: 160,
             render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePriceForNew} refresh={() => actionRef.current?.reload()} type='number' />],
         },
         {
@@ -421,8 +422,8 @@ export default () => {
             title: 'Upload Time',
             dataIndex: 'created_at',
             key: 'created_at',
-            valueType: 'dateTime',
-            width: 160,
+            align: 'center',
+            width: 100,
             search: false,
             render: (_, record) => [<span key='created_at'>{dayjs(record.created_at).format('YYYY-MM-DD')}</span>],
         },
@@ -451,6 +452,19 @@ export default () => {
             fixed: 'right',
             render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(0) + '%'}</span>],
         },
+        // (REACT_APP_ENV === 'devLocal' || REACT_APP_ENV === 'test')  {
+        //     title: 'TestComputer',
+        //     dataIndex: 'TestComputer',
+        //     key: 'TestComputer',
+        //     valueType: 'option',
+        //     width: 110,
+        //     search: false,
+        //     align: 'center',
+        //     fixed: 'right',
+        //     render: (_, record) => {
+        //         return <TestComputer key='TestComputer' sales_price={record.sales_price} person_sales_price={record.purchase_price} us_tax_rate={record.us_import_tax} tax_rate={record.us_import_tax} ship_fee={record.ship_fee} platform_fee={record.platform_fee} last_purchase_price={record.purchase_price} purchase_price={record.purchase_price} exchange_rate={record.exchange_rate} profitPoint={profitPoint} />
+        //     }
+        // },
     ];
     return (
         <ProTable<NewProductsItem>
@@ -460,16 +474,16 @@ export default () => {
             headerTitle={`The current dollar rate is ${USDRate}`}
             cardBordered
             request={async (params = {}, sort, filter) => {
-                const rate = await getRate()
-                setUSDRate(rate)
                 await getBrand()
                 const tempParams = { ...params, ...filter, ...sort, len: params.pageSize, page: params.current, margin_rate: params.margin_rate ? params.margin_rate / 100 : undefined, }
                 const res = await getNewProduct(tempParams)
                 const { data, code } = res
                 let tempData = data.data
                 if (code) {
+                    const rate = tempData[0]?.exchange_rate || await getRate()
+                    setUSDRate(rate)
                     tempData = tempData.map((item: NewProductsItem) => {
-                        item.exchange_rate = rate
+                        // item.exchange_rate = rate
                         return {
                             ...item,
                             target_price: getTargetPurchasePrice(item)
@@ -513,8 +527,8 @@ export default () => {
             toolBarRender={() => [
                 //    设置利润点
                 <Space key="profitPoint" >
-                    <span>Profit Point:</span>
-                    <InputNumber placeholder="Profit Point" size='small' step={0.01} value={profitPoint} style={{ width: '65px' }} onChange={(e) => {
+                    <span>Profit Percentage:</span>
+                    <InputNumber placeholder="Profit Percentage" size='small' step={0.01} value={profitPoint} style={{ width: '65px' }} onChange={(e) => {
                         setProfitPoint(e)
                     }} />
                     <Button type='primary' size='small' onClick={() => {
@@ -522,7 +536,7 @@ export default () => {
                             actionRef.current?.reload()
                         }
                     }}>
-                        Recalculation
+                        Calculate
                     </Button>
                 </Space>,
                 <AddProduct key='addproduct' reload={() => {

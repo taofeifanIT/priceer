@@ -2,8 +2,8 @@ import { useEffect, useState, useRef } from 'react'
 import { message, Spin, Typography, InputNumber } from 'antd'
 import { EditTwoTone } from '@ant-design/icons'
 
-const SetValueComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void, type?: 'text' | 'number', numberStep?: number, otherParams?: any }) => {
-    const { id, editKey, value, api, refresh, type = 'text', numberStep = 1, otherParams = {} } = props
+const SetValueComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void, type?: 'text' | 'number', numberStep?: number, otherParams?: any, disabled?: boolean }) => {
+    const { id, editKey, value, api, refresh, type = 'text', numberStep = 1, otherParams = {}, disabled = false } = props
     const [paramValue, setParamValue] = useState(value)
     const [spinning, setSpinning] = useState(false)
     const [numberIsEdit, setNumberIsEdit] = useState(false)
@@ -28,25 +28,40 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
     }, [value])
     return (<>
         <Spin spinning={spinning}>
-            {(editKey === 'reimburse_money' && value) && '$'}
-            {type === 'text' && <Typography.Text editable={{
-                onChange(val) {
-                    // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                    if (!val || val === paramValue) {
-                        return
+            {(type === 'text' && !disabled) && <Typography.Text
+                style={{ width: '100%' }}
+                ellipsis={{ rows: 1, expandable: true, symbol: 'more', tooltip: paramValue }}
+                editable={{
+                    onChange(val) {
+                        // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
+                        if (!val || val === paramValue) {
+                            return
+                        }
+                        savgValue(val)
                     }
-                    savgValue(val)
-                }
-            }} >
+                }} >
                 {paramValue}
             </Typography.Text>}
-            {type === 'number' && (<>
+            {(type === 'number' && !disabled) && (<>
                 {numberIsEdit ? <InputNumber
                     ref={numberRef}
                     step={numberStep}
                     value={paramValue}
+                    // 回车保存
+                    onPressEnter={(e: any) => {
+                        setNumberIsEdit(false)
+                        // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
+                        if (!e.target.value || e.target.value == value) {
+                            return
+                        }
+                        savgValue(e.target.value)
+                    }}
                     onBlur={(e) => {
                         setNumberIsEdit(false)
+                        // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
+                        if (!e.target.value || e.target.value == value) {
+                            return
+                        }
                         savgValue(e.target.value)
                     }}
                     onChange={(val: any) => {
@@ -64,6 +79,7 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                         } />
                     </>}
             </>)}
+            {disabled && paramValue}
         </Spin>
 
     </>)

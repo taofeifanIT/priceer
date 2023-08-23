@@ -34,7 +34,7 @@ export default (props: { id: number, editKey: string, value: string | number, ap
     }
     return (<>
         <Modal title="Edit Comments" open={visible} confirmLoading={spinning} onOk={handleOk} onCancel={handleCancel}>
-            <Input.TextArea rows={4} value={paramValue} onChange={(e) => {
+            <Input.TextArea rows={4} aria-autocomplete='new-password' value={paramValue} onChange={(e) => {
                 setParamValue(e.target.value)
             }} />
         </Modal>
