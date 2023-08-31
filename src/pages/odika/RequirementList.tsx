@@ -1,6 +1,7 @@
-import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Typography, Steps, Spin, Tooltip, Popconfirm } from 'antd';
+import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Typography, Steps, Spin, Tooltip, Popconfirm, Dropdown } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
+import type { MenuProps } from 'antd';
 import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { getSkuList, saveDesign, editDesign, getDesignList, getDesignDetail } from '@/services/odika/requirementList';
@@ -10,6 +11,8 @@ import { getImageUrl } from '@/utils/utils'
 import { FormattedMessage, getLocale } from 'umi';
 import { FilePdfOutlined } from '@ant-design/icons';
 import getInfoComponent from './components/getInfoComponent'
+import axios from 'axios';
+import { useModel } from 'umi';
 const { Search } = Input;
 const { Text } = Typography;
 // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成
@@ -283,24 +286,6 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             })
         })
     };
-
-    // const pasteUpload = (event) => {
-    //     event.stopPropagation()
-    //     console.log(event)
-    //     const data = event.clipboardData || window.clipboardData
-    //     let tempFile = null // 存储文件数据
-    //     if (data.items && data.items.length) {
-    //         // 检索剪切板items
-    //         for (const value of data.items) {
-    //             if (value.type.indexOf('image') !== -1) {
-    //                 tempFile = value.getAsFile()
-    //                 break
-    //             }
-    //         }
-    //     }
-    //     console.log('tempFile', tempFile)
-    //     // handleUpload(tempFile)
-    // }
 
     const modelTitle = <>
         <Space>
@@ -688,6 +673,10 @@ export default () => {
     });
     const statusWidth = getLocale() === 'en-US' ? 900 : 660
 
+    const { initialState } = useModel('@@initialState');
+    const { currentUser } = initialState || {};
+    const isOperationsAdministrator = currentUser?.authGroup.title === 'Operations administrator'
+
     const initData = () => {
         setLoading(true);
         getDesignList({
@@ -856,16 +845,91 @@ export default () => {
             }
         }
     ]
+    const onMenuClick: MenuProps['onClick'] = (e) => {
+        const type = e.key;
+        // 上传页面模板
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.pdf';
+        const url = `${API_URL}/design/uploadTemplate`;
+        fileInput.click();
+        fileInput.onchange = (e: any) => {
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', type);
+            const config = {
+                headers: { 'Content-Type': 'multipart/form-data', token: getToken() }
+            };
+            axios.post(url, formData, config).then(res => {
+                if (res.data.code === 1 || res.data.code === 200) {
+                    message.success('successfully upload')
+                } else {
+                    throw res.data.msg
+                }
+            }).catch(err => {
+                message.error(err)
+            })
+        }
+    };
 
+    const listingPageTemplateItems = [
+        {
+            key: '2',
+            label: localFront('replacePageTemplate'),
+        },
+    ];
+    // listingContentTemplateItems
+    const listingContentTemplateItems = [
+        {
+            key: '1',
+            label: localFront('replaceContentTemplate'),
+        },
+    ];
     const titleCpmponent = () => {
-        return <>
+        return <Space>
             <Button size='small' type="primary" onClick={() => {
                 actionRef.current.showModal();
             }}>{localFront('CreateRequirement')}</Button>
-            {/* <Button size='small' type="primary" style={{ marginLeft: '5px' }} icon={<FilePdfOutlined />} onClick={() => {
-                // window.open(`/odika/ViewDesign`)
-            }}>{localFront('viewTemplate')}</Button> */}
-        </>
+
+            {isOperationsAdministrator ?
+                <>
+                    <Dropdown.Button
+                        size='small'
+                        icon={<FilePdfOutlined />}
+                        menu={{ items: listingPageTemplateItems, onClick: onMenuClick }}
+                        onClick={() => {
+                            const fileUrl = `${API_URL}/storage/upload/design/Listing_page.pdf`;
+                            window.open(fileUrl)
+                        }}>{localFront('viewPageTemplate')}
+                    </Dropdown.Button>
+                    <Dropdown.Button
+                        size='small'
+                        icon={<FilePdfOutlined />}
+                        menu={{ items: listingContentTemplateItems, onClick: onMenuClick }}
+                        onClick={() => {
+                            const fileUrl = `${API_URL}/storage/upload/design/Listing_content.pdf`;
+                            window.open(fileUrl)
+                        }}>{localFront('viewContentTemplate')}
+                    </Dropdown.Button>
+                </> :
+                <>
+                    <Button
+                        size='small'
+                        onClick={() => {
+                            const fileUrl = `${API_URL}/storage/upload/design/Listing_page.pdf`;
+                            window.open(fileUrl)
+                        }}>{localFront('viewPageTemplate')}
+                    </Button>
+                    <Button
+                        size='small'
+                        onClick={() => {
+                            const fileUrl = `${API_URL}/storage/upload/design/Listing_content.pdf`;
+                            window.open(fileUrl)
+                        }}>{localFront('viewContentTemplate')}
+                    </Button>
+                </>}
+        </Space>
     }
 
     useEffect(() => {

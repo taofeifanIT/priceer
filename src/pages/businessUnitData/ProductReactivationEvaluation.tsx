@@ -3,14 +3,15 @@ import { ProTable } from '@ant-design/pro-components';
 import { useEffect, useRef, useState } from 'react';
 import { getResaleList, updatePurchasePrice, editMemo, batchEdit, updateSalesPrice, updateSalesTarget, updateState, updateTax } from '@/services/businessUnitData/productReactivationEvaluation';
 import type { ResaleListItem } from '@/services/businessUnitData/productReactivationEvaluation';
-import { message, Select, Button, Space, InputNumber, Table, Typography } from 'antd';
+import { message, Select, Button, Space, InputNumber, Table, Typography, Dropdown, Modal } from 'antd';
+import type { MenuProps } from 'antd';
 import { VerticalAlignBottomOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { exportExcel } from '@/utils/excelHelper'
 import { getToken } from '@/utils/token';
 import axions from 'axios';
 import SetValueComponent from './components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
-import TestComputer from './components/TestComputer';
+// import TestComputer from './components/TestComputer';
 
 
 let exportData: never[] = []
@@ -19,6 +20,16 @@ const StatusButton = (props: { id: number, status: number, refresh: () => void }
     const { id, status, refresh } = props
     const [spinning, setSpinning] = useState(false)
     const [statusValue, setStatusValue] = useState(status)
+    const items = [
+        {
+            key: 1,
+            label: 'Inactive',
+        },
+        {
+            key: 2,
+            label: 'Active',
+        },
+    ];
     const saveValue = (val: any) => {
         setSpinning(true)
         updateState({ id, status: val }).then((res: any) => {
@@ -34,12 +45,29 @@ const StatusButton = (props: { id: number, status: number, refresh: () => void }
             setSpinning(false)
         })
     }
+    const onMenuClick: MenuProps['onClick'] = (e: any) => {
+        const form = items.find(item => item.key === statusValue)?.label
+        const to = items.find(item => item.key == e.key)?.label
+        Modal.confirm({
+            title: 'Are you sure you want to change the status?',
+            content: `${form} -> ${to}`,
+            onOk: () => {
+                saveValue(e.key)
+            }
+        })
+    };
     useEffect(() => {
         setStatusValue(status)
     }, [status])
-    return <Button size='small' type={statusValue === 1 ? 'primary' : 'default'} loading={spinning} disabled={statusValue === 2} onClick={() => {
-        saveValue(2)
-    }}>Confirm</Button>
+    return <>
+        <Dropdown.Button
+            size='small'
+            trigger={['click']}
+            loading={spinning}
+            menu={{ items: items.filter(item => item.key !== statusValue), onClick: onMenuClick }}>
+            {items.find(item => item.key === statusValue)?.label}
+        </Dropdown.Button>
+    </>
 }
 
 export default () => {
@@ -164,8 +192,8 @@ export default () => {
             width: 100,
             hideInTable: true,
             valueEnum: {
-                1: { text: 'Unconfirmed', status: 'Default' },
-                2: { text: 'Confirmed', status: 'Success' },
+                1: { text: 'Inactive', status: 'Default' },
+                2: { text: 'Active', status: 'Success' },
             }
         },
         {
@@ -403,16 +431,15 @@ export default () => {
         },
         // action
         {
-            title: 'Action',
+            title: 'Status',
             dataIndex: 'option',
             valueType: 'option',
-            width: (REACT_APP_ENV === 'devLocal' || REACT_APP_ENV === 'test') ? 170 : 100,
-            align: 'center',
+            width: 110,
             fixed: 'right',
             render: (_, record) => {
                 return <Space>
                     <StatusButton key='status' id={record.id} status={record.status} refresh={() => actionRef.current?.reload()} />
-                    <TestComputer key='TestComputer' sales_price={record.sales_price} person_sales_price={record.person_sales_price} us_tax_rate={record.us_tax_rate} tax_rate={record.tax_rate} ship_fee={record.ship_fee} platform_fee={record.platform_fee} last_purchase_price={record.last_purchase_price} purchase_price={record.purchase_price} exchange_rate={record.exchange_rate} profitPoint={profitPoint} />
+                    {/* <TestComputer key='TestComputer' sales_price={record.sales_price} person_sales_price={record.person_sales_price} us_tax_rate={record.us_tax_rate} tax_rate={record.tax_rate} ship_fee={record.ship_fee} platform_fee={record.platform_fee} last_purchase_price={record.last_purchase_price} purchase_price={record.purchase_price} exchange_rate={record.exchange_rate} profitPoint={profitPoint} /> */}
                 </Space>
             },
         }

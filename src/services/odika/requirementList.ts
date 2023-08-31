@@ -266,3 +266,16 @@ export async function editSortV3(params: { id: number, no: number, is_lock: numb
         data: params
     });
 }
+
+// /design/uploadTemplate
+export async function uploadTemplate(file: any, type: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+    return request('/api/design/uploadTemplate', {
+        method: 'POST',
+        data: formData,
+        formData,
+        requestType: 'form'
+    });
+}

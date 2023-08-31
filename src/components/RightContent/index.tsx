@@ -8,6 +8,12 @@ import styles from './index.less';
 
 export type SiderTheme = 'light' | 'dark';
 
+const ItmesEnv = {
+  dev: 'blue',
+  stag: 'green',
+  pro: 'yellow',
+};
+
 const GlobalHeaderRight: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const [form] = Form.useForm();
@@ -60,7 +66,7 @@ const GlobalHeaderRight: React.FC = () => {
   }, [visible]);
   return (
     <Space className={className}>
-      {REACT_APP_ENV === 'dev' ? <Tag color="blue">Pro</Tag> : <Tag color="#f50">{REACT_APP_ENV}</Tag>}
+      <Tag color={ItmesEnv[REACT_APP_ENV]}>{REACT_APP_ENV}</Tag>
       {storeName && <Tag color={colorByStoreName}>{storeName}</Tag>}
       <Popover
         id="popPopover"

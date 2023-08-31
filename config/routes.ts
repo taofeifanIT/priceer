@@ -26,6 +26,12 @@ export default [
     path: '/dashboard',
     access: 'normalRouteFilter',
     routes: [
+      // RemovalOrderDataAnalysis
+      {
+        path: '/dashboard/RemovalOrderDataAnalysis',
+        name: 'RemovalOrderDataAnalysis',
+        component: './dashboard/RemovalOrderDataAnalysis',
+      },
       {
         path: '/dashboard/Anlysis',
         name: 'Anlysis',

@@ -34,7 +34,7 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                 editable={{
                     onChange(val) {
                         // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                        if (!val || val === paramValue) {
+                        if (val === paramValue) {
                             return
                         }
                         savgValue(val)
@@ -51,7 +51,7 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                     onPressEnter={(e: any) => {
                         setNumberIsEdit(false)
                         // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                        if (!e.target.value || e.target.value == value) {
+                        if (e.target.value == value) {
                             return
                         }
                         savgValue(e.target.value)
@@ -59,7 +59,7 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                     onBlur={(e) => {
                         setNumberIsEdit(false)
                         // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                        if (!e.target.value || e.target.value == value) {
+                        if (e.target.value == value) {
                             return
                         }
                         savgValue(e.target.value)

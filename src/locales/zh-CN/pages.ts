@@ -5,8 +5,11 @@ export default {
   'pages.odika.requirementSortList.locked': '已锁定',
   'pages.odika.requirementSortList.lock': '锁定',
   // ----------odika RequirementList
-  // scene graph
-  'pages.odika.RequirementList.viewTemplate': '查看模板',
+  // 替换Listing页面模版
+  'pages.odika.RequirementList.replaceContentTemplate': '替换Listing内容模版',
+  'pages.odika.RequirementList.replacePageTemplate': '替换Listing页面模版',
+  'pages.odika.RequirementList.viewPageTemplate': 'Listing页面模板',
+  'pages.odika.RequirementList.viewContentTemplate': 'Listing内容模板',
   'pages.odika.RequirementList.sceneGraph': '场景图',
   'pages.odika.RequirementList.detailMapPresentation': '添加细节图展示',
   'pages.odika.RequirementList.pictureTextDetailsIcon': '图片+文字+细节/Icon',
