@@ -1,4 +1,4 @@
-import { Table, Spin, Col, Row, Divider, Select } from 'antd';
+import { Table, Spin, Col, Row, Divider, Select, message } from 'antd';
 import { removalOrderDashboard } from '@/services/dashboard/removalOrderDataAnalysis'
 import { useEffect, useState } from 'react';
 import { useModel } from 'umi';
@@ -52,7 +52,9 @@ export default () => {
     const init = () => {
         setLoading(true)
         removalOrderDashboard().then(res => {
-            setLoading(false)
+            if (!res.code) {
+                throw res.msg
+            }
             const columnsData: any = []
             res.data.table.forEach((item: any) => {
                 item.content.forEach((subItem: any) => {
@@ -104,6 +106,10 @@ export default () => {
                 avg_days: avgDaysData,
                 return_rate: res.data.return_rate
             } as any)
+        }).catch(err => {
+            message.error(err)
+        }).finally(() => {
+            setLoading(false)
         })
     }
     useEffect(() => {

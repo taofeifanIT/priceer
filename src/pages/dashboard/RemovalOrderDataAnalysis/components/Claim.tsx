@@ -1,4 +1,4 @@
-import { Select, Card, Row, Col, Spin, Statistic, Space, Button } from 'antd';
+import { Select, Card, Row, Col, Spin, Statistic, Space, Button, message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetClaimInfo } from '@/services/dashboard/removalOrderDataAnalysis'
@@ -58,8 +58,14 @@ export default () => {
     const init = (storeIds?: number[]) => {
         setLoading(true)
         removalOrderGetClaimInfo({ store_id: storeIds }).then(res => {
-            setLoading(false)
+            if (!res.code) {
+                throw res.msg
+            }
             setData(res.data)
+        }).catch(err => {
+            message.error(err)
+        }).finally(() => {
+            setLoading(false)
         })
     }
 

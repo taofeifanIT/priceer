@@ -1,4 +1,4 @@
-import { Select, Card, Row, Col, Spin, Statistic, Space, Button, DatePicker } from 'antd';
+import { Select, Card, Row, Col, Spin, Statistic, Space, Button, DatePicker, message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetROInfo } from '@/services/dashboard/removalOrderDataAnalysis'
@@ -41,8 +41,14 @@ export default () => {
         }
         setLoading(true)
         removalOrderGetROInfo({ store_id: storeIds?.length ? storeIds : undefined, ...paramTime }).then(res => {
-            setLoading(false)
+            if (!res.code) {
+                throw res.msg
+            }
             setData(res.data)
+        }).catch(err => {
+            message.error(err)
+        }).finally(() => {
+            setLoading(false)
         })
     }
 
