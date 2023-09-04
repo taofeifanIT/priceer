@@ -2,6 +2,7 @@ import { Select, Card, Row, Col, Spin, Statistic, Space, Button, DatePicker, mes
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetWarehouseInfo } from '@/services/dashboard/removalOrderDataAnalysis'
+import InfoCircle from './InfoCircle'
 import dayJs from 'dayjs'
 const { RangePicker } = DatePicker;
 export default () => {
@@ -40,7 +41,7 @@ export default () => {
             }
             setData(res.data)
         }).catch(err => {
-            message.error(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setLoading(false)
         })
@@ -80,17 +81,17 @@ export default () => {
             <div style={{ marginTop: '10px' }}>
                 <Row>
                     <Col span={6}>
-                        <Card style={{ margin: '4px 4px 4px 0' }} size='small' title='Total'>
-                            <Statistic title="Tracking Count" value={data.total.qty} />
-                            <Statistic title="Unit Count" value={data.total.boxes} />
-                            <Statistic title="Inventory Value Amount" prefix={"$"} value={data.total.land_cost} />
+                        <Card style={{ margin: '4px 4px 4px 0' }} size='small' title={'Total'}>
+                            <Statistic title={<>Tracking Count<InfoCircle title='Total Number Of Boxes' /></>} value={data.total.qty} />
+                            <Statistic title={<>Unit Count<InfoCircle title='Total Number Of products' /></>} value={data.total.boxes} />
+                            <Statistic title={<>Inventory Value Amount<InfoCircle title='Total Cost Of Goods' /></>} prefix={"$"} value={data.total.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
-                        <Card style={{ margin: 4 }} size='small' title='Processing'>
-                            <Statistic title="Tracking Count" value={data.process.qty} />
-                            <Statistic title="Unit Count" value={data.process.boxes} />
-                            <Statistic title="Inventory Value Amount" prefix={"$"} value={data.process.land_cost} />
+                        <Card style={{ margin: 4 }} size='small' title={'Processing'}>
+                            <Statistic title={<>Tracking Count<InfoCircle title='Number Of Boxes In Process' /></>} value={data.process.qty} />
+                            <Statistic title={<>Unit Count<InfoCircle title='Number Of Products In Process' /></>} value={data.process.boxes} />
+                            <Statistic title={<>Inventory Value Amount<InfoCircle title='Total Cost Of Goods In Process' /></>} prefix={"$"} value={data.process.land_cost} />
                         </Card>
                     </Col>
                 </Row>

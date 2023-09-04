@@ -2,6 +2,7 @@ import { Select, Card, Row, Col, Spin, Statistic, Space, Button, DatePicker, mes
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetROInfo } from '@/services/dashboard/removalOrderDataAnalysis'
+import InfoCircle from './InfoCircle'
 import dayJs from 'dayjs'
 const { RangePicker } = DatePicker;
 export default () => {
@@ -46,7 +47,7 @@ export default () => {
             }
             setData(res.data)
         }).catch(err => {
-            message.error(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setLoading(false)
         })
@@ -87,26 +88,26 @@ export default () => {
                 <Row>
                     <Col span={6}>
                         <Card style={{ margin: '4px 4px 4px 0' }}>
-                            <Statistic title="DOA Quantity" value={data.doa.quantity} />
-                            <Statistic title="NS Land Price" prefix={'$'} value={data.doa.land_cost} />
+                            <Statistic title={<>DOA Quantity<InfoCircle title='Total Number Of DOA Products' /></>} value={data.doa.quantity} />
+                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.doa.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title="Used Quantity" value={data.used.quantity} />
-                            <Statistic title="NS Land Price" prefix={'$'} value={data.used.land_cost} />
+                            <Statistic title={<>Used Quantity<InfoCircle title='Total Number Of Used Products' /></>} value={data.used.quantity} />
+                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.used.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title="New Quantity" value={data.new.quantity} />
-                            <Statistic title="NS Land Price" prefix={'$'} value={data.new.land_cost} />
+                            <Statistic title={<>New Quantity<InfoCircle title='Total Number Of New Products' /></>} value={data.new.quantity} />
+                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.new.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title="OpenBox Quantity" value={data.open_box.quantity} />
-                            <Statistic title="NS Land Price" prefix={'$'} value={data.open_box.land_cost} />
+                            <Statistic title={<>OpenBox Quantity<InfoCircle title='Total Number Of OpenBox Products' /></>} value={data.open_box.quantity} />
+                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.open_box.land_cost} />
                         </Card>
                     </Col>
                 </Row>

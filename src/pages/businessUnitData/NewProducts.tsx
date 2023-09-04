@@ -377,7 +377,8 @@ export default () => {
             key: 'purchase_price',
             search: false,
             align: 'center',
-            width: 160,
+            width: 175,
+            tooltip: 'untaxed price',
             render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePriceForNew} refresh={() => actionRef.current?.reload()} type='number' />],
         },
         {

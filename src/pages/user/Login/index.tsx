@@ -12,6 +12,7 @@ import {
 } from '@ant-design/pro-components';
 import { Alert, message, Tabs } from 'antd';
 import React, { useState, useEffect } from 'react';
+import { getConfig } from '@/services/basePop';
 // @ts-ignore
 import { FormattedMessage, history, SelectLang, useIntl, useModel, setLocale, getLocale } from 'umi';
 import styles from './index.less';
@@ -40,15 +41,16 @@ const Login: React.FC = () => {
 
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
+    const configInfo = await initialState?.fetchConfigInfo?.();
     if (userInfo) {
       // @ts-ignore
       await setInitialState((s) => ({
         ...s,
+        configInfo,
         currentUser: userInfo,
       }));
     }
   };
-
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // 登录

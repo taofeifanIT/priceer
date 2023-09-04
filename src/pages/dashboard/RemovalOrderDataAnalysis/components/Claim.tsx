@@ -2,6 +2,7 @@ import { Select, Card, Row, Col, Spin, Statistic, Space, Button, message } from 
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetClaimInfo } from '@/services/dashboard/removalOrderDataAnalysis'
+import InfoCircle from './InfoCircle'
 import { Pie } from '@ant-design/charts'
 
 
@@ -63,7 +64,7 @@ export default () => {
             }
             setData(res.data)
         }).catch(err => {
-            message.error(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setLoading(false)
         })
@@ -100,17 +101,17 @@ export default () => {
                             <Col span={12}>
                                 <Card style={{ margin: '4px 4px 4px 0' }}>
                                     <div style={{ height: '170px' }}>
-                                        <Statistic title="Total Claim" value={data.number} />
-                                        <Statistic title="Sku Quantity" value={data.skus} />
-                                        <Statistic title="Unit Count" value={data.qty} />
+                                        <Statistic title={<>Total Claim<InfoCircle title='Total Number Of Claims' /></>} value={data.number} />
+                                        <Statistic title={<>Sku Quantity<InfoCircle title='Total Number Of SKU' /></>} value={data.skus} />
+                                        <Statistic title={<>Unit Quantity<InfoCircle title='Total Product Quantity' /></>} value={data.qty} />
                                     </div>
                                 </Card>
                             </Col>
                             <Col span={12}>
                                 <Card style={{ margin: 4 }}>
                                     <div style={{ height: '170px' }}>
-                                        <Statistic title="Amount Of Successful Claim" value={data.success_amount} />
-                                        <Statistic title="Number Of successful Claims" value={data.success_number} />
+                                        <Statistic title={<>Amount Of Successful Claim<InfoCircle title='Total Amount Of Successful Claim' /></>} prefix={'$'} value={data.success_amount} />
+                                        <Statistic title={<>Number Of successful Claims<InfoCircle title='Total Number Of Successful Claims' /></>} value={data.success_number} />
                                     </div>
                                 </Card>
                             </Col>
@@ -119,15 +120,15 @@ export default () => {
                             <Col span={12}>
                                 <Card style={{ margin: '4px 4px 4px 0' }}>
                                     <div style={{ height: '110px' }}>
-                                        <Statistic title="Claim Failure Cost" value={data.fail_amount} />
-                                        <Statistic title="Number Of Failed Claims" value={data.fail_number} />
+                                        <Statistic title={<>Claim Failure Cost<InfoCircle title='Total Cost Of Failed Claims' /></>} prefix={'$'} value={data.fail_amount} />
+                                        <Statistic title={<>Number Of Failed Claims<InfoCircle title='Total Number Of Failed Claims' /></>} value={data.fail_number} />
                                     </div>
                                 </Card>
                             </Col>
                             <Col span={12}>
                                 <Card style={{ margin: '4px 4px 4px 0' }}>
                                     <div style={{ height: '110px' }}>
-                                        <Statistic title="Average Claim Period" value={data.avg_days} />
+                                        <Statistic title={<>Average Claim Period<InfoCircle title='Average Time Period For Processing Claimed Goods' /></>} value={data.avg_days} />
                                     </div>
                                 </Card>
                             </Col>

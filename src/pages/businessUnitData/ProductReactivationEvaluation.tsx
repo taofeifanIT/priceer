@@ -379,7 +379,8 @@ export default () => {
             dataIndex: 'purchase_price',
             key: 'purchase_price',
             search: false,
-            width: 158,
+            width: 172,
+            tooltip: 'untaxed price',
             render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePrice} refresh={() => actionRef.current?.reload()} type='number' disabled={record.status === 2} />],
         },
         {

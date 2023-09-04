@@ -32,6 +32,7 @@ export async function getInitialState(): Promise<{
   configInfo?: API.Config;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  fetchConfigInfo?: () => Promise<API.Config | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {
@@ -68,8 +69,10 @@ export async function getInitialState(): Promise<{
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
     const configInfo = await fetchConfigInfo();
+    console.log(configInfo);
     return {
       fetchUserInfo,
+      fetchConfigInfo,
       currentUser,
       configInfo,
       settings: defaultSettings,
@@ -77,6 +80,7 @@ export async function getInitialState(): Promise<{
   }
   return {
     fetchUserInfo,
+    fetchConfigInfo,
     settings: defaultSettings,
   };
 }

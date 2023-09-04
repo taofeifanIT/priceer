@@ -1,5 +1,6 @@
 import { Table, Spin, Col, Row, Divider, Select, message } from 'antd';
 import { removalOrderDashboard } from '@/services/dashboard/removalOrderDataAnalysis'
+import InfoCircle from './InfoCircle'
 import { useEffect, useState } from 'react';
 import { useModel } from 'umi';
 const { Column, ColumnGroup } = Table;
@@ -80,7 +81,7 @@ export default () => {
                             tableTotal[columnsItem + '_qty'] += subSubItem.qty
                         }
                     })
-                    tempObj.storeId = configInfo.store?.find((storeItem: any) => storeItem.id === item.store_id)?.nick_name
+                    tempObj.storeId = configInfo?.store?.find((storeItem: any) => storeItem.id === item.store_id)?.nick_name
                 })
                 if (Object.keys(tempObj).length > 0) {
                     tempTableData.push(tempObj)
@@ -107,7 +108,7 @@ export default () => {
                 return_rate: res.data.return_rate
             } as any)
         }).catch(err => {
-            message.error(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setLoading(false)
         })
@@ -125,16 +126,16 @@ export default () => {
                 scroll={{ y: 300 }}>
                 <Column title="Store" dataIndex={'storeId'} />
                 {
-                    data.tableColumn.map((item: any) => {
+                    data.tableColumn.map((item: any, index) => {
                         return <ColumnGroup key={item} title={item}>
-                            <Column title="Boxes" dataIndex={item + '_boxes'} key={item + '_boxes'} align='center' />
-                            <Column title="Qty" dataIndex={item + '_qty'} key={item + '_qty'} align='center' />
+                            <Column title={index === 0 ? <>Boxes <InfoCircle title='Number Of Boxes On The Day' /></> : 'Boxes'} dataIndex={item + '_boxes'} key={item + '_boxes'} align='center' />
+                            <Column title={index === 0 ? <>Qty <InfoCircle title='Product Quantity Of The Day' /></> : 'Qty'} dataIndex={item + '_qty'} key={item + '_qty'} align='center' />
                         </ColumnGroup>
                     })
                 }
 
             </Table>
-            <Divider style={{ margin: '14px 0' }} />
+            <Divider style={{ margin: '24px 0' }} />
             <Row>
                 <Col span={10}>
                     <h3 style={{ marginLeft: 9 }}>AVG Days in WH</h3>
@@ -168,15 +169,15 @@ export default () => {
                 </Col>
                 <Col span={1}>
                     <div style={{ textAlign: 'center' }}>
-                        <Divider type='vertical' style={{ height: 300 }} />
+                        <Divider type='vertical' style={{ height: 445 }} />
                     </div>
                 </Col>
                 <Col span={13}>
                     <div style={{ padding: '0px 10px 10px 4px' }}>
-                        <h3 style={{ marginLeft: 4, display: 'inline-block', width: '50%' }}>Current Return Rates  Est.</h3>
+                        <h3 style={{ marginLeft: 4, display: 'inline-block', width: '50%' }}>Current Return Rates  Est. </h3>
                         <p style={{ display: 'inline-block' }}>
                             <span style={{ position: 'absolute', right: 10, top: -5 }}>
-                                Store：
+                                Platform：
                                 <Select
                                     allowClear
                                     style={{ width: '168px' }}

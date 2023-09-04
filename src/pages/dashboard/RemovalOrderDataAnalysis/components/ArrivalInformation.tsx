@@ -1,6 +1,7 @@
 import { Select, Card, Row, Col, Spin, Statistic, Space, Button, message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
+import InfoCircle from './InfoCircle'
 import { removalOrderNextWeekPredict } from '@/services/dashboard/removalOrderDataAnalysis'
 
 
@@ -23,7 +24,7 @@ export default () => {
             }
             setData(res.data)
         }).catch(err => {
-            message.error(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setLoading(false)
         })
@@ -35,7 +36,7 @@ export default () => {
     return (<div style={{ padding: '0px 4px 10px 10px' }}>
         <Spin spinning={loading}>
             <h3>
-                Next week's arrival information
+                Next Week's Arrival Information
             </h3>
             <Space>
                 <Select
@@ -57,17 +58,17 @@ export default () => {
                 <Row>
                     <Col span={6}>
                         <Card style={{ margin: '4px 4px 4px 0' }}>
-                            <Statistic title="Unit" precision={3} value={data.qty} />
+                            <Statistic title={<>Unit<InfoCircle title='Product Quantity' /></>} precision={3} value={data.qty} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title="Volume" precision={3} value={data.volume} />
+                            <Statistic title={<>Volume<InfoCircle title='The Volume Required' /></>} precision={3} value={data.volume} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title="Boxes" precision={3} value={data.boxes} />
+                            <Statistic title={<>Boxes<InfoCircle title='Amount Of Boxes' /></>} precision={3} value={data.boxes} />
                         </Card>
                     </Col>
                 </Row>
