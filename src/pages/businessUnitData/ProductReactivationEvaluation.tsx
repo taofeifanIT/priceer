@@ -3,7 +3,7 @@ import { ProTable } from '@ant-design/pro-components';
 import { useEffect, useRef, useState } from 'react';
 import { getResaleList, updatePurchasePrice, editMemo, batchEdit, updateSalesPrice, updateSalesTarget, updateState, updateTax } from '@/services/businessUnitData/productReactivationEvaluation';
 import type { ResaleListItem } from '@/services/businessUnitData/productReactivationEvaluation';
-import { message, Select, Button, Space, InputNumber, Table, Typography, Dropdown, Modal } from 'antd';
+import { message, Select, Button, Space, InputNumber, Table, Typography, Dropdown, Modal, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import { VerticalAlignBottomOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { exportExcel } from '@/utils/excelHelper'
@@ -11,6 +11,7 @@ import { getToken } from '@/utils/token';
 import axions from 'axios';
 import SetValueComponent from './components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
+import './index.less'
 // import TestComputer from './components/TestComputer';
 
 
@@ -210,8 +211,23 @@ export default () => {
                         text: record.asin,
                     }}
                 >
-                    <a href={`https://www.amazon.com/dp/${record.asin}`} target='blank'>{record.asin}</a>
+                    <Tooltip title={record.is_timeout === 2 ? 'The sales target became negative for more than 6 months' : ''}>
+                        <a href={`https://www.amazon.com/dp/${record.asin}`} style={{ color: record.is_timeout === 2 ? 'red' : '' }} target='blank'>{record.asin}</a>
+                    </Tooltip>
                 </Typography.Text>
+            }
+        },
+        // Sales Target Negative Time
+        {
+            title: 'ST Period',
+            dataIndex: 'is_timeout',
+            key: 'is_timeout',
+            hideInTable: true,
+            valueType: 'select',
+            tooltip: 'Whether Sales Target became negative is more than six months or not',
+            valueEnum: {
+                1: { text: '< 6 months', status: 'Default' },
+                2: { text: '> 6 months', status: 'Error' },
             }
         },
         // sku
@@ -465,20 +481,19 @@ export default () => {
             }}
             actionRef={actionRef}
             cardBordered
-            headerTitle={`The current dollar rate is ${USDRate}`}
-            request={async (params = {}, sort, filter) => {
-                // const rate = await getRate()
-                // setUSDRate(rate)
+            headerTitle={`The Current Dollar Rate is ${USDRate}`}
+            request={async (params = {}, sort) => {
                 const response = await getResaleList({
                     ...params,
                     margin_rate: params.margin_rate ? params.margin_rate / 100 : undefined,
+                    start_date: params.us_sales_target_modify_time ? params.us_sales_target_modify_time[0] : undefined,
+                    end_date: params.us_sales_target_modify_time ? params.us_sales_target_modify_time[1] : undefined,
                     len: params.pageSize,
                     page: params.current
                 })
                 const { data, total } = response.data.content
                 const brandData = response.data.brand.map((item: { brand: string }) => ({ label: item.brand, value: item.brand }))
                 const resultData = data.map((item: ResaleListItem) => {
-                    // item.exchange_rate = rate
                     return {
                         ...item,
                         target_price: getTargetPurchasePrice(item),
@@ -510,18 +525,6 @@ export default () => {
             rowKey="id"
             search={{
                 labelWidth: 'auto',
-            }}
-            form={{
-                // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-                syncToUrl: (values, type) => {
-                    if (type === 'get') {
-                        return {
-                            ...values,
-                            created_at: [values.startTime, values.endTime],
-                        };
-                    }
-                    return values;
-                },
             }}
             pagination={{
                 pageSize: 15,
@@ -555,7 +558,7 @@ export default () => {
                 // <a key="template" href={downloadTemplate()} target='blank' >Download template</a>,
                 <a key="template" onClick={() => {
                     downloadTemplateLocal()
-                }}>Download template</a>
+                }}>Download Template</a>
             ]}
         />
     );

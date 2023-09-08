@@ -1,0 +1,89 @@
+.tableContrain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // tableContrain 下面的div的div的div
+  > div > div {
+    height: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+}
+
+#generateDeclarationInformationTable {
+  position: relative;
+  background-color: hwb(0 100% 0%);
+  border: 5px solid #badf94;
+  //   thead 的第二个tr的第二个th的颜色变红
+  thead tr:nth-child(2) th:nth-child(2) {
+    font-weight: bold;
+  }
+  thead tr:first-child th:first-child {
+    color: #70a09f;
+    font-weight: bold;
+  }
+  thead tr:first-child {
+    border-bottom: 3px solid #c8e7a7;
+  }
+  //   thead 中的字体默认不加粗
+  thead tr th {
+    font-weight: normal;
+  }
+  //   thead 的第三个tr背景色变绿
+  thead tr:nth-child(3) {
+    background-color: #e2efd9;
+  }
+  thead tr:nth-child(10) th {
+    font-weight: bold;
+  }
+  // thead tr:nth-child(12) th {
+  //   font-weight: bold;
+  // }
+  thead tr:last-child {
+    background-color: #e2efd9;
+    border-top: 3px solid #c8e7a7;
+  }
+  thead tr:last-child th {
+    font-weight: bold;
+  }
+  tbody tr td {
+    text-align: center;
+  }
+  tfoot tr th {
+    font-weight: normal;
+  }
+  tfoot tr:first-child th:first-child {
+    padding-right: 10;
+    font-weight: bold;
+    text-align: right;
+  }
+  tfoot tr:first-child th:first-child + th {
+    background-color: #e2efd9;
+  }
+  tfoot tr:first-child th:first-child + th + th {
+    background-color: #e2efd9;
+  }
+  // tfoot得每个6 7 8 9列加上背景色
+  tfoot tr:nth-child(2) th:nth-child(2),
+  tfoot tr:nth-child(2) th:nth-child(3),
+  tfoot tr:nth-child(3) th:nth-child(1),
+  tfoot tr:nth-child(3) th:nth-child(2),
+  tfoot tr:nth-child(4) th:nth-child(1),
+  tfoot tr:nth-child(4) th:nth-child(2) {
+    // background-color: #e2efd9;
+    background-color: #e2efd9;
+  }
+  tfoot tr:nth-child(4) th:nth-child(2) {
+    font-weight: bold;
+    border-bottom: 3px solid black;
+  }
+  tfoot tr {
+    height: 30px;
+  }
+  // class为freightCost的元素靠在 id=premium的元素的右边
+  .freightCost {
+    position: absolute;
+    right: -60px;
+  }
+  // class为freightCost的元素靠在 id=premium的元素的右边
+}

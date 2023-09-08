@@ -69,7 +69,6 @@ export async function getInitialState(): Promise<{
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
     const configInfo = await fetchConfigInfo();
-    console.log(configInfo);
     return {
       fetchUserInfo,
       fetchConfigInfo,
@@ -107,7 +106,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
         }
         if (!hasPage) {
           // 如果没有权限，重定向到一个带权限的页面 
-          const indexPage = findIndexPage(initialState.currentUser?.menu);
+          const newMenu: any = initialState?.currentUser?.menu.sort((a: any, b: any) => a.id - b.id);
+          const indexPage = findIndexPage(newMenu);
           if (indexPage) {
             history.push(indexPage);
           } else {

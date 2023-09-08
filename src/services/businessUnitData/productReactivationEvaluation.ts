@@ -43,6 +43,8 @@ export type ResaleListItem = {
     sales_target: number;
     status: number;
     tax_rate: number;
+    us_sales_target_modify_time: string;
+    is_timeout: number;
 }
 
 export async function getResaleList(params?: any) {

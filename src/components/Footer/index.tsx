@@ -1,4 +1,4 @@
-import { GithubOutlined } from '@ant-design/icons';
+// import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 import { useIntl } from 'umi';
 
@@ -14,20 +14,20 @@ const Footer: React.FC = () => {
   return (
     <DefaultFooter
       copyright={`${currentYear} ${defaultMessage}`}
-      links={[
-        {
-          key: 'DROP SHIP',
-          title: 'DROP SHIP',
-          href: 'https://vl-multi.itmars.net',
-          blankTarget: true,
-        },
-        {
-          key: 'github',
-          title: <GithubOutlined />,
-          href: 'https://github.com/taofeifanIT/priceer',
-          blankTarget: true,
-        },
-      ]}
+    // links={[
+    //   {
+    //     key: 'DROP SHIP',
+    //     title: 'DROP SHIP',
+    //     href: 'https://vl-multi.itmars.net',
+    //     blankTarget: true,
+    //   },
+    //   {
+    //     key: 'github',
+    //     title: <GithubOutlined />,
+    //     href: 'https://github.com/taofeifanIT/priceer',
+    //     blankTarget: true,
+    //   },
+    // ]}
     />
   );
 };

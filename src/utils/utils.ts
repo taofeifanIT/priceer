@@ -314,3 +314,20 @@ export const URLS = {
 export const getImageUrl = (baseUrl: string) => {
     return API_URL + '/storage/' + baseUrl
 }
+
+
+// 传入domID 生成图片并下载图片
+export const createImage = (domId: string) => {
+    const element: any = document.getElementById(domId);
+    html2canvas(element, {
+        logging: false,
+        // 最大保真
+        scale: 3.5,
+    }).then(function (canvas) {
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const link = document.createElement('a');
+        link.download = 'image.png';
+        link.href = imgData;
+        link.click();
+    });
+}

@@ -346,7 +346,7 @@ export default () => {
             size='small'
             columns={columns}
             actionRef={actionRef}
-            headerTitle={`The current dollar rate is ${USDRate}`}
+            headerTitle={`The Current Dollar Rate is ${USDRate}`}
             cardBordered
             request={async (params = {}, sort, filter) => {
                 await getBrand()

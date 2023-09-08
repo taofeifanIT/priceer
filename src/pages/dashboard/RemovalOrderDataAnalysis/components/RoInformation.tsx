@@ -60,6 +60,8 @@ export default () => {
         <Spin spinning={loading}>
             <h3>
                 RO Information
+                {/* 写个提示： 默认展示昨天的数据 */}
+                <InfoCircle title="The Processed Romval Orders for Yesterday" />
             </h3>
             <Space>
                 <Select
@@ -68,7 +70,7 @@ export default () => {
                     style={{ width: '300px' }}
                     placeholder="Please select"
                     maxTagCount={'responsive'}
-                    options={configInfo.store.map((item: any) => ({ label: item.name, value: item.id }))}
+                    options={configInfo.dash_store.map((item: any) => ({ label: item.name, value: item.id }))}
                     onChange={(value: any) => {
                         setStore(value)
                     }}
@@ -88,26 +90,26 @@ export default () => {
                 <Row>
                     <Col span={6}>
                         <Card style={{ margin: '4px 4px 4px 0' }}>
-                            <Statistic title={<>DOA Quantity<InfoCircle title='Total Number Of DOA Products' /></>} value={data.doa.quantity} />
-                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.doa.land_cost} />
+                            <Statistic title={<>DOA Quantity<InfoCircle title='Total DOA Products' /></>} value={data.doa.quantity} />
+                            <Statistic title={<>Total NS Land Price<InfoCircle title='Total Land Prices from NetSuite' /></>} prefix={'$'} value={data.doa.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title={<>Used Quantity<InfoCircle title='Total Number Of Used Products' /></>} value={data.used.quantity} />
-                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.used.land_cost} />
+                            <Statistic title={<>Used Quantity<InfoCircle title='Total Used Products' /></>} value={data.used.quantity} />
+                            <Statistic title={<>Total NS Land Price<InfoCircle title='Total Land Prices from NetSuite' /></>} prefix={'$'} value={data.used.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title={<>New Quantity<InfoCircle title='Total Number Of New Products' /></>} value={data.new.quantity} />
-                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.new.land_cost} />
+                            <Statistic title={<>New Quantity<InfoCircle title='Total New Products' /></>} value={data.new.quantity} />
+                            <Statistic title={<>Total NS Land Price<InfoCircle title='Total Land Prices from NetSuite' /></>} prefix={'$'} value={data.new.land_cost} />
                         </Card>
                     </Col>
                     <Col span={6}>
                         <Card style={{ margin: 4 }}>
-                            <Statistic title={<>OpenBox Quantity<InfoCircle title='Total Number Of OpenBox Products' /></>} value={data.open_box.quantity} />
-                            <Statistic title={<>NS Land Price<InfoCircle title='Data From NS, Total Cost Of Such Goods' /></>} prefix={'$'} value={data.open_box.land_cost} />
+                            <Statistic title={<>OpenBox Quantity<InfoCircle title='Total OpenBox Products' /></>} value={data.open_box.quantity} />
+                            <Statistic title={<>Total NS Land Price<InfoCircle title='Total Land Prices from NetSuite' /></>} prefix={'$'} value={data.open_box.land_cost} />
                         </Card>
                     </Col>
                 </Row>

@@ -5,6 +5,7 @@ import { ProTable } from '@ant-design/pro-components';
 import { Button, Modal, Typography } from 'antd';
 import { getShipmentList } from '@/services/removalOrder'
 import type { TableListItem } from '@/services/removalOrder'
+import { useModel } from 'umi';
 import Dayjs from 'dayjs';
 const { Paragraph } = Typography;
 
@@ -38,6 +39,17 @@ const checkProgress = (check_status: number): any => {
 
 export default () => {
     const actionRef: any = useRef<FormInstance>();
+    const { initialState } = useModel('@@initialState');
+    const { configInfo } = initialState || {};
+    const getStores = () => {
+        const storeObj: any = {}
+        configInfo?.dash_store.forEach((item: any) => {
+            storeObj[item.id] = {
+                text: item.name
+            }
+        })
+        return storeObj
+    }
     const columns: ProColumns<TableListItem>[] = [
         {
             // 进度
@@ -153,6 +165,36 @@ export default () => {
             search: false,
         },
         {
+            width: 100,
+            title: 'Store Name',
+            dataIndex: 'store_id',
+            ellipsis: true,
+            hideInTable: true,
+            valueType: 'select',
+            valueEnum: getStores(),
+        },
+        {
+            title: 'state',
+            dataIndex: 'state',
+            hideInTable: true,
+            valueType: 'select',
+            valueEnum: {
+                1: { text: 'Checked' },
+                2: { text: 'Not Checked' },
+            }
+        },
+        // delivery_time
+        {
+            title: 'Delivery Time',
+            dataIndex: 'delivery_time',
+            hideInTable: true,
+            valueType: 'select',
+            valueEnum: {
+                current: { text: 'This week' },
+                All: { text: 'All' },
+            }
+        },
+        {
             title: 'Action',
             width: 80,
             key: 'option',
@@ -229,6 +271,20 @@ export default () => {
             }}
             scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0), y: document.body.clientHeight - 320 }}
             size="small"
+            form={{
+                // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+                syncToUrl: (values, type) => {
+                    if (type === 'get') {
+                        return {
+                            ...values,
+                            delivery_time: values.delivery_time ? 'current' : undefined
+                            // created_at: [values.created_at && values.created_at[0] ? values.created_at[0].format('YYYY-MM-DD') : undefined, values.created_at && values.created_at[1] ? values.created_at[1].format('YYYY-MM-DD') : undefined],
+                        };
+                    }
+                    console.log(values)
+                    return values;
+                },
+            }}
             bordered
             dateFormatter="string"
             headerTitle="Removal Shipment Detail"

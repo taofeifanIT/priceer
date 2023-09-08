@@ -8,6 +8,7 @@ declare namespace API {
     company: { id: number, name: string }[];
     country: { id: number, name: string }[];
     market: { id: number, name: string }[];
+    dash_store: { id: number, name: string }[];
   }
 
   type globalParameter = {

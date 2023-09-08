@@ -217,6 +217,11 @@ export default [
     ]
   },
   {
+    path: '/warehouse/ClearanceOfGoods',
+    name: 'ClearanceOfGoods',
+    component: './warehouse/ClearanceOfGoods',
+  },
+  {
     path: '/404',
     name: '404',
     component: './404',

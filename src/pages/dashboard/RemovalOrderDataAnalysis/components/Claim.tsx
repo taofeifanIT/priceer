@@ -1,10 +1,11 @@
-import { Select, Card, Row, Col, Spin, Statistic, Space, Button, message } from 'antd';
+import { Select, Card, Row, Col, Spin, Statistic, Space, Button, message, DatePicker } from 'antd';
 import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetClaimInfo } from '@/services/dashboard/removalOrderDataAnalysis'
 import InfoCircle from './InfoCircle'
 import { Pie } from '@ant-design/charts'
-
+import dayJs from 'dayjs'
+const { RangePicker } = DatePicker;
 
 const DemoPie = (props: { successes: number, failures: number }) => {
     const data = [
@@ -52,13 +53,22 @@ export default () => {
         fail_number: 0,
         avg_days: 0
     })
+    const [date, setDate] = useState(null as any)
     const [store, setStore] = useState([])
     const { initialState } = useModel('@@initialState');
     const { configInfo = {} } = initialState;
 
     const init = (storeIds?: number[]) => {
         setLoading(true)
-        removalOrderGetClaimInfo({ store_id: storeIds }).then(res => {
+        let paramTime = undefined
+        if (date !== null && date !== undefined && date.length > 0 && date[0] !== null) {
+            paramTime = date.map((item: string | number | Date | dayJs.Dayjs | null | undefined) => dayJs(item).format('YYYY-MM-DD'))
+            paramTime = {
+                start_date: paramTime[0],
+                end_date: paramTime[1]
+            }
+        }
+        removalOrderGetClaimInfo({ store_id: storeIds, ...paramTime }).then(res => {
             if (!res.code) {
                 throw res.msg
             }
@@ -87,11 +97,18 @@ export default () => {
                             style={{ width: '300px' }}
                             placeholder="Please select"
                             maxTagCount={'responsive'}
-                            options={configInfo.store.map((item: any) => ({ label: item.name, value: item.id }))}
+                            options={configInfo.dash_store.map((item: any) => ({ label: item.name, value: item.id }))}
                             onChange={(value: any) => {
                                 setStore(value)
                             }}
                         />
+                        <RangePicker value={date} onChange={(val) => {
+                            if (val) {
+                                setDate(val)
+                            } else {
+                                setDate([null, null])
+                            }
+                        }} />
                         <Button type="primary" onClick={() => {
                             init(store)
                         }}>Search</Button>
@@ -101,34 +118,35 @@ export default () => {
                             <Col span={12}>
                                 <Card style={{ margin: '4px 4px 4px 0' }}>
                                     <div style={{ height: '170px' }}>
-                                        <Statistic title={<>Total Claim<InfoCircle title='Total Number Of Claims' /></>} value={data.number} />
-                                        <Statistic title={<>Sku Quantity<InfoCircle title='Total Number Of SKU' /></>} value={data.skus} />
-                                        <Statistic title={<>Unit Quantity<InfoCircle title='Total Product Quantity' /></>} value={data.qty} />
+                                        <Statistic title={<>Total Claims<InfoCircle title='Total Claims Number' /></>} value={data.number} />
+                                        <Statistic title={<>Sku Quantity<InfoCircle title='Total SKU Number' /></>} value={data.skus} />
+                                        <Statistic title={<>Unit<InfoCircle title='Total Product Quantity' /></>} value={data.qty} />
                                     </div>
                                 </Card>
                             </Col>
                             <Col span={12}>
                                 <Card style={{ margin: 4 }}>
                                     <div style={{ height: '170px' }}>
-                                        <Statistic title={<>Amount Of Successful Claim<InfoCircle title='Total Amount Of Successful Claim' /></>} prefix={'$'} value={data.success_amount} />
-                                        <Statistic title={<>Number Of successful Claims<InfoCircle title='Total Number Of Successful Claims' /></>} value={data.success_number} />
+                                        <Statistic title={<>Average Claim Period<InfoCircle title='Average Time Period to Process Claims' /></>} value={data.avg_days} />
                                     </div>
                                 </Card>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={12}>
-                                <Card style={{ margin: '4px 4px 4px 0' }}>
+                                <Card style={{ margin: 4 }}>
                                     <div style={{ height: '110px' }}>
-                                        <Statistic title={<>Claim Failure Cost<InfoCircle title='Total Cost Of Failed Claims' /></>} prefix={'$'} value={data.fail_amount} />
-                                        <Statistic title={<>Number Of Failed Claims<InfoCircle title='Total Number Of Failed Claims' /></>} value={data.fail_number} />
+                                        <Statistic title={<>Amount Of Successful Claims<InfoCircle title='Total Amount of Successful Claims' /></>} prefix={'$'} value={data.success_amount} />
+                                        <Statistic title={<>Number Of successful Claims<InfoCircle title='Total Number of Successful Claims' /></>} value={data.success_number} />
                                     </div>
                                 </Card>
+
                             </Col>
                             <Col span={12}>
                                 <Card style={{ margin: '4px 4px 4px 0' }}>
                                     <div style={{ height: '110px' }}>
-                                        <Statistic title={<>Average Claim Period<InfoCircle title='Average Time Period For Processing Claimed Goods' /></>} value={data.avg_days} />
+                                        <Statistic title={<>Inventory Cost for Failed Claims<InfoCircle title='Total Inventory Cost of Failed Claims' /></>} prefix={'$'} value={data.fail_amount} />
+                                        <Statistic title={<>Number Of Failed Claims<InfoCircle title='Total Number of Failed Claims' /></>} value={data.fail_number} />
                                     </div>
                                 </Card>
                             </Col>

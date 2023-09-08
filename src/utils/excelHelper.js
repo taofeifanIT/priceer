@@ -73,4 +73,11 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
   XLSX.writeFile(wb, fileName);
 };
 
-export { exportExcel };
+
+// 导出table为excel
+const exportTableExcel = (table, fileName = 'demo.xlsx') => {
+  const wb = XLSX.utils.table_to_book(table);
+  XLSX.writeFile(wb, fileName);
+}
+
+export { exportExcel, exportTableExcel };

@@ -1,0 +1,38 @@
+.yearDataBystore {
+  table,
+  thead,
+  tfoot,
+  tbody {
+    display: block;
+  }
+  thead,
+  tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+  thead {
+    width: calc(100% - 1em);
+  }
+  tbody {
+    height: 250px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  tfoot tr {
+    display: table;
+    width: 100%;
+    // 字体加粗
+    font-weight: bold;
+    table-layout: fixed;
+    background-color: rgb(159, 178, 255);
+  }
+  tfoot {
+    width: calc(100% - 1em);
+  }
+  tbody tr:hover {
+    background-color: #fafafa;
+    // 延迟1s;
+    transition: background-color 0.3s;
+  }
+}

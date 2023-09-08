@@ -10,6 +10,7 @@ export default () => {
     const [data, setData] = useState({
         boxes: 0,
         qty: 0,
+        title: '',
         volume: 0
     })
     const [store, setStore] = useState([])
@@ -36,7 +37,7 @@ export default () => {
     return (<div style={{ padding: '0px 4px 10px 10px' }}>
         <Spin spinning={loading}>
             <h3>
-                Next Week's Arrival Information
+                {data.title} Arrival Information <InfoCircle title={`The Incoming Products for ${data.title}`} />
             </h3>
             <Space>
                 <Select
@@ -45,7 +46,7 @@ export default () => {
                     style={{ width: '300px' }}
                     placeholder="Please select"
                     maxTagCount={'responsive'}
-                    options={configInfo.store.map((item: any) => ({ label: item.name, value: item.id }))}
+                    options={configInfo.dash_store.map((item: any) => ({ label: item.name, value: item.id }))}
                     onChange={(value: any) => {
                         setStore(value)
                     }}
@@ -57,18 +58,24 @@ export default () => {
             <div style={{ marginTop: '10px' }}>
                 <Row>
                     <Col span={6}>
-                        <Card style={{ margin: '4px 4px 4px 0' }}>
-                            <Statistic title={<>Unit<InfoCircle title='Product Quantity' /></>} precision={3} value={data.qty} />
+                        <Card style={{ margin: '4px 4px 4px 0', cursor: 'pointer' }} onClick={() => {
+                            window.open('/RemovalOrder/ShipmentList?state=2&delivery_time=current')
+                        }}>
+                            <Statistic title={<>Unit<InfoCircle title='Total Product Quantities' /></>} precision={0} value={data.qty} />
                         </Card>
                     </Col>
                     <Col span={6}>
-                        <Card style={{ margin: 4 }}>
-                            <Statistic title={<>Volume<InfoCircle title='The Volume Required' /></>} precision={3} value={data.volume} />
+                        <Card style={{ margin: 4, cursor: 'pointer' }} onClick={() => {
+                            window.open('/RemovalOrder/ShipmentList?state=2&delivery_time=current')
+                        }}>
+                            <Statistic title={<>Volume<InfoCircle title='The Total Volume Required for Storage' /></>} precision={0} suffix={'CBM'} value={data.volume} />
                         </Card>
                     </Col>
                     <Col span={6}>
-                        <Card style={{ margin: 4 }}>
-                            <Statistic title={<>Boxes<InfoCircle title='Amount Of Boxes' /></>} precision={3} value={data.boxes} />
+                        <Card style={{ margin: 4, cursor: 'pointer' }} onClick={() => {
+                            window.open('/RemovalOrder/ShipmentList?state=2&delivery_time=current')
+                        }}>
+                            <Statistic title={<>Boxes<InfoCircle title='Total Tracking Numbers' /></>} precision={0} value={data.boxes} />
                         </Card>
                     </Col>
                 </Row>

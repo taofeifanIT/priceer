@@ -1,69 +1,35 @@
-import { Table, Spin, Col, Row, Divider, Select, message } from 'antd';
-import { removalOrderDashboard } from '@/services/dashboard/removalOrderDataAnalysis'
+import { Spin, Space, message, Radio, Button, Card } from 'antd';
+import { removalOrderNotReceived } from '@/services/dashboard/removalOrderDataAnalysis'
 import InfoCircle from './InfoCircle'
 import { useEffect, useState } from 'react';
 import { useModel } from 'umi';
-const { Column, ColumnGroup } = Table;
+import { exportTableExcel } from '@/utils/excelHelper'
+import './yearDataByStore.less'
 
-
-let returnRateData: any = []
-
-const options = [
-    {
-        label: 'Amazon Canada',
-        value: 'Amazon Canada',
-    },
-    {
-        label: 'Amazon Mexico',
-        value: 'Amazon Mexico',
-    },
-    {
-        label: 'Amazon US',
-        value: 'Amazon US',
-    },
-]
 
 export default () => {
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState<
-        { table: any[]; avg_days: any[]; return_rate: any[]; tableColumn: any[] }>
-        ({ table: [], avg_days: [], return_rate: [], tableColumn: [] })
+        { table: any[]; tableColumn: any[], total: any }>
+        ({ table: [], tableColumn: [], total: {} })
+    const [type, setType] = useState<1 | 2 | 3>(2)
     const { initialState } = useModel('@@initialState');
     const { configInfo = {} } = initialState;
 
-    const getColorByNumber = (number: number, key: string) => {
-        const startColor = "rgb(99, 190, 123)";
-        const endColor = "rgb(248, 105, 107)";
-        const steps = data.avg_days.length;
-        const parseColor = (color: any) => color.match(/\d+/g).map(Number);
-        const start = parseColor(startColor);
-        const end = parseColor(endColor);
-        const stepSizes = start.map((value: number, index: string | number) => (end[index] - value) / (steps - 1));
-        const transitionColors = [];
-        for (let i = 0; i < steps; i++) {
-            const currentColor = start.map((value: number, index: string | number) => Math.round(value + stepSizes[index] * i));
-            transitionColors.push(`rgb(${currentColor.join(",")})`);
-        }
-        const tempData = data.avg_days.map((item: any) => item[key])
-        tempData.sort((a: number, b: number) => a - b)
-        const index = tempData.indexOf(number)
-        return transitionColors[index];
-    }
-
-    const init = () => {
+    const init = (typeNumber: 1 | 2 | 3) => {
         setLoading(true)
-        removalOrderDashboard().then(res => {
+        removalOrderNotReceived({ type: typeNumber }).then(res => {
             if (!res.code) {
                 throw res.msg
             }
             const columnsData: any = []
-            res.data.table.forEach((item: any) => {
+            res.data.forEach((item: any) => {
                 item.content.forEach((subItem: any) => {
                     columnsData.push(subItem.current_date)
                 })
             })
             const columns = [...new Set(columnsData)]
-            const tableData = res.data.table
+            const tableData = res.data
             const tempTableData: any = []
             const tableTotal: any = { storeId: 'Total' }
             columns.forEach((item: any) => {
@@ -77,8 +43,8 @@ export default () => {
                         if (subSubItem.current_date === columnsItem) {
                             tempObj[columnsItem + '_boxes'] = subSubItem.boxes
                             tempObj[columnsItem + '_qty'] = subSubItem.qty
-                            tableTotal[columnsItem + '_boxes'] += subSubItem.boxes
-                            tableTotal[columnsItem + '_qty'] += subSubItem.qty
+                            tableTotal[columnsItem + '_boxes'] += parseInt(subSubItem.boxes)
+                            tableTotal[columnsItem + '_qty'] += parseInt(subSubItem.qty)
                         }
                     })
                     tempObj.storeId = configInfo?.store?.find((storeItem: any) => storeItem.id === item.store_id)?.nick_name
@@ -87,25 +53,12 @@ export default () => {
                     tempTableData.push(tempObj)
                 }
             })
-            tempTableData.push(tableTotal)
-            const avgDayTotal: any = { storeId: 'Total', last_week: 0, this_week: 0 }
-            const avgDaysData = res.data.avg_days.map((item: any) => {
-                avgDayTotal.last_week += item.content.last_week
-                avgDayTotal.this_week += item.content.this_week
-                return {
-                    storeId: configInfo.store?.find((storeItem: any) => storeItem.id === item.store_id)?.nick_name,
-                    last_week: item.content.last_week,
-                    this_week: item.content.this_week,
-                }
-            })
-            avgDaysData.push(avgDayTotal)
-            returnRateData = res.data.return_rate
+            // tempTableData.push(tableTotal)
             setData({
                 ...data,
                 table: tempTableData,
                 tableColumn: columns,
-                avg_days: avgDaysData,
-                return_rate: res.data.return_rate
+                total: tableTotal
             } as any)
         }).catch(err => {
             message.error(JSON.stringify(err))
@@ -114,107 +67,89 @@ export default () => {
         })
     }
     useEffect(() => {
-        init()
-    }, [])
+        init(type)
+    }, [type])
     return (<div>
         <Spin spinning={loading}>
-            <Table
-                dataSource={data.table}
+            <Card
+                title='The Not Processed Removal Orders'
                 size='small'
-                bordered
-                pagination={false}
-                scroll={{ y: 300 }}>
-                <Column title="Store" dataIndex={'storeId'} />
-                {
-                    data.tableColumn.map((item: any, index) => {
-                        return <ColumnGroup key={item} title={item}>
-                            <Column title={index === 0 ? <>Boxes <InfoCircle title='Number Of Boxes On The Day' /></> : 'Boxes'} dataIndex={item + '_boxes'} key={item + '_boxes'} align='center' />
-                            <Column title={index === 0 ? <>Qty <InfoCircle title='Product Quantity Of The Day' /></> : 'Qty'} dataIndex={item + '_qty'} key={item + '_qty'} align='center' />
-                        </ColumnGroup>
-                    })
-                }
-
-            </Table>
-            <Divider style={{ margin: '24px 0' }} />
-            <Row>
-                <Col span={10}>
-                    <h3 style={{ marginLeft: 9 }}>AVG Days in WH</h3>
-                    <div style={{ padding: '0px 4px 10px 10px' }}>
-                        <table style={{ width: '100%', border: '1px solid #ebebeb' }} border="1" >
-                            <thead>
-                                <tr style={{ background: '#fafafa' }}>
-                                    <th align='left' style={{ paddingLeft: '5%' }}>Store</th>
-                                    <th align='center'>Last Week</th>
-                                    <th align='center'>This Week</th>
-                                </tr>
-                            </thead>
-                            <tbody style={{ overflowY: 'scroll', height: 200 }}>
-                                {data.avg_days.map((item: any) => {
-                                    if (item.storeId === 'Total') {
-                                        return <tr key={item.storeId} style={{ background: '#9bbaf4' }}>
-                                            <td style={{ paddingLeft: '5%' }}>{item.storeId}</td>
-                                            <td align='center'>{item.last_week}</td>
-                                            <td align='center'>{item.this_week}</td>
-                                        </tr>
-                                    }
-                                    return <tr key={item.storeId}>
-                                        <td style={{ paddingLeft: '5%' }}>{item.storeId}</td>
-                                        <td style={{ background: getColorByNumber(item.last_week, 'last_week') }} align='center'>{item.last_week}</td>
-                                        <td style={{ background: getColorByNumber(item.this_week, 'this_week') }} align='center'>{item.this_week}</td>
-                                    </tr>
+                extra={<Space>
+                    <Radio.Group
+                        value={type}
+                        size='small'
+                        onChange={(e) => setType(e.target.value)}>
+                        <Radio.Button value={1}>
+                            Days
+                        </Radio.Button>
+                        <Radio.Button value={2}>
+                            Weeks
+                        </Radio.Button>
+                        <Radio.Button value={3}>
+                            Months
+                        </Radio.Button>
+                    </Radio.Group>
+                    {/* download button */}
+                    <Button size='small' type='primary' onClick={() => {
+                        exportTableExcel(document.getElementById('yearDataTable'), 'NotReceived.xlsx')
+                    }}>Download</Button>
+                </Space>}>
+                <div className='yearDataBystore'>
+                    <table id='yearDataTable' style={{ width: '100%', border: '1px solid #efefef' }} border="1">
+                        <thead style={{ background: '#fafafa' }}>
+                            <tr>
+                                <th rowSpan={2} style={{ height: 40, width: 80 }}>Store</th>
+                                {data.tableColumn.map((item: any) => {
+                                    return <th colSpan={2} key={item} style={{ height: 40 }}>{item}</th>
                                 })}
-                            </tbody>
-                        </table>
-                    </div>
-                </Col>
-                <Col span={1}>
-                    <div style={{ textAlign: 'center' }}>
-                        <Divider type='vertical' style={{ height: 445 }} />
-                    </div>
-                </Col>
-                <Col span={13}>
-                    <div style={{ padding: '0px 10px 10px 4px' }}>
-                        <h3 style={{ marginLeft: 4, display: 'inline-block', width: '50%' }}>Current Return Rates  Est. </h3>
-                        <p style={{ display: 'inline-block' }}>
-                            <span style={{ position: 'absolute', right: 10, top: -5 }}>
-                                Platform：
-                                <Select
-                                    allowClear
-                                    style={{ width: '168px' }}
-                                    placeholder="Please select"
-                                    onChange={(value: any) => {
-                                        if (value) {
-                                            const tempData = returnRateData.filter((item: any) => item.platform === value)
-                                            setData({
-                                                ...data,
-                                                return_rate: tempData
-                                            } as any)
-                                        } else {
-                                            setData({
-                                                ...data,
-                                                return_rate: returnRateData
-                                            } as any)
+                            </tr>
+                            <tr>
+                                {
+                                    data.tableColumn.map((item: any, index: number) => {
+                                        return <>
+                                            <th key={item + '_boxes'}>Boxes {index === 0 ? <InfoCircle title='Total Tracking Numbers which not processed on this date' /> : null}</th>
+                                            <th key={item + '_qty'}>Qty {index === 0 ? <InfoCircle title='Total Tracking Numbers which not processed on this date' /> : null}</th>
+                                        </>
+                                    })
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                data.table.map((item: any) => {
+                                    return <tr key={item.storeId}>
+                                        <td style={{ paddingLeft: 10, width: 80 }}>{item.storeId}</td>
+                                        {
+                                            data.tableColumn.map((subItem: any) => {
+                                                return <>
+                                                    <td align='center'>{item[subItem + '_boxes']}</td>
+                                                    <td align='center'>{item[subItem + '_qty']}</td>
+                                                </>
+                                            })
                                         }
-                                    }}
-                                    options={options}
-                                />
-                            </span>
-                        </p>
-                        <Table
-                            dataSource={data.return_rate}
-                            size='small'
-                            pagination={false}
-                            style={{ width: '100%' }}
-                            scroll={{ y: 367 }}>
-                            <Column title="Date" dataIndex={'current_date'} />
-                            <Column title="Platform" dataIndex={'platform'} ellipsis />
-                            <Column title="Sales" dataIndex={'sales'} />
-                            <Column title="Return Qty" dataIndex={'return_quantity'} />
-                            <Column title="Return Rate" dataIndex={'return_rate'} />
-                        </Table>
-                    </div>
-                </Col>
-            </Row>
+                                    </tr>
+                                })
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                {
+                                    //遍历 data.total
+                                    Object.keys(data.total).map((item: any) => {
+                                        if (item === 'storeId') {
+                                            return <td key={item} style={{ paddingLeft: 10, width: 80 }}>{data.total[item]}</td>
+                                        }
+                                        return <td align='center' key={item}>{data.total[item]}</td>
+                                    })
+                                }
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </Card>
+
+
+            {/* <Divider style={{ margin: '8px 0 12px 0' }} /> */}
         </Spin>
     </div>)
 }
