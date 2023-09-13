@@ -42,6 +42,12 @@ export default [
         path: '/dashboard/Sales',
         component: './dashboard/Sales',
       },
+      // SalesAndRefundRank
+      {
+        path: '/dashboard/SalesAndRefundRank',
+        name: 'SalesAndRefundRank',
+        component: './dashboard/SalesAndRefundRank',
+      }
     ],
   },
   {
@@ -89,6 +95,12 @@ export default [
         name: 'Warehouse',
         component: './ReportView/Warehouse',
       },
+      // FbaInventoryAge
+      {
+        path: '/ReportView/FbaInventoryAge',
+        name: 'FbaInventoryAge',
+        component: './ReportView/FbaInventoryAge',
+      }
     ],
   },
   {
@@ -220,6 +232,12 @@ export default [
     path: '/warehouse/ClearanceOfGoods',
     name: 'ClearanceOfGoods',
     component: './warehouse/ClearanceOfGoods',
+  },
+  {
+    // selfDefinedReport
+    path: '/selfDefinedReport',
+    name: 'selfDefinedReport',
+    component: './selfDefinedReport',
   },
   {
     path: '/404',

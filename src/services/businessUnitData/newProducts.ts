@@ -88,3 +88,11 @@ export async function pmSelfCheck(params: { id: number, status: number }) {
         data: params
     });
 }
+
+// updateSalesPriceForNew
+export async function updateSalesPriceForNew(params: { id: number, sales_price: number }) {
+    return request('/api/businessUnitData/updateSalesPriceForNew', {
+        method: 'POST',
+        data: params
+    });
+}

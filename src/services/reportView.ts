@@ -43,3 +43,19 @@ export async function warehouseIndex() {
         method: 'get'
     });
 }
+
+// dataReport/getInventoryAge
+export async function getInventoryAge(params: { page: number, len: number, type?: string }) {
+    return request('/api/dataReport/getInventoryAge', {
+        method: 'post',
+        data: params
+    });
+}
+
+// dataReport/getFbaInventoryAge
+export async function getFbaInventoryAge(params: { page: number, len: number, store_id?: number }) {
+    return request('/api/dataReport/getFbaInventoryAge', {
+        method: 'post',
+        data: params
+    });
+}

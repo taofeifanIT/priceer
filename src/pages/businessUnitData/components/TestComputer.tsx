@@ -46,15 +46,15 @@ export default (props: {
                     {/* 显示计算结果 */}
                     <br />
                     <br />
-                    <div>采购单价：{unitCost}</div>
-                    <div>target price：{targetPrice}</div>
-                    <div>毛利率：{grossMargin}</div>
+                    <div>Unit Cost(USD) :{unitCost}</div>
+                    <div>Target Purchase Price(CNY)：{targetPrice}</div>
+                    <div>Margin Rate：{grossMargin}</div>
                     {/* 显示计算过程 */}
                     <br />
                     <br />
-                    <div>采购单价 = (采购价 / 汇率) * (1 + 关税)   如果人工填写了关税，就用人工填写的关税，采购价也是一样</div>
-                    <div>target price  (售价 * (1 - 平台费) - 运费) / (1 + 关税)  * （1 - 利润点） * 汇率</div>
-                    <div>毛利率 = (售价 * (1 - 平台费) - 运费 - 采购单价) / (售价 * (1 - 平台费))</div>
+                    <div>Unit Cost(USD) = (采购价 / 汇率) * (1 + 关税)   如果人工填写了关税，就用人工填写的关税，采购价也是一样</div>
+                    <div>Target Purchase Price(CNY)  (售价 * (1 - 平台费) - 运费) / (1 + 关税)  * （1 - 利润点） * 汇率</div>
+                    <div>Margin Rate = (售价 * (1 - 平台费) - 运费 - 采购单价) / (售价 * (1 - 平台费))</div>
                 </div>
             </Modal>
         </div>

@@ -1,7 +1,7 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef } from 'react';
-import { getNewProduct, editMemoForNew, updatePurchasePriceForNew, addProduct, addProductByFile, updateTaxForNew, getBrandForNew, pmSelfCheck } from '@/services/businessUnitData/newProducts'
+import { getNewProduct, editMemoForNew, updatePurchasePriceForNew, addProduct, addProductByFile, updateTaxForNew, getBrandForNew, pmSelfCheck, updateSalesPriceForNew } from '@/services/businessUnitData/newProducts'
 import type { NewProductsItem } from '@/services/businessUnitData/newProducts'
 import { Input, message, Space, Modal, Button, InputNumber, Form, Select, Popconfirm } from 'antd';
 import { PlusOutlined, MinusCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
@@ -11,8 +11,10 @@ import { useState } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { getToken } from '@/utils/token';
-import { exportExcel } from '@/utils/excelHelper'
-import { statusConfig } from './config'
+import { exportExcel } from '@/utils/excelHelper';
+import { statusConfig } from './config';
+// import TestComputer from './components/TestComputer';
+
 
 const DownloadTemplate = () => {
     const downloadTemplateLocal = () => {
@@ -278,7 +280,6 @@ export default () => {
                 const status = form.getFieldValue('brand');
                 if (status !== 'open') {
                     return (
-                        // value 和 onchange 会通过 form 自动注入。
                         <Select
                             allowClear
                             showSearch
@@ -323,7 +324,8 @@ export default () => {
             key: 'sales_price',
             search: false,
             width: 125,
-            render: (_, record) => [<span key='sales_price'>${record.sales_price}</span>],
+            // render: (_, record) => [<span key='sales_price'>${record.sales_price}</span>],
+            render: (_, record) => [<SetValueComponent key={'sales_price'} id={record.id} editKey='sales_price' value={record.sales_price} api={updateSalesPriceForNew} refresh={() => actionRef.current?.reload()} type='number' prefix='$' />],
         },
         {
             title: 'US Import Tax',
@@ -452,7 +454,7 @@ export default () => {
             fixed: 'right',
             render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(0) + '%'}</span>],
         },
-        // (REACT_APP_ENV === 'devLocal' || REACT_APP_ENV === 'test')  {
+        // (REACT_APP_ENV === 'stag') ? {
         //     title: 'TestComputer',
         //     dataIndex: 'TestComputer',
         //     key: 'TestComputer',
@@ -462,9 +464,9 @@ export default () => {
         //     align: 'center',
         //     fixed: 'right',
         //     render: (_, record) => {
-        //         return <TestComputer key='TestComputer' sales_price={record.sales_price} person_sales_price={record.purchase_price} us_tax_rate={record.us_import_tax} tax_rate={record.us_import_tax} ship_fee={record.ship_fee} platform_fee={record.platform_fee} last_purchase_price={record.purchase_price} purchase_price={record.purchase_price} exchange_rate={record.exchange_rate} profitPoint={profitPoint} />
+        //         return <TestComputer key='TestComputer' sales_price={record.sales_price} person_sales_price={record.sales_price} us_tax_rate={record.us_import_tax} tax_rate={record.us_import_tax} ship_fee={record.ship_fee} platform_fee={record.platform_fee} last_purchase_price={record.purchase_price} purchase_price={record.purchase_price} exchange_rate={record.exchange_rate} profitPoint={profitPoint} />
         //     }
-        // },
+        // } : {},
     ];
     return (
         <ProTable<NewProductsItem>

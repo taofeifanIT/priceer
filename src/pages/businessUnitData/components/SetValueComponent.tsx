@@ -2,7 +2,18 @@ import { useEffect, useState, useRef } from 'react'
 import { message, Spin, Typography, InputNumber } from 'antd'
 import { EditTwoTone } from '@ant-design/icons'
 
-const SetValueComponent = (props: { id: number, editKey: string, value: string | number, api: any, refresh: () => void, type?: 'text' | 'number', numberStep?: number, otherParams?: any, disabled?: boolean }) => {
+const SetValueComponent = (props: {
+    id: number,
+    editKey: string,
+    value: string | number,
+    api: any,
+    refresh: () => void,
+    type?: 'text' | 'number',
+    numberStep?: number,
+    otherParams?: any,
+    disabled?: boolean,
+    prefix?: string
+}) => {
     const { id, editKey, value, api, refresh, type = 'text', numberStep = 1, otherParams = {}, disabled = false } = props
     const [paramValue, setParamValue] = useState(value)
     const [spinning, setSpinning] = useState(false)
@@ -15,6 +26,8 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                 message.success(`${editKey} set successfully`)
                 refresh()
             } else {
+                // 报错恢复原值
+                setParamValue(value)
                 throw res.msg
             }
         }).catch((err: any) => {
@@ -43,6 +56,7 @@ const SetValueComponent = (props: { id: number, editKey: string, value: string |
                 {paramValue}
             </Typography.Text>}
             {(type === 'number' && !disabled) && (<>
+                {(props.prefix && !numberIsEdit) && <span>{props.prefix}</span>}
                 {numberIsEdit ? <InputNumber
                     ref={numberRef}
                     step={numberStep}
