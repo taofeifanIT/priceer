@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getQueryVariable } from '@/utils/utils'
 import { getDesignDetail, checkDesign } from '@/services/odika/requirementList';
 import type { saveDesignParams } from '@/services/odika/requirementList';
@@ -8,6 +8,13 @@ const { Text, Title } = Typography;
 
 const COLORS = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#f50', '#2db7f5', '#87d068', '#108ee9', '#f50', '#2db7f5', '#87d068', '#108ee9']
 
+const tagStyle: React.CSSProperties = {
+    wordBreak: 'break-word',
+    whiteSpace: 'pre-wrap',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    marginBottom: '5px',
+}
 
 const CheckForm = (props: { check?: string }) => {
     const { check } = props;
@@ -273,9 +280,9 @@ export default () => {
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
                                     <span><FormattedMessage id='pages.odika.ViewDesign.SellingPoint' />：</span>
-                                    <div style={{ width: ((item.url?.length || 1) * WIDTH - 50) }}>
+                                    <div style={{ maxWidth: ((item.url?.length || 1) * WIDTH - 50) }}>
                                         {item?.sellingPoint?.map((point, pointIndex) => {
-                                            return <Tag color={COLORS[pointIndex]} key={point}>{point}</Tag>
+                                            return <Tag color={COLORS[pointIndex]} style={tagStyle} key={point}>{point}</Tag>
                                         })}
                                     </div>
                                 </Space>

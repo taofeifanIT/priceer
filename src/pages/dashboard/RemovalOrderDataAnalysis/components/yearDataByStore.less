@@ -12,7 +12,7 @@
     table-layout: fixed;
   }
   thead {
-    width: calc(100% - 1em);
+    width: calc(100% - 5px);
   }
   tbody {
     height: 250px;
@@ -28,11 +28,26 @@
     background-color: rgb(159, 178, 255);
   }
   tfoot {
-    width: calc(100% - 1em);
+    width: calc(100% - 5px);
   }
   tbody tr:hover {
     background-color: #fafafa;
     // 延迟1s;
     transition: background-color 0.3s;
+  }
+  // 判断mac系统
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(50, 50, 50, 0.3);
+    border-radius: 1em;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: rgba(50, 50, 50, 0.1);
+    border-radius: 1em;
   }
 }

@@ -142,13 +142,18 @@ export function enterF11() {
 
 export function findIndexPage(arr: any[]) {
     let path = '';
-    arr.forEach((item) => {
-        if (!item.routes) {
-            path = item.path;
+    for (let i = 0; i < arr.length; i++) {
+        if (path) {
+            continue;
+        };
+        if (!arr[i].routes) {
+            path = arr[i].path;
         } else {
-            path = item.routes[0].path;
+            path = arr[i].routes[0].path;
+            // 跳出循环
+            break;
         }
-    });
+    }
     return path;
 }
 

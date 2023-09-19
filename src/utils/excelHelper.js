@@ -68,7 +68,6 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
       }),
     },
   };
-  // console.log(output)
   // 导出 Excel
   XLSX.writeFile(wb, fileName);
 };

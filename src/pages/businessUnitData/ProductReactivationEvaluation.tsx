@@ -499,7 +499,7 @@ export default () => {
                         target_price: getTargetPurchasePrice(item),
                     }
                 })
-                const rate = resultData[0]?.exchange_rate || await getRate()
+                const rate = response.exchange_rate
                 setUSDRate(rate)
                 setBrands(brandData)
                 exportData = resultData

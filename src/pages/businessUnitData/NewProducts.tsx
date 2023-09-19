@@ -194,7 +194,7 @@ export default () => {
         // const ts = dividend / divisor * (1 - 0.1) * USDRate * 1.13
         const ts = dividend / divisor * (1 - profitPoint) * exchange_rate
         // 保留两位小数
-        console.log(sales_price, platform_fee, ship_fee, us_import_tax, exchange_rate)
+        // console.log(sales_price, platform_fee, ship_fee, us_import_tax, exchange_rate)
         return ts.toFixed(2)
     }
     const getBrand = async () => {
@@ -212,18 +212,18 @@ export default () => {
         setBrands(brandData)
     }
 
-    const getRate = async () => {
-        // if (USDRate) return USDRate
-        let rate = 7.25;
-        const { data } = await axios('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
-        if (data.code === 0) {
-            rate = data.data.rate
-        } else {
-            // 递归调用
-            rate = await getRate()
-        }
-        return rate
-    }
+    // const getRate = async () => {
+    //     // if (USDRate) return USDRate
+    //     let rate = 7.25;
+    //     const { data } = await axios('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
+    //     if (data.code === 0) {
+    //         rate = data.data.rate
+    //     } else {
+    //         // 递归调用
+    //         rate = await getRate()
+    //     }
+    //     return rate
+    // }
     const columns: ProColumns<NewProductsItem>[] = [
         {
             dataIndex: 'index',
@@ -315,7 +315,7 @@ export default () => {
             dataIndex: 'status',
             key: 'status',
             valueType: 'select',
-            width: 135,
+            width: 145,
             valueEnum: statusConfig,
         },
         {
@@ -479,10 +479,10 @@ export default () => {
                 await getBrand()
                 const tempParams = { ...params, ...filter, ...sort, len: params.pageSize, page: params.current, margin_rate: params.margin_rate ? params.margin_rate / 100 : undefined, }
                 const res = await getNewProduct(tempParams)
-                const { data, code } = res
+                const { data, code, exchange_rate } = res
                 let tempData = data.data
                 if (code) {
-                    const rate = tempData[0]?.exchange_rate || await getRate()
+                    const rate = exchange_rate
                     setUSDRate(rate)
                     tempData = tempData.map((item: NewProductsItem) => {
                         // item.exchange_rate = rate

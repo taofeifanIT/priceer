@@ -105,7 +105,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
           hasPage = result?.path === jumpPath;
         }
         if (!hasPage) {
-          // 如果没有权限，重定向到一个带权限的页面 
           const newMenu: any = initialState?.currentUser?.menu.sort((a: any, b: any) => a.id - b.id);
           const indexPage = findIndexPage(newMenu);
           if (indexPage) {

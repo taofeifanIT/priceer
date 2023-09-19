@@ -1,6 +1,8 @@
-import { Row, Col, Card, Table, Spin, message, Tag } from 'antd';
+import { Row, Col, Card, Table, Spin, message, Tag, DatePicker, Form, Button, Select } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { getSalesAndRefundRank } from '@/services/dashboard/salesAndRefundRank';
+import { useModel } from 'umi';
+const { RangePicker } = DatePicker;
 
 // "seller_sku": "40B00135CN-Open Box",
 // 				"quantity_num": 76
@@ -28,7 +30,7 @@ const cirlceStyle: React.CSSProperties = {
 //     '#ffff00',
 // ]
 
-const tagColor = {
+const tagColor: any = {
     'UNWANTED_ITEM': '#55acee',
     'DEFECTIVE': '#cd201f',
     'MISSING_PARTS': '#3b5999',
@@ -42,35 +44,12 @@ const tagColor = {
     'SWITCHEROO': '#09d305',
     'NO_REASON_GIVEN': '#6672f7',
     'NOT_AS_DESCRIBED': '#b0c778',
+    'UNDELIVERABLE_REFUSED': '#c138be',
 }
 
-const salesColumns = [
-    {
-        dataIndex: 'index',
-        valueType: 'indexBorder',
-        width: 100,
-        align: 'center',
-        render: (_: any, __: any, index: any) => {
-            return <div style={index <= 2 ? cirlceStyle : {
-                ...cirlceStyle,
-                background: '#979797',
-            }}>
-                {index + 1}
-            </div>
-        }
-    },
-    {
-        title: 'Seller SKU',
-        dataIndex: 'seller_sku',
-    },
-    {
-        title: 'Quantity',
-        dataIndex: 'quantity_num',
-        align: 'center',
-    }
-]
 
-const refundColumns = [
+
+const salesAndRefundRankColumns = [
     {
         dataIndex: 'index',
         valueType: 'indexBorder',
@@ -86,18 +65,31 @@ const refundColumns = [
         }
     },
     {
-        title: 'MSKU',
-        dataIndex: 'msku',
-        // ellipsis: true,
+        title: 'SKU',
+        dataIndex: 'sku',
     },
     {
-        title: 'Reason',
+        title: 'Quantity',
+        dataIndex: 'quantity',
+        sorter: (a: any, b: any) => a.quantity - b.quantity,
+    },
+    {
+        // return quantity
+        title: 'Return Quantity',
+        dataIndex: 'return_quantity',
+        sorter: (a: any, b: any) => a.return_quantity - b.return_quantity,
+    },
+    {
+        title: 'Return Rate',
+        dataIndex: 'return_rate',
+        sorter: (a: any, b: any) => a.return_rate - b.return_rate,
+    },
+    {
+        title: 'Reasons',
         dataIndex: 'content',
         render: (_: any, record: any) => {
             return <div>
-                {record.content.map((item: any, index: number) => {
-                    // return <Tag key={item.reason} style={{ marginBottom: '5px' }}>{item.reason + ' ' + item.num}</Tag>
-                    // 判断item.reason是否在tagColor中，不用全等，包含就行
+                {record.reason.map((item: any) => {
                     const color = Object.keys(tagColor).find(key => item.reason.includes(key)) || ''
                     return <Tag key={item.reason} style={{ marginBottom: '5px' }} color={color ? tagColor[color] : '#55acee'}>{item.reason + ' ' + item.num}</Tag>
 
@@ -105,19 +97,27 @@ const refundColumns = [
             </div>
         }
     },
-    {
-        title: 'Quantity',
-        dataIndex: 'quantity_num',
-        align: 'center',
-    },
 ]
 
 export default () => {
-    const [salesAndRefundRank, setSalesAndRefundRank] = useState<any>({})
+    const [salesAndRefundRank, setSalesAndRefundRank] = useState<any>([])
     const [loading, setLoading] = useState<boolean>(false)
-    const initData = () => {
+    const [form] = Form.useForm();
+    const { initialState } = useModel('@@initialState');
+    const { configInfo } = initialState || {};
+    const getStores = () => {
+        const storeObj: any = {}
+        configInfo?.dash_store.forEach((item: any) => {
+            storeObj[item.id] = {
+                text: item.name
+            }
+        })
+        return storeObj
+    }
+
+    const initData = (params: any) => {
         setLoading(true)
-        getSalesAndRefundRank().then(res => {
+        getSalesAndRefundRank(params).then(res => {
             if (!res.code) {
                 throw res.msg
             }
@@ -128,33 +128,60 @@ export default () => {
             setLoading(false)
         })
     }
+
+    const onFinish = (values: any) => {
+        const { date } = values
+        const formParams = {
+            store_id: values.store_id,
+            start_date: date ? date[0].format('YYYY-MM-DD') : undefined,
+            end_date: date ? date[1].format('YYYY-MM-DD') : undefined,
+        }
+        initData(formParams)
+    };
     useEffect(() => {
-        initData()
+        initData({
+            store_id: form.getFieldValue('store_id'),
+        })
     }, [])
     return (<div style={{ background: '#fff' }}>
         <Spin spinning={loading}>
             <Row gutter={24}>
-                <Col span={10}>
-                    <Card title="Sales Rank" bordered={false}>
+                <Col span={24}>
+                    <Card title={<Form
+                        layout={'inline'}
+                        form={form}
+                        onFinish={onFinish}
+                        initialValues={{
+                            store_id: "2",
+                        }}
+                    >
+                        <Form.Item
+                            label="Store Name"
+                            name="store_id"
+                        >
+                            <Select
+                                allowClear
+                                style={{ width: 120 }}
+                                options={Object.keys(getStores()).map(key => ({ label: getStores()[key].text, value: key }))}
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            label="Date"
+                            name="date"
+                        >
+                            <RangePicker />
+                        </Form.Item>
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit">Query</Button>
+                        </Form.Item>
+                    </Form>} bordered={false}>
                         <Table
                             size='small'
                             bordered
-                            columns={salesColumns}
-                            dataSource={salesAndRefundRank.sales}
+                            columns={salesAndRefundRankColumns}
+                            dataSource={salesAndRefundRank}
                             pagination={false}
-                            rowKey={(record: any) => record.seller_sku}
-                        />
-                    </Card>
-                </Col>
-                <Col span={14}>
-                    <Card title="Refund Rank" bordered={false}>
-                        <Table
-                            size='small'
-                            bordered
-                            columns={refundColumns}
-                            dataSource={salesAndRefundRank.refund}
-                            pagination={false}
-                            rowKey={(record: any) => record.msku}
+                            rowKey={(record: any) => record.sku}
                         />
                     </Card>
                 </Col>

@@ -3,6 +3,11 @@ import { ProTable } from '@ant-design/pro-components';
 import { useRef } from 'react';
 import { getFbaInventoryAge } from '@/services/reportView'
 import { useModel } from 'umi';
+import { Button } from 'antd';
+import { useState } from 'react';
+import { exportExcel } from '@/utils/excelHelper'
+import { ExportOutlined } from '@ant-design/icons';
+
 
 type GithubIssueItem = {
     id: number;
@@ -28,9 +33,9 @@ type GithubIssueItem = {
 };
 
 
-
 export default () => {
     const actionRef = useRef<ActionType>();
+    const [publicData, setPublicData] = useState<GithubIssueItem[]>([])
     const { initialState } = useModel('@@initialState');
     const { configInfo } = initialState || {};
     const getStores = () => {
@@ -43,26 +48,12 @@ export default () => {
         return storeObj
     }
     const columns: ProColumns<GithubIssueItem>[] = [
-
-        {
-            title: 'ASIN',
-            dataIndex: 'asin',
-            width: 120,
-            search: false,
-            fixed: 'left',
-        },
         {
             title: 'Store Name',
             dataIndex: 'store_id',
             width: 120,
             valueType: 'select',
             valueEnum: getStores(),
-        },
-        {
-            title: 'Current Date',
-            dataIndex: 'current_date',
-            width: 120,
-            search: false,
         },
         {
             title: 'MSKU',
@@ -72,12 +63,24 @@ export default () => {
             search: false,
         },
         {
-            title: 'Product Name',
-            dataIndex: 'product_name',
-            width: 320,
-            ellipsis: true,
+            title: 'ASIN',
+            dataIndex: 'asin',
+            width: 120,
             search: false,
         },
+        // {
+        //     title: 'Current Date',
+        //     dataIndex: 'current_date',
+        //     width: 120,
+        //     search: false,
+        // },
+        // {
+        //     title: 'Product Name',
+        //     dataIndex: 'product_name',
+        //     width: 320,
+        //     ellipsis: true,
+        //     search: false,
+        // },
         {
             title: 'Condition',
             dataIndex: 'condition',
@@ -111,31 +114,36 @@ export default () => {
         {
             title: 'Inv Age 0 to 30 Days',
             dataIndex: 'inv_age_0_to_30_days',
-            width: 155,
+            width: 170,
+            sorter: (a, b) => a.inv_age_0_to_30_days - b.inv_age_0_to_30_days,
             search: false,
         },
         {
             title: 'Inv Age 31 to 60 Days',
             dataIndex: 'inv_age_31_to_60_days',
-            width: 164,
+            width: 177,
+            sorter: (a, b) => a.inv_age_31_to_60_days - b.inv_age_31_to_60_days,
             search: false,
         },
         {
             title: 'Inv Age 61 to 90 Days',
             dataIndex: 'inv_age_61_to_90_days',
-            width: 164,
+            width: 177,
+            sorter: (a, b) => a.inv_age_61_to_90_days - b.inv_age_61_to_90_days,
             search: false,
         },
         {
             title: 'Inv Age 181 to 330 Days',
             dataIndex: 'inv_age_181_to_330_days',
-            width: 179,
+            width: 195,
+            sorter: (a, b) => a.inv_age_181_to_330_days - b.inv_age_181_to_330_days,
             search: false,
         },
         {
             title: 'Inv Age 331 to 365 Days',
             dataIndex: 'inv_age_331_to_365_days',
-            width: 179,
+            width: 195,
+            sorter: (a, b) => a.inv_age_331_to_365_days - b.inv_age_331_to_365_days,
             search: false,
         },
         {
@@ -185,6 +193,7 @@ export default () => {
                         page: params.current
                     }
                     getFbaInventoryAge(tempParams).then((res) => {
+                        setPublicData(res.data)
                         resolve({
                             data: res.data,
                             success: !!res.code,
@@ -212,6 +221,7 @@ export default () => {
                 //     listsHeight: 400,
                 // },
             }}
+
             form={{
                 // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
                 syncToUrl: (values, type) => {
@@ -231,7 +241,30 @@ export default () => {
             }}
             scroll={{ x: columns.reduce((total, { width = 0 }) => total + width, 0) }}
             dateFormatter="string"
-            headerTitle="FbaInventoryAge Report"
+            headerTitle={<>FBA Inventory Age Report {publicData[0]?.current_date}</>}
+            toolBarRender={() => [
+                <Button
+                    key="export"
+                    type="primary"
+                    icon={<ExportOutlined />}
+                    onClick={() => {
+                        const excelColumns: any = columns.map((item: any) => {
+                            return {
+                                title: item.title,
+                                dataIndex: item.dataIndex,
+                                key: item.dataIndex,
+                            }
+                        })
+                        const excelData = publicData.map((item: any) => {
+                            return {
+                                ...item,
+                                store_id: getStores()[item.store_id].text
+                            }
+                        })
+                        exportExcel(excelColumns, excelData, 'FBA_Inventory_Age_Report.xlsx')
+                    }}
+                >Export</Button>,
+            ]}
         />
     );
 };

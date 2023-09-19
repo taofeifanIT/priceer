@@ -73,18 +73,18 @@ export default () => {
         }
         setBrands(brandData)
     }
-    const getRate = async () => {
-        // if (USDRate) return USDRate
-        let rate = 7.25;
-        const { data } = await axios('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
-        if (data.code === 0) {
-            rate = data.data.rate
-        } else {
-            // 递归调用
-            rate = await getRate()
-        }
-        return rate
-    }
+    // const getRate = async () => {
+    //     // if (USDRate) return USDRate
+    //     let rate = 7.25;
+    //     const { data } = await axios('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
+    //     if (data.code === 0) {
+    //         rate = data.data.rate
+    //     } else {
+    //         // 递归调用
+    //         rate = await getRate()
+    //     }
+    //     return rate
+    // }
     const getTargetPurchasePrice = (record: NewProductsItem) => {
         const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_import_tax = 0, exchange_rate } = record;
         const dividend = (sales_price * (1 - platform_fee) - ship_fee)
@@ -352,7 +352,7 @@ export default () => {
                 await getBrand()
                 const tempParams = { ...params, ...filter, ...sort, margin_rate: params.margin_rate ? (params.margin_rate / 100) : undefined, len: params.pageSize, page: params.current }
                 const res = await getCheckList(tempParams)
-                const { data, code } = res
+                const { data, code, exchange_rate } = res
                 const resultData = data.data.map((item: NewProductsItem) => {
                     // item.exchange_rate = USDRate
                     return {
@@ -360,7 +360,7 @@ export default () => {
                         target_price: getTargetPurchasePrice(item)
                     }
                 })
-                const rate = resultData[0]?.exchange_rate || await getRate()
+                const rate = exchange_rate
                 setUSDRate(rate)
                 return {
                     data: resultData,
