@@ -98,7 +98,7 @@ const ActionModel = React.forwardRef((props: actionItems, ref) => {
     }));
     return (
         <>
-            <Modal title={editRecordId ? 'edit' : 'add'} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
+            <Modal title={editRecordId ? 'edit' : 'add'} op={isModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
                 <Form
                     layout={"horizontal"}
                     form={form}
@@ -190,7 +190,7 @@ const ListingModel = React.forwardRef((props: listingModelItem, ref) => {
     }, [])
     return (
         <>
-            <Modal title={'Listing'} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
+            <Modal title={'Listing'} open={isModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
                 <Form
                     layout={"horizontal"}
                     form={form}

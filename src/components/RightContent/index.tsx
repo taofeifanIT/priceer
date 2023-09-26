@@ -72,8 +72,8 @@ const GlobalHeaderRight: React.FC = () => {
         id="popPopover"
         placement="bottomRight"
         trigger="click"
-        visible={visible}
-        onVisibleChange={handleVisibleChange}
+        open={visible}
+        onOpenChange={handleVisibleChange}
         content={
           <div>
             <Form

@@ -44,7 +44,7 @@ function DeleteComponent(props: {
   return (
     <Popconfirm
       title="Are you sure you want to delete it?"
-      visible={visible}
+      open={visible}
       onConfirm={handleOk}
       okButtonProps={{ loading: confirmLoading }}
       onCancel={handleCancel}
@@ -54,7 +54,7 @@ function DeleteComponent(props: {
   );
 }
 
-export default (props: any) => {
+export default () => {
   const [init, setInit] = useState([]);
   const [data, setData] = useState<any[]>([]);
   const [tableRecord, setTableRecord] = useState({});
@@ -152,7 +152,7 @@ export default (props: any) => {
     >
       <Modal
         title={(editRecord as any).id ? 'edit' : 'add'}
-        visible={isModalVisible}
+        open={isModalVisible}
         confirmLoading={confirmLoading}
         onOk={handleOk}
         onCancel={handleCancel}

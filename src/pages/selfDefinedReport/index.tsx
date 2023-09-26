@@ -16,11 +16,12 @@ const reportConfig: any = {
                 value: '',
                 options: [],
             },
-            // "Brand": {
-            //     value: '',
-            //     options: [],
-            // },
         },
+        boldCol: [
+            "Qty Aged 60 ~ 90 Days",
+            "Qty Aged 90 ~ 180 Days",
+            "Qty Aged 180 ~ 365 Days",
+        ]
     }
 }
 
@@ -81,9 +82,12 @@ export default () => {
                     // sorter: configInfo[reportTemplate].needSorterColumns.includes(item) ? (a: any, b: any) => a[item] - b[item] : false,
                     sorter: (item !== 'Location Average Cost' && item !== 'Currency') ? sorter : false,
                     render: (text: any) => {
+                        if (text === null) {
+                            return ''
+                        }
                         let valueStr: any = text
-                        if (!isNaN(valueStr) && columnType === 'number') {
-                            if (text.toString().indexOf('.') !== -1) {
+                        if (!isNaN(valueStr) && columnType === 'number' && configInfo[reportTemplate].boldCol.includes(item)) {
+                            if (text?.toString().indexOf('.') !== -1) {
                                 valueStr = parseFloat(parseFloat(valueStr).toFixed(3))
                             }
                             if (valueStr > 0) {
@@ -105,7 +109,7 @@ export default () => {
                 ...pagination,
                 current: params.page,
                 pageSize: params.len,
-                total: data.total_page.length,
+                total: data.length,
             });
         }).catch((err) => {
             console.log(err);
@@ -120,7 +124,7 @@ export default () => {
     const getSelectComponent = () => {
         const selectData = Object.keys(configInfo[reportTemplate].needSelectColumns).map((item) => {
             const targetValue = configInfo[reportTemplate].needSelectColumns[item]
-            return <>
+            return <span key={item}>
                 <span>{item}：</span>
                 <Select allowClear style={{ width: 220 }} value={targetValue.value} onChange={(val) => {
                     const tempConfigInfo = { ...configInfo };
@@ -133,7 +137,7 @@ export default () => {
                         })
                     }
                 </Select>
-            </>
+            </span>
         })
         return selectData
     }
@@ -159,6 +163,7 @@ export default () => {
             // 设置分页
             setPagination({
                 ...pagination,
+                current: 1,
                 total: filterData.length,
             })
         } else {
@@ -169,6 +174,7 @@ export default () => {
             // 设置分页
             setPagination({
                 ...pagination,
+                current: 1,
                 total: allData.length,
             })
         }
@@ -180,10 +186,13 @@ export default () => {
                 page: 1,
                 len: 50,
             });
-        } else {
+        }
+    }, []);
+    useEffect(() => {
+        if (reportData.alreadyInit) {
             caculateData()
         }
-    }, [configInfo]);
+    }, [JSON.stringify(configInfo)]);
     return (
         <div style={{ background: '#fff', padding: 8 }}>
             <Card

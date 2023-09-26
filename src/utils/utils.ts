@@ -149,7 +149,8 @@ export function findIndexPage(arr: any[]) {
         if (!arr[i].routes) {
             path = arr[i].path;
         } else {
-            path = arr[i].routes[0].path;
+            // path = arr[i].routes[0].path;
+            path = findIndexPage(arr[i].routes);
             // 跳出循环
             break;
         }

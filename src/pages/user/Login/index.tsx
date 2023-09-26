@@ -7,12 +7,12 @@ import {
 } from '@ant-design/icons';
 import {
   LoginForm,
-  ProFormCheckbox,
+  // ProFormCheckbox,
   ProFormText,
 } from '@ant-design/pro-components';
 import { Alert, message, Tabs } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { getConfig } from '@/services/basePop';
+// import { getConfig } from '@/services/basePop';
 // @ts-ignore
 import { FormattedMessage, history, SelectLang, useIntl, useModel, setLocale, getLocale } from 'umi';
 import styles from './index.less';
@@ -180,15 +180,15 @@ const Login: React.FC = () => {
               marginBottom: 24,
             }}
           >
-            <ProFormCheckbox noStyle name="autoLogin">
+            {/* <ProFormCheckbox noStyle name="autoLogin">
               <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
-            </ProFormCheckbox>
+            </ProFormCheckbox> */}
             <a
               style={{
                 float: 'right',
               }}
             >
-              <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" />
+              {/* <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" /> */}
             </a>
           </div>
         </LoginForm>

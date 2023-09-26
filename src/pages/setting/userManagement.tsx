@@ -85,7 +85,7 @@ const OperationModal = (props: {
         maskClosable={false}
         title={props.record ? 'edit' : 'add'}
         confirmLoading={confirmLoading}
-        visible={props.isModalVisible}
+        open={props.isModalVisible}
         onOk={onFinish}
         onCancel={() => props.setIsModalVisible(onReset)}
       >
@@ -194,7 +194,7 @@ function DeleteComponent(props: { id: number; initData: () => void }) {
   return (
     <Popconfirm
       title="Are you sure you want to delete this data？"
-      visible={visible}
+      open={visible}
       onConfirm={handleOk}
       okButtonProps={{ loading: confirmLoading }}
       onCancel={handleCancel}

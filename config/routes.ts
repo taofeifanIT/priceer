@@ -225,6 +225,12 @@ export default [
         path: '/odika/DemandProcessControl',
         name: 'DemandProcessControl',
         component: './odika/DemandProcessControl',
+      },
+      // Order
+      {
+        path: '/odika/OdikaOrder',
+        name: 'Order',
+        component: './odika/OdikaOrder',
       }
     ]
   },

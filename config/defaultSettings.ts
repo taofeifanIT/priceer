@@ -16,7 +16,10 @@ const Settings: LayoutSettings & {
   logo: '/subLogo.png',
   iconfontUrl: '',
   headerHeight: 48,
-  splitMenus: false
+  splitMenus: false,
+  // menu: {
+  //   locale: false,
+  // }
 
 };
 

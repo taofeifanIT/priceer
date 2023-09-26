@@ -213,7 +213,7 @@ function FromComponet(props: any) {
             },
           ]}
         >
-          <Cascader options={forderOptions(options)} changeOnSelect onChange={changeOptions} />
+          <Cascader options={forderOptions(options)} changeOnSelect />
         </Form.Item>
         <Form.Item
           name="title"
@@ -331,7 +331,7 @@ const DeleteComponent = React.memo((props: { id: number; initData: () => void })
   return (
     <Popconfirm
       title="are you sure delete it?"
-      visible={visible}
+      open={visible}
       onConfirm={handleOk}
       okButtonProps={{
         loading: confirmLoading,

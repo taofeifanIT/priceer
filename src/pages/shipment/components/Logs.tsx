@@ -51,7 +51,7 @@ const ShowResponse = forwardRef((_: any, ref: any) => {
     return (<Modal
         title="Response log"
         width={1000}
-        visible={visible}
+        open={visible}
         onCancel={handleCancel}
         onOk={handleCancel}>
         <Spin spinning={loading}>
