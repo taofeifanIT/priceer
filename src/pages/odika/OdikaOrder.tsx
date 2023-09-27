@@ -22,6 +22,44 @@ export default () => {
 
 
     const columns: ProColumns<OrderListItem>[] = [
+        // id: number;
+        // store_name: string;
+        // amazon_order_id: string;
+        // order_item_id: string;
+        // seller_sku: string;
+        // asin: string;
+        // order_status: string;
+        // title: string;
+        // is_replacement_order: number;
+        // shipping_tracking_number: string;
+        // quantity_ordered: number;
+        // ack_status: string;
+        // ack_reason: string;
+        // auto_order: number;
+        // fnSku: string;
+        // item_price_amount: string;
+        // item_tax_amount: string;
+        // order_total_amount: string;
+        // quantity_shipped: number;
+        // shipping_address: {
+        //     StateOrRegion: string;
+        //     PostalCode: string;
+        //     City: string;
+        //     CountryCode: string;
+        //     Phone?: string;
+        //     Name?: string;
+        //     AddressLine1?: string;
+        //     AddressLine2?: string;
+        // };
+        // carrier: string;
+        // warehouse_id: number;
+        // warehouse_order_code: string;
+        // shipping_fee: number;
+        // shipping_currency: string;
+        // shipping_method: string;
+        // shipping_tax_amount: string;
+        // warehouse_code: string;
+        // warehouse_name: string;
         {
             title: 'Amazon Order ID',
             dataIndex: 'amazon_order_id',
@@ -85,6 +123,12 @@ export default () => {
                         <Text>{record.seller_sku}</Text>
                         <Paragraph style={{ display: 'inline' }} copyable={{ text: record.seller_sku }}></Paragraph>
                     </Text>
+                    {/* fnSku */}
+                    <Text type='secondary'>
+                        FnSku:
+                        <Text>{record.fnsku}</Text>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.fnsku }}></Paragraph>
+                    </Text>
                     <Text type='secondary'>
                         Amazon Order ID:
                         <Text>{record.amazon_order_id}</Text>
@@ -98,7 +142,7 @@ export default () => {
                     <Text type="secondary">
                         Title: <Text
                             ellipsis={{ tooltip: record.title }}
-                            style={{ maxWidth: 330, display: 'inline-block' }}
+                            style={{ width: 300 }}
                         >{record.title}</Text>
                     </Text>
                     {record.is_replacement_order === 1 && <Tag color="red">Replacement</Tag>}
@@ -155,6 +199,48 @@ export default () => {
                     </Text>}
                     <Text type='secondary'>
                         <Tag color="#2db7f5">{record.shipping_address.CountryCode}</Tag>
+                    </Text>
+                </Space>
+            }
+        },
+        {
+            // Price
+            title: 'Price',
+            dataIndex: 'Price',
+            search: false,
+            width: 240,
+            render: (_, record) => {
+                return <Space direction="vertical">
+                    <Text type='secondary'>
+                        Item Price Amount:
+                        <Text>{record.item_price_amount}</Text>
+                    </Text>
+                    <Text type='secondary'>
+                        Item Tax Amount:
+                        <Text>{record.item_tax_amount}</Text>
+                    </Text>
+                    <Text type='secondary'>
+                        Order Total Amount:
+                        <Text>{record.order_total_amount}</Text>
+                    </Text>
+                </Space>
+            }
+        },
+        {
+            // Quantity
+            title: 'Quantity',
+            dataIndex: 'Quantity',
+            search: false,
+            width: 240,
+            render: (_, record) => {
+                return <Space direction="vertical">
+                    <Text type='secondary'>
+                        Quantity Ordered:
+                        <Text>{record.quantity_ordered}</Text>
+                    </Text>
+                    <Text type='secondary'>
+                        Quantity Shipped:
+                        <Text>{record.quantity_shipped}</Text>
                     </Text>
                 </Space>
             }
@@ -217,6 +303,14 @@ export default () => {
                     <Text type='secondary'>
                         Shipping Currency:
                         <Text>{record.shipping_currency}</Text>
+                    </Text>
+                    <Text type='secondary'>
+                        Shipping Tax Amount:
+                        <Text>{record.shipping_tax_amount}</Text>
+                    </Text>
+                    <Text type='secondary'>
+                        Shipping Tracking Number:
+                        <Text>{record.shipping_tracking_number}</Text>
                     </Text>
                 </Space>
             }

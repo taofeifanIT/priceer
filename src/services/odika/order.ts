@@ -15,6 +15,11 @@ export type OrderListItem = {
     ack_status: string;
     ack_reason: string;
     auto_order: number;
+    fnsku: string;
+    item_price_amount: string;
+    item_tax_amount: string;
+    order_total_amount: string;
+    quantity_shipped: number;
     shipping_address: {
         StateOrRegion: string;
         PostalCode: string;
@@ -31,6 +36,7 @@ export type OrderListItem = {
     shipping_fee: number;
     shipping_currency: string;
     shipping_method: string;
+    shipping_tax_amount: string;
     warehouse_code: string;
     warehouse_name: string;
 }
