@@ -1,0 +1,124 @@
+#customsDeclaration {
+  thead {
+    font-size: 12px;
+    vertical-align: text-top;
+  }
+  thead th {
+    // 字体默认不加粗
+    font-weight: normal;
+    text-align: left;
+  }
+  //   thead的第一个tr
+  thead tr:first-child {
+    border-bottom: 1px solid rgb(209, 209, 209);
+    th {
+      font-weight: 600;
+      font-size: 18px;
+      text-align: center;
+    }
+  }
+  thead tr:nth-child(3) {
+    height: 40px;
+    th {
+      border-bottom: 1px solid transparent;
+    }
+  }
+
+  thead tr:nth-child(2) {
+    th:first-child {
+      border-right: 1px solid transparent;
+    }
+    th:nth-child(2) {
+      border-right: 1px solid transparent;
+    }
+    th:nth-child(3) {
+      border-right: 1px solid transparent;
+    }
+    th:nth-child(4) {
+      border-right: 1px solid transparent;
+    }
+  }
+  thead tr:nth-child(5),
+  thead tr:nth-child(7),
+  thead tr:nth-child(9),
+  thead tr:nth-child(11) {
+    // 除去最后一个th右边框不透明，其余透明
+    th {
+      border-bottom: 1px solid transparent;
+    }
+  }
+  //   tbody的第一个tr
+  tbody tr:first-child {
+    td {
+      //    右边框透明
+      border-right: 1px solid transparent;
+    }
+    // 最后一个td 右边框不透明 黑色
+    td:last-child {
+      border-right: 1px solid #000;
+    }
+  }
+  tbody tr {
+    height: 40px;
+  }
+  //   tbody的第二个tr
+  tbody tr:nth-child(2) {
+    // 第一个td
+    td:first-child {
+      width: 100px;
+    }
+    td:nth-child(2) {
+      width: 160px;
+    }
+    td:nth-child(3) {
+      width: 160px;
+    }
+    td:nth-child(4) {
+      width: 70px;
+    }
+    td:nth-child(5) {
+      width: 60px;
+    }
+    td:nth-child(6) {
+      width: 60px;
+    }
+    td:nth-child(7) {
+      width: 60px;
+    }
+    td:nth-child(8) {
+      width: 100px;
+    }
+    td:nth-child(9) {
+      width: 100px;
+    }
+    td:nth-child(10) {
+      width: 60px;
+      border-right: 0.1px solid transparent;
+    }
+    td:nth-child(11) {
+      width: 100px;
+      border-right: 0.1px solid transparent;
+    }
+    td:nth-child(12) {
+      width: 190px;
+    }
+    td:nth-child(13) {
+      width: 190px;
+    }
+  }
+  tfoot tr {
+    th {
+      color: rgb(113, 113, 113);
+      font-size: 11px !important;
+      text-align: left;
+      border-right: 1px solid transparent;
+    }
+    th:nth-child(4) {
+      border-right: 1px solid #000;
+    }
+    th:last-child {
+      border-right: 1px solid #000;
+    }
+    height: 80px;
+  }
+}

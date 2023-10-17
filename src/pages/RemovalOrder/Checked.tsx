@@ -222,7 +222,7 @@ const GetTitle = (props: { title: string, externalData: ShipmentDetailsItem[], c
     const { title, externalData, callBack, width = 120, titleValue } = props
     const [titleObj] = useState<any>({ pops: title === 'Match' ? matchProps : title === 'Claim' ? claimProps : conditionProps })
     const [value, setValue] = useState<string>(titleValue)
-    const [data, setData] = useState<ShipmentDetailsItem[]>(externalData)
+    // const [data, setData] = useState<ShipmentDetailsItem[]>(externalData)
     const changeAllPop = (value: string) => {
         const tempData = externalData?.map(item => {
             // 如果key === match ,value === 1,清空claim

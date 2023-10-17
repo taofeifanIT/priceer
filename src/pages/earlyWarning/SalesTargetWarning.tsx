@@ -1,4 +1,4 @@
-import { message } from 'antd';
+import { Button, message } from 'antd';
 import { getSalesTargetList, getSalesTargetBrand } from '@/services/earlyWarning'
 import type { SalesTargetListParams } from '@/services/earlyWarning'
 import type { SalesTargetItem } from '@/services/earlyWarning'
@@ -9,7 +9,10 @@ import { useRef, useState } from 'react';
 import type { FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import { countWorkDay } from '@/utils/utils'
+import { exportExcel } from '@/utils/excelHelper'
 
+
+let outData: any = []
 export default () => {
     const actionRef = useRef<ActionType>();
     const formRef = useRef<FormInstance>();
@@ -299,6 +302,7 @@ export default () => {
                         setCurrentColumns(columns)
                     }
                 }
+                outData = tempData
                 return tempData
             }}
             request={async (
@@ -331,6 +335,13 @@ export default () => {
             search={{
                 labelWidth: 'auto',
             }}
+            toolBarRender={() => [
+                <Button key="export" type="primary" onClick={() => {
+                    exportExcel(currentColumns.filter((item: any) => !item.hideInTable && item.title), outData, 'Sales_Target_Warning.xlsx')
+                }}>
+                    Export
+                </Button>
+            ]}
             pagination={false}
         />
     </>);

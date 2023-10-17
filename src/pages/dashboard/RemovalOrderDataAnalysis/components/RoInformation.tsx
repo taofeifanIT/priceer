@@ -61,7 +61,8 @@ export default () => {
             <h3>
                 RO Information
                 {/* 写个提示： 默认展示昨天的数据 */}
-                <InfoCircle title="The Processed Romval Orders for Yesterday" />
+                {/* <InfoCircle title="The Processed Romval Orders for Yesterday" /> */}
+                <InfoCircle title="The Processed Romval Orders. Filters: Store & Date (default: yesterday)." />
             </h3>
             <Space>
                 <Select

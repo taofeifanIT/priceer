@@ -115,39 +115,46 @@ export default () => {
                     </Space>
                     <div style={{ marginTop: '10px' }}>
                         <Row>
-                            <Col span={12}>
-                                <Card style={{ margin: '4px 4px 4px 0' }}>
-                                    <div style={{ height: '170px' }}>
-                                        <Statistic title={<>Total Claims<InfoCircle title='Total Claims Number' /></>} value={data.number} />
-                                        <Statistic title={<>Sku Quantity<InfoCircle title='Total SKU Number' /></>} value={data.skus} />
-                                        <Statistic title={<>Unit<InfoCircle title='Total Product Quantity' /></>} value={data.qty} />
-                                    </div>
+                            <Col span={24}>
+                                <Card title='New Claims' size='small' style={{ margin: '4px 4px 4px 0' }}>
+                                    <Row>
+                                        <Col span={8}>
+                                            <Statistic title={<>New Claims<InfoCircle title='Claims Number' /></>} value={data.number} />
+                                        </Col>
+                                        <Col span={8}>
+                                            <Statistic title={<>Sku Quantity<InfoCircle title='Total SKU Number' /></>} value={data.skus} />
+                                        </Col>
+                                        <Col span={8}>
+                                            <Statistic title={<>Unit<InfoCircle title='Total Product Quantity' /></>} value={data.qty} />
+                                        </Col>
+                                    </Row>
                                 </Card>
                             </Col>
-                            <Col span={12}>
+                            {/* <Col span={12}>
                                 <Card style={{ margin: 4 }}>
                                     <div style={{ height: '170px' }}>
                                         <Statistic title={<>Average Claim Period<InfoCircle title='Average Time Period to Process Claims' /></>} value={data.avg_days} />
                                     </div>
                                 </Card>
-                            </Col>
+                            </Col> */}
                         </Row>
                         <Row>
-                            <Col span={12}>
-                                <Card style={{ margin: 4 }}>
-                                    <div style={{ height: '110px' }}>
-                                        <Statistic title={<>Amount Of Successful Claims<InfoCircle title='Total Amount of Successful Claims' /></>} prefix={'$'} value={data.success_amount} />
-                                        <Statistic title={<>Number Of successful Claims<InfoCircle title='Total Number of Successful Claims' /></>} value={data.success_number} />
-                                    </div>
-                                </Card>
-
-                            </Col>
-                            <Col span={12}>
-                                <Card style={{ margin: '4px 4px 4px 0' }}>
-                                    <div style={{ height: '110px' }}>
-                                        <Statistic title={<>Inventory Cost for Failed Claims<InfoCircle title='Total Inventory Cost of Failed Claims' /></>} prefix={'$'} value={data.fail_amount} />
-                                        <Statistic title={<>Number Of Failed Claims<InfoCircle title='Total Number of Failed Claims' /></>} value={data.fail_number} />
-                                    </div>
+                            <Col span={24}>
+                                <Card title={<>Finished Claims <span style={{ fontSize: '12px' }}>（Average Claim Period<InfoCircle title='Average Time Period to Process Claims' />：<span style={{ fontSize: '16px' }}>{data.avg_days}</span></span>）</>} size='small'>
+                                    <Row>
+                                        <Col span={12}>
+                                            <div style={{ height: '120px' }}>
+                                                <Statistic title={<>Amount Of Successful Claims<InfoCircle title='Total Amount of Successful Claims' /></>} prefix={'$'} value={data.success_amount} />
+                                                <Statistic title={<>Number Of Successful Claims<InfoCircle title='Total Number of Successful Claims' /></>} value={data.success_number} />
+                                            </div>
+                                        </Col>
+                                        <Col span={12}>
+                                            <div style={{ height: '120px' }}>
+                                                <Statistic title={<>Inventory Cost for Failed Claims<InfoCircle title='Total Inventory Cost of Failed Claims' /></>} prefix={'$'} value={data.fail_amount} />
+                                                <Statistic title={<>Number Of Failed Claims<InfoCircle title='Total Number of Failed Claims' /></>} value={data.fail_number} />
+                                            </div>
+                                        </Col>
+                                    </Row>
                                 </Card>
                             </Col>
                         </Row>

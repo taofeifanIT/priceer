@@ -39,6 +39,8 @@ export type OrderListItem = {
     shipping_tax_amount: string;
     warehouse_code: string;
     warehouse_name: string;
+    is_cancel: 0 | 1;
+    cancel_reason: string;
 }
 
 // odikaOrder/getList

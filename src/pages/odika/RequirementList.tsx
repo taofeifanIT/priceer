@@ -603,7 +603,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    {localFront('sceneRotograph')} (1464:600)
+                                    {localFront('sceneRotograph')} (2928:1200)
                                 </Button>
                             </Form.Item>
                         </>
@@ -645,7 +645,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             ))}
                             <Form.Item label={" "} colon={false}>
                                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    {localFront('detailMapPresentation')}  (650:350)
+                                    {localFront('detailMapPresentation')}  (1300:700)
                                 </Button>
                             </Form.Item>
                         </>

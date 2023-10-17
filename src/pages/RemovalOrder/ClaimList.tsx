@@ -20,7 +20,7 @@ import {
     from '@/services/removalOrder'
 import moment from 'moment';
 import { getToken } from '@/utils/token'
-import SetValueComponent from '@/pages/businessUnitData/components/SetValueComponent';
+import SetValueComponent from '@/components/SetValueComponent';
 
 export type TableListItem = {
     id: number,

@@ -197,7 +197,7 @@ export default () => {
                             <div>
                                 <Space size={'small'} style={{ 'marginTop': '10px', marginBottom: '15px' }} align='start'>
                                     <span><FormattedMessage id='pages.odika.ViewDesign.pictrueDesc' />：</span>
-                                    <div style={{ width: ((item.url.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
+                                    <div style={{ width: ((item.url?.length || 1) * WIDTH - 50), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.memo}</div>
                                 </Space>
                             </div>
                         </div>
@@ -326,7 +326,7 @@ export default () => {
                     : null}
             {checkAPlus(designDetail?.aPlus) ? (<>
                 <Title level={5} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.template' /></Title>
-                <Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' /> (1464:600)</Title>
+                <Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' /> (2928:1200)</Title>
                 <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
                     {designDetail?.aPlus.aplusScene?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
@@ -361,7 +361,7 @@ export default () => {
                     })}
                 </div>
             </>) : null}
-            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.detail' /> (650:350)</Title>
+            {checkDetailPicture(designDetail?.detailPicture) ? (<><Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.detail' /> (1300:700)</Title>
                 <div>
                     {designDetail?.detailPicture?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>

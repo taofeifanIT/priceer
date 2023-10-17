@@ -67,14 +67,14 @@ const OperationModal = (props: {
       });
   };
   const onReset = () => {
-    formRef.current.resetFields();
+    form.resetFields();
   };
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
   };
   React.useEffect(() => {
-    if (formRef.current && props.record && props.isModalVisible) {
-      formRef.current.setFieldsValue(props.record);
+    if (props.record && props.isModalVisible) {
+      form.setFieldsValue(props.record);
     } else {
       form.resetFields();
     }

@@ -5,7 +5,7 @@ import { getNewProduct, editMemoForNew, updatePurchasePriceForNew, addProduct, a
 import type { NewProductsItem } from '@/services/businessUnitData/newProducts'
 import { Input, message, Space, Modal, Button, InputNumber, Form, Select, Popconfirm } from 'antd';
 import { PlusOutlined, MinusCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
-import SetValueComponent from './components/SetValueComponent';
+import SetValueComponent from '@/components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
 import { useState } from 'react';
 import axios from 'axios';

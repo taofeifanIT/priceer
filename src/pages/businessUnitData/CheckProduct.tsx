@@ -7,7 +7,6 @@ import { message, Space, Popconfirm, Button, Select, InputNumber } from 'antd';
 import { getBrandForNew } from '@/services/businessUnitData/newProducts'
 import InputMemoComponent from './components/InputMemoComponent';
 import { statusConfig } from './config'
-import axios from 'axios'
 
 const options: any = {
     1: 'Approve',

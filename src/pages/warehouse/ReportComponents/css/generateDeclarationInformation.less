@@ -10,7 +10,8 @@
   }
 }
 
-#generateDeclarationInformationTable {
+#generateDeclarationInformationTable,
+.generateDeclarationInformationTable {
   position: relative;
   background-color: hwb(0 100% 0%);
   border: 5px solid #badf94;
@@ -39,6 +40,9 @@
   // thead tr:nth-child(12) th {
   //   font-weight: bold;
   // }
+  tbody tr {
+    // height: 148px;
+  }
   thead tr:last-child {
     background-color: #e2efd9;
     border-top: 3px solid #c8e7a7;
@@ -84,6 +88,7 @@
   .freightCost {
     position: absolute;
     right: -60px;
+    // 虚线边框
   }
   // class为freightCost的元素靠在 id=premium的元素的右边
 }

@@ -2,6 +2,7 @@ import { Row, Col, Card, Table, Spin, message, Tag, DatePicker, Form, Button, Se
 import React, { useState, useEffect } from 'react';
 import { getSalesAndRefundRank } from '@/services/dashboard/salesAndRefundRank';
 import { useModel } from 'umi';
+import { exportExcel } from '@/utils/excelHelper'
 const { RangePicker } = DatePicker;
 
 // "seller_sku": "40B00135CN-Open Box",
@@ -49,55 +50,6 @@ const tagColor: any = {
 
 
 
-const salesAndRefundRankColumns = [
-    {
-        dataIndex: 'index',
-        valueType: 'indexBorder',
-        width: 80,
-        align: 'center',
-        render: (_: any, __: any, index: any) => {
-            return <div style={index <= 2 ? cirlceStyle : {
-                ...cirlceStyle,
-                background: '#979797',
-            }}>
-                {index + 1}
-            </div>
-        }
-    },
-    {
-        title: 'SKU',
-        dataIndex: 'sku',
-    },
-    {
-        title: 'Quantity',
-        dataIndex: 'quantity',
-        sorter: (a: any, b: any) => a.quantity - b.quantity,
-    },
-    {
-        // return quantity
-        title: 'Return Quantity',
-        dataIndex: 'return_quantity',
-        sorter: (a: any, b: any) => a.return_quantity - b.return_quantity,
-    },
-    {
-        title: 'Return Rate',
-        dataIndex: 'return_rate',
-        sorter: (a: any, b: any) => a.return_rate - b.return_rate,
-    },
-    {
-        title: 'Reasons',
-        dataIndex: 'content',
-        render: (_: any, record: any) => {
-            return <div>
-                {record.reason.map((item: any) => {
-                    const color = Object.keys(tagColor).find(key => item.reason.includes(key)) || ''
-                    return <Tag key={item.reason} style={{ marginBottom: '5px' }} color={color ? tagColor[color] : '#55acee'}>{item.reason + ' ' + item.num}</Tag>
-
-                })}
-            </div>
-        }
-    },
-]
 
 export default () => {
     const [salesAndRefundRank, setSalesAndRefundRank] = useState<any>([])
@@ -105,6 +57,70 @@ export default () => {
     const [form] = Form.useForm();
     const { initialState } = useModel('@@initialState');
     const { configInfo } = initialState || {};
+    const quantiySum = salesAndRefundRank.reduce((total: number, item: any) => {
+        return total + parseInt(item.quantity)
+    }, 0)
+    const returnQuantitySum = salesAndRefundRank.reduce((total: number, item: any) => {
+        return total + parseInt(item.return_quantity)
+    }, 0)
+    const salesAndRefundRankColumns = [
+        {
+            dataIndex: 'index',
+            valueType: 'indexBorder',
+            width: 80,
+            align: 'center',
+            render: (_: any, __: any, index: any) => {
+                return <div style={index <= 2 ? cirlceStyle : {
+                    ...cirlceStyle,
+                    background: '#979797',
+                }}>
+                    {index + 1}
+                </div>
+            }
+        },
+        {
+            title: 'SKU',
+            dataIndex: 'sku',
+            key: 'sku',
+        },
+        {
+            title: `Quantity (${quantiySum})`,
+            dataIndex: 'quantity',
+            sorter: (a: any, b: any) => a.quantity - b.quantity,
+            key: 'quantity',
+            type: 'n'
+        },
+        {
+            // return quantity
+            title: `Return Quantity (${returnQuantitySum})`,
+            dataIndex: 'return_quantity',
+            sorter: (a: any, b: any) => a.return_quantity - b.return_quantity,
+            key: 'return_quantity',
+            type: 'n'
+        },
+        {
+            title: 'Return Rate',
+            dataIndex: 'return_rate',
+            sorter: (a: any, b: any) => a.return_rate - b.return_rate,
+            key: 'return_rate',
+            type: 'n'
+        },
+        {
+            title: 'Reasons',
+            dataIndex: 'reason',
+            key: 'reason',
+            render: (_: any, record: any) => {
+                return <div>
+                    {record.reason.map((item: any) => {
+                        const color = Object.keys(tagColor).find(key => item.reason.includes(key)) || ''
+                        return <Tag key={item.reason} style={{ marginBottom: '5px' }} color={color ? tagColor[color] : '#55acee'}>{item.reason + ' ' + item.num}</Tag>
+
+                    })}
+                </div>
+            }
+        },
+    ]
+
     const getStores = () => {
         const storeObj: any = {}
         configInfo?.dash_store.forEach((item: any) => {
@@ -147,40 +163,54 @@ export default () => {
         <Spin spinning={loading}>
             <Row gutter={24}>
                 <Col span={24}>
-                    <Card title={<Form
-                        layout={'inline'}
-                        form={form}
-                        onFinish={onFinish}
-                        initialValues={{
-                            store_id: "2",
-                        }}
-                    >
-                        <Form.Item
-                            label="Store Name"
-                            name="store_id"
+                    <Card
+                        extra={<Button type="primary" onClick={() => {
+                            const tempData = salesAndRefundRank.map((item: any) => {
+                                return {
+                                    ...item,
+                                    reason: item.reason.map((reason: any) => {
+                                        return reason.reason + ' ' + reason.num
+                                    }).join(',')
+                                }
+                            })
+                            console.log(tempData)
+                            exportExcel(salesAndRefundRankColumns, tempData, 'SalesAndRefundRank.xlsx')
+                        }}>Export</Button>}
+                        title={<Form
+                            layout={'inline'}
+                            form={form}
+                            onFinish={onFinish}
+                            initialValues={{
+                                store_id: "2",
+                            }}
                         >
-                            <Select
-                                allowClear
-                                style={{ width: 120 }}
-                                options={Object.keys(getStores()).map(key => ({ label: getStores()[key].text, value: key }))}
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            label="Date"
-                            name="date"
-                        >
-                            <RangePicker />
-                        </Form.Item>
-                        <Form.Item>
-                            <Button type="primary" htmlType="submit">Query</Button>
-                        </Form.Item>
-                    </Form>} bordered={false}>
+                            <Form.Item
+                                label="Store Name"
+                                name="store_id"
+                            >
+                                <Select
+                                    allowClear
+                                    style={{ width: 120 }}
+                                    options={Object.keys(getStores()).map(key => ({ label: getStores()[key].text, value: key }))}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label="Date"
+                                name="date"
+                            >
+                                <RangePicker />
+                            </Form.Item>
+                            <Form.Item>
+                                <Button type="primary" htmlType="submit">Query</Button>
+                            </Form.Item>
+                        </Form>} bordered={false}>
                         <Table
                             size='small'
                             bordered
                             columns={salesAndRefundRankColumns}
                             dataSource={salesAndRefundRank}
                             pagination={false}
+                            scroll={{ y: document.body.clientHeight - 260 }}
                             rowKey={(record: any) => record.sku}
                         />
                     </Card>

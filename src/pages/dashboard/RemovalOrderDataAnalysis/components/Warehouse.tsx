@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useModel } from 'umi';
 import { removalOrderGetWarehouseInfo } from '@/services/dashboard/removalOrderDataAnalysis'
 import InfoCircle from './InfoCircle'
-import dayJs from 'dayjs'
 export default () => {
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState({
@@ -38,7 +37,7 @@ export default () => {
     }
 
     useEffect(() => {
-        init()
+        init(store)
     }, [type])
     return (<div style={{ padding: '0px 4px 10px 10px' }}>
         <Spin spinning={loading}>

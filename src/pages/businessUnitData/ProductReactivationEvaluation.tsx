@@ -9,7 +9,7 @@ import { VerticalAlignBottomOutlined, FileExcelOutlined } from '@ant-design/icon
 import { exportExcel } from '@/utils/excelHelper'
 import { getToken } from '@/utils/token';
 import axions from 'axios';
-import SetValueComponent from './components/SetValueComponent';
+import SetValueComponent from '@/components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
 import './index.less'
 // import TestComputer from './components/TestComputer';

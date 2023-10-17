@@ -19,47 +19,7 @@ const autoOrderOtions = [
 
 export default () => {
     const actionRef: any = useRef<FormInstance>();
-
-
     const columns: ProColumns<OrderListItem>[] = [
-        // id: number;
-        // store_name: string;
-        // amazon_order_id: string;
-        // order_item_id: string;
-        // seller_sku: string;
-        // asin: string;
-        // order_status: string;
-        // title: string;
-        // is_replacement_order: number;
-        // shipping_tracking_number: string;
-        // quantity_ordered: number;
-        // ack_status: string;
-        // ack_reason: string;
-        // auto_order: number;
-        // fnSku: string;
-        // item_price_amount: string;
-        // item_tax_amount: string;
-        // order_total_amount: string;
-        // quantity_shipped: number;
-        // shipping_address: {
-        //     StateOrRegion: string;
-        //     PostalCode: string;
-        //     City: string;
-        //     CountryCode: string;
-        //     Phone?: string;
-        //     Name?: string;
-        //     AddressLine1?: string;
-        //     AddressLine2?: string;
-        // };
-        // carrier: string;
-        // warehouse_id: number;
-        // warehouse_order_code: string;
-        // shipping_fee: number;
-        // shipping_currency: string;
-        // shipping_method: string;
-        // shipping_tax_amount: string;
-        // warehouse_code: string;
-        // warehouse_name: string;
         {
             title: 'Amazon Order ID',
             dataIndex: 'amazon_order_id',
@@ -109,35 +69,35 @@ export default () => {
             title: 'Marketplace',
             dataIndex: 'Marketplace',
             search: false,
-            width: 385,
+            width: 355,
             render: (_, record) => {
                 return <Space direction="vertical">
                     <Text type='secondary'>
                         <AmazonOutlined />Asin:
                         <Link href={`https://www.amazon.com/dp/${record.asin}`} target="_blank">{record.asin}</Link>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.asin }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.asin }} />
                     </Text>
                     {/* sku */}
                     <Text type='secondary'>
                         SKU:
                         <Text>{record.seller_sku}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.seller_sku }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.seller_sku }} />
                     </Text>
                     {/* fnSku */}
                     <Text type='secondary'>
                         FnSku:
                         <Text>{record.fnsku}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.fnsku }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.fnsku }} />
                     </Text>
                     <Text type='secondary'>
                         Amazon Order ID:
                         <Text>{record.amazon_order_id}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.amazon_order_id }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.amazon_order_id }} />
                     </Text>
                     <Text type='secondary'>
                         Order Item ID:
                         <Text>{record.order_item_id}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.order_item_id }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.order_item_id }} />
                     </Text>
                     <Text type="secondary">
                         Title: <Text
@@ -154,48 +114,48 @@ export default () => {
             title: 'Pii',
             dataIndex: 'Pii',
             search: false,
-            width: 305,
+            width: 300,
             render: (_, record) => {
                 return <Space direction="vertical">
                     {record.shipping_address.Name && <Text type='secondary'>
                         Name:
                         <Text>{record.shipping_address.Name}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.Name }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.Name }} />
                     </Text>}
                     {record.shipping_address.AddressLine1 && <Text type='secondary'>
                         AddressLine1:
                         <Text>{record.shipping_address.AddressLine1}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.AddressLine1 }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.AddressLine1 }} />
                     </Text>}
                     {record.shipping_address.AddressLine2 && <Text type='secondary'>
                         AddressLine2:
                         <Text>{record.shipping_address.AddressLine2}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.AddressLine2 }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.AddressLine2 }} />
                     </Text>}
                     {record.shipping_address.PostalCode && <Text type='secondary'>
                         PostalCode:
                         <Text>{record.shipping_address.PostalCode}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.PostalCode }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.PostalCode }} />
                     </Text>}
                     {record.shipping_address.City && <Text type='secondary'>
                         City:
                         <Text>{record.shipping_address.City}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.City }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.City }} />
                     </Text>}
                     {record.shipping_address.StateOrRegion && <Text type='secondary'>
                         StateOrRegion:
                         <Text>{record.shipping_address.StateOrRegion}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.StateOrRegion }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.StateOrRegion }} />
                     </Text>}
                     {record.shipping_address.CountryCode && <Text type='secondary'>
                         CountryCode:
                         <Text>{record.shipping_address.CountryCode}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.CountryCode }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.CountryCode }} />
                     </Text>}
                     {record.shipping_address.Phone && <Text type='secondary'>
                         Phone:
                         <Text>{record.shipping_address.Phone}</Text>
-                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.Phone }}></Paragraph>
+                        <Paragraph style={{ display: 'inline' }} copyable={{ text: record.shipping_address.Phone }} />
                     </Text>}
                     <Text type='secondary'>
                         <Tag color="#2db7f5">{record.shipping_address.CountryCode}</Tag>
@@ -208,7 +168,7 @@ export default () => {
             title: 'Price',
             dataIndex: 'Price',
             search: false,
-            width: 240,
+            width: 185,
             render: (_, record) => {
                 return <Space direction="vertical">
                     <Text type='secondary'>
@@ -231,7 +191,7 @@ export default () => {
             title: 'Quantity',
             dataIndex: 'Quantity',
             search: false,
-            width: 240,
+            width: 150,
             render: (_, record) => {
                 return <Space direction="vertical">
                     <Text type='secondary'>
@@ -250,7 +210,7 @@ export default () => {
             title: 'ACK',
             dataIndex: 'ACK',
             search: false,
-            width: 180,
+            width: 160,
             render: (_, record) => {
                 return <Space direction="vertical">
                     <Text type='secondary'>
@@ -281,6 +241,12 @@ export default () => {
                         Operating Status:
                         <Text>{autoOrderOtions.find(item => item.value === record.auto_order)?.label}</Text>
                     </Text>
+                    {record.is_cancel === 1 && (
+                        <Text type='secondary'>
+                            Cancel Reason:
+                            <Text style={{ color: 'red' }}>{record.cancel_reason}</Text>
+                        </Text>
+                    )}
                 </Space>
             }
         },
@@ -373,6 +339,7 @@ export default () => {
                 labelWidth: 'auto',
             }}
             size="small"
+            scroll={{ y: columns.reduce((total, item) => total + (item.width || 0), 0) > 1000 ? 1000 : undefined }}
             bordered
             dateFormatter="string"
             headerTitle="OdiKa Order List"

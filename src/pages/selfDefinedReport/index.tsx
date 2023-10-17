@@ -204,6 +204,13 @@ export default () => {
                     Export
                 </Button>}
                 title={<Space>
+                    <Button type="primary" loading={loading} onClick={() => {
+                        initData({
+                            type: reportTemplate,
+                            page: pagination.current,
+                            len: pagination.pageSize,
+                        })
+                    }}>Generate</Button>
                     <span>Template Name：</span>
                     <Select style={{ width: 220 }} value={reportTemplate} onChange={(val) => {
                         setReportTemplate(val);
@@ -215,13 +222,6 @@ export default () => {
                         }
                     </Select>
                     {getSelectComponent()}
-                    <Button type="primary" loading={loading} onClick={() => {
-                        initData({
-                            type: reportTemplate,
-                            page: pagination.current,
-                            len: pagination.pageSize,
-                        })
-                    }}>Generate</Button>
                 </Space>}
             >
                 <Table

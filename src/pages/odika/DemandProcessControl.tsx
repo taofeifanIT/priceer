@@ -1,7 +1,7 @@
-import { Button, Card, Table, Input, Space, message, Image, Typography, Segmented, DatePicker } from 'antd';
+import { Button, Card, Table, Input, message, Typography, Segmented, DatePicker, InputNumber } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useState, useEffect } from 'react';
-import { getListForPlan, editPlan, editExpectTime } from '@/services/odika/requirementList';
+import { getListForPlan, editPlan, editExpectTime, editSortV3 } from '@/services/odika/requirementList';
 import type { RequirementListItem } from '@/services/odika/requirementList';
 import { EditTwoTone } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -14,6 +14,8 @@ import weekYear from 'dayjs/plugin/weekYear'
 import getInfoComponent from './components/getInfoComponent'
 import { useModel } from 'umi';
 import { FormattedMessage, getLocale } from 'umi';
+import SetValueComponent from '@/components/SetValueComponent'
+
 
 dayjs.extend(customParseFormat)
 dayjs.extend(advancedFormat)
@@ -219,7 +221,18 @@ const App: React.FC = () => {
             width: 90,
             align: 'center',
             render: (_, record) => {
-                return record.close_sort === 0 ? null : record.close_sort
+                return record.close_sort === 0 ? null :
+                    <SetValueComponent
+                        type='number'
+                        value={record.close_sort}
+                        editKey='no'
+                        id={record.id}
+                        api={editSortV3}
+                        otherParams={{ is_lock: 1 }}
+                        refresh={initData}
+                        disabled={isDesigner}
+                        numberStep={1}
+                    />
             }
         },
         {
