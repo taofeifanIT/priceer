@@ -4,7 +4,7 @@ import type { TabsProps } from 'antd';
 import { GenerateDeclarationInformation, CustomsManifest, CustomsDeclaration } from './ReportComponents';
 import type { paramType, tInfoByNSItems } from '@/services/warehouse/generateDeclarationInformation'
 import { getInfoByNS } from '@/services/warehouse/generateDeclarationInformation'
-import { downloadPdf } from '@/utils/utils'
+import { downloadPdf, downloadPdfAcross } from '@/utils/utils'
 import { template } from './ReportComponents/reportConfig'
 
 // All.CustomsDeclaration
@@ -17,6 +17,11 @@ const App: React.FC = () => {
         soNumber: '',
         deliveryNumbers: '',
         numberOfCases: '',
+        shippingFee: '',
+        gwWeightSum: 0,
+        nwWeightSum: 0,
+        soldFor: '',
+        premium: 0,
         data: [],
     });
     const [openModal, setOpenModal] = useState(false);
@@ -33,7 +38,7 @@ const App: React.FC = () => {
             children: <CustomsManifest params={generateDeclarationInformationParams} setParams={setGenerateDeclarationInformationParams} />,
         },
         {
-            key: 'customsDeclarationTable',
+            key: 'customsDeclaration',
             label: 'Customs declaration',
             children: <CustomsDeclaration params={generateDeclarationInformationParams} setParams={setGenerateDeclarationInformationParams} />,
         }
@@ -41,6 +46,21 @@ const App: React.FC = () => {
     const onChange = (key: string) => {
         setTabIndex(key);
     };
+    const getTotalAmountNum = (data: tInfoByNSItems[]) => {
+        return data.reduce((sum, item) => {
+            return sum + parseFloat(item.total_amount)
+        }, 0)
+    }
+    const getGwWeightSum = (data: tInfoByNSItems[]) => {
+        return data.reduce((sum, item) => {
+            return sum + parseFloat(item.g_w_weight)
+        }, 0)
+    }
+    const getNwWeightSum = (data: tInfoByNSItems[]) => {
+        return data.reduce((sum, item) => {
+            return sum + parseFloat(item.n_w_weight)
+        }, 0)
+    }
     const genarateData = () => {
         setLoading(true)
         getInfoByNS({
@@ -48,14 +68,20 @@ const App: React.FC = () => {
         }).then((res) => {
             if (res.code) {
                 // const tempData = res.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee')
-                const tempData = res.data.map((item: tInfoByNSItems) => {
+                let tempData = res.data.map((item: tInfoByNSItems) => {
                     return {
                         ...item,
                         needEdit: item.actual_volume_cbm == '0.0000000'
                     }
                 })
+                const shippingFee = tempData.find((item: tInfoByNSItems) => item.item === 'Shipping fee')
+                tempData = tempData.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee')
                 setGenerateDeclarationInformationParams({
                     ...generateDeclarationInformationParams,
+                    shippingFee: shippingFee ? shippingFee.total_amount : 0,
+                    premium: getTotalAmountNum(tempData) * 0.0005,
+                    gwWeightSum: getGwWeightSum(tempData),
+                    nwWeightSum: getNwWeightSum(tempData),
                     data: tempData,
                 })
             } else {
@@ -105,6 +131,10 @@ const App: React.FC = () => {
             style={{ marginBottom: '10px' }}
             onClick={() => {
                 const tempItem: any = items.find((item) => item.key === tabIndex)
+                if (tabIndex === 'customsDeclaration') {
+                    downloadPdfAcross(tempItem.key, tempItem.label)
+                    return
+                }
                 downloadPdf(tempItem.key, tempItem.label)
             }}>Print Current Report</Button>
         &nbsp;&nbsp;

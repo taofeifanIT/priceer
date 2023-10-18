@@ -1,19 +1,19 @@
-import { Row } from 'antd';
+// import { Row } from 'antd';
 import type { paramType, tInfoByNSItems } from '@/services/warehouse/generateDeclarationInformation'
 import { template } from './reportConfig'
 import './css/customsDeclaration.less'
-
+import dayjs from 'dayjs'
 
 export default (props: {
     params: paramType,
     setParams: (params: paramType) => void,
     width?: number,
 }) => {
-    const { params, setParams, width = 1600 } = props;
+    const { params, width = 1600 } = props;
     const getTotalAmountNum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
+        return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.total_amount)
-        }, 0)
+        }, 0).toFixed(2)
     }
     return (
         <div >
@@ -47,18 +47,23 @@ export default (props: {
                         </tr>
                         <tr>
                             <th colSpan={2} contentEditable>
-                                上海威昱网络科技有限公司
+                                {/* 上海威昱网络科技有限公司 */}
                             </th>
-                            <th colSpan={5} contentEditable>2244</th>
-                            <th colSpan={4} style={{ textAlign: 'center' }}>2023/8/29</th>
+                            <th colSpan={5} contentEditable>
+                                {/* 2244 */}
+                            </th>
+                            <th colSpan={4} style={{ textAlign: 'center' }} contentEditable>
+                                {/* 2023/8/29 */}
+                                {dayjs().format('YYYY/MM/DD')}
+                            </th>
                             <th contentEditable />
-                            <th colSpan={2} contentEditable>联系电话：15800960591</th>
+                            <th colSpan={2} contentEditable>联系电话：</th>
                         </tr>
                         <tr>
                             <th colSpan={2}>境外收货人</th>
                             <th colSpan={5}>运输方式</th>
                             <th colSpan={4}>运输工具名称及航次号</th>
-                            <th colSpan={3}>提运单号</th>
+                            <th colSpan={3} >提运单号</th>
                         </tr>
                         <tr>
                             <th colSpan={2} contentEditable>
@@ -71,15 +76,15 @@ export default (props: {
                             </th>
                         </tr>
                         <tr>
-                            <th colSpan={2} contentEditable>生产销售单位     3118962327
-                                <br />
-                                9131011757079288XJ  </th>
+                            <th colSpan={2} contentEditable>生产销售单位</th>
                             <th colSpan={5}>监管方式</th>
                             <th colSpan={4}>征免性质</th>
-                            <th colSpan={3}>许可证号</th>
+                            <th colSpan={3} contentEditable>许可证号</th>
                         </tr>
                         <tr>
-                            <th colSpan={2} contentEditable>上海威昱网络科技有限公司</th>
+                            <th colSpan={2} contentEditable>
+                                {/* 上海威昱网络科技有限公司 */}
+                            </th>
                             <th colSpan={5} contentEditable>一般监管</th>
                             <th colSpan={4} contentEditable>一般征税</th>
                             <th colSpan={3} contentEditable />
@@ -95,7 +100,7 @@ export default (props: {
                             <th colSpan={2}>{params.invoiceNumber}</th>
                             <th colSpan={5} contentEditable>美国</th>
                             <th colSpan={4} contentEditable>美国</th>
-                            <th colSpan={1} contentEditable>LogsAgeles</th>
+                            <th colSpan={1} contentEditable>Los Angeles</th>
                             <th colSpan={2} contentEditable>上海浦东机场</th>
                         </tr>
                         <tr>
@@ -113,67 +118,49 @@ export default (props: {
                             <th colSpan={1}>
                                 {params.numberOfCases}
                             </th>
-                            <th colSpan={4} contentEditable>660</th>
-                            <th colSpan={3} contentEditable>650</th>
-                            <th colSpan={1} contentEditable>DAP</th>
-                            <th colSpan={1} >$ 3036.74</th>
-                            <th colSpan={1}>$ 18.37</th>
+                            <th colSpan={4}>{params.gwWeightSum.toFixed(0)}</th>
+                            <th colSpan={3}>{params.nwWeightSum.toFixed(2)}</th>
+                            <th colSpan={1}>
+                                {params.soldFor}
+                            </th>
+                            <th colSpan={1} >$ {params.shippingFee}</th>
+                            <th colSpan={1}>$ {params.premium.toFixed(2)}</th>
                             <th colSpan={1} contentEditable />
                         </tr>
                         <tr>
                             <th colSpan={14} contentEditable>随附单证及编号</th>
                         </tr>
                         <tr style={{ height: 50 }}>
-                            <th colSpan={14} rowSpan={2} contentEditable>标记唛码及备注</th>
+                            <th colSpan={14} contentEditable>标记唛码及备注</th>
+                        </tr>
+                        <tr style={{ height: 40 }}>
+                            <th>项号<br />商品编号</th>
+                            <th />
+                            <th>商品名称及规格型号</th>
+                            <th colSpan={2} style={{ textAlign: 'center' }}>数量及单位</th>
+                            <th />
+                            <th>净重（千克）</th>
+                            <th colSpan={3} style={{ textAlign: 'center' }}>单价/总价/币制</th>
+                            <th>原产国(地区)</th>
+                            <th>最终目的国（地区）</th>
+                            <th>境内货源地</th>
+                            <th>征免</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>项号<br />商品编号</td>
-                            <td />
-                            <td>商品名称及规格型号</td>
-                            <td colSpan={2} style={{ textAlign: 'center' }}>数量及单位</td>
-                            <td />
-                            <td>净重（千克）</td>
-                            <td colSpan={3} style={{ textAlign: 'center' }}>单价/总价/币制</td>
-                            <td>原产国(地区)</td>
-                            <td>最终目的国（地区）</td>
-                            <td>境内货源地</td>
-                            <td>征免</td>
-                        </tr>
-                        {/* {
-                            [1, 2].map((item, index) => {
-                                return <tr key={`customsDeclaration-${index}`}>
-                                    <td>{index + 1}</td>
-                                    <td>8708299000999</td>
-                                    <td>车顶行李架锁芯</td>
-                                    <td>120</td>
-                                    <td>个</td>
-                                    <td />
-                                    <td>18</td>
-                                    <td style={{ textAlign: 'center' }}>0.54</td>
-                                    <td style={{ textAlign: 'center' }}>64.99</td>
-                                    <td>USD</td>
-                                    <td>比利时</td>
-                                    <td>USA</td>
-                                    <td>松江</td>
-                                    <td>照章征免</td>
-                                </tr>
-                            })
-                        } */}
                         {
-                            params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').map((item: tInfoByNSItems, index) => {
-                                return <tr key={`customsDeclaration-${index}`}>
+                            params.data.map((item: tInfoByNSItems, index) => {
+                                return <tr key={`customsDeclaration-${index}`} className='whole-node'>
                                     <td>{index + 1}</td>
-                                    <td>{item.item}</td>
-                                    <td>{item.item}</td>
+                                    <td>{item.cn_hs_code.replace(/\./g, "")}<span contentEditable>999</span></td>
+                                    <td>{item.chinese_customs_clearance_name}</td>
                                     <td>{item.qty}</td>
                                     <td contentEditable>个</td>
                                     <td />
                                     <td>{item.n_w_weight}</td>
                                     <td style={{ textAlign: 'center' }}>{item.unit_price_usd}</td>
                                     <td style={{ textAlign: 'center' }}>{item.total_amount}</td>
-                                    <td>{item.coo}</td>
+                                    <td contentEditable>USD</td>
                                     <td contentEditable />
                                     <td contentEditable />
                                     <td contentEditable />
@@ -202,21 +189,26 @@ export default (props: {
                             <td />
                             <td />
                         </tr>
-                    </tbody>
-                    <tfoot>
                         <tr>
-                            <th colSpan={1}>
+                            {Array.from({ length: 14 }).map((_, index) => {
+                                return <td key={`customsDeclaration-${index}`} />
+                            })}
+                        </tr>
+                    </tbody>
+                    <tfoot className='whole-node'>
+                        <tr>
+                            <th colSpan={1} contentEditable>
                                 报关人员<br />
                                 申报单位
                             </th>
                             <th colSpan={2} contentEditable>保管人员证号</th>
-                            <th colSpan={2}>
+                            <th colSpan={2} contentEditable>
                                 电话
                             </th>
-                            <th colSpan={6}>
+                            <th colSpan={6} contentEditable>
                                 兹申明对以上内容承担如实申报、依法纳税之法律责任<br />申报单位（签章）
                             </th>
-                            <th colSpan={3}>海关批注及签章 </th>
+                            <th colSpan={3} contentEditable>海关批注及签章 </th>
                         </tr>
                     </tfoot>
                 </table>

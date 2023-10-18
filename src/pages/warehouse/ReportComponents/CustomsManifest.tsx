@@ -1,5 +1,5 @@
 import { Row } from 'antd';
-import type { paramType, tInfoByNSItems } from '@/services/warehouse/generateDeclarationInformation'
+import type { paramType } from '@/services/warehouse/generateDeclarationInformation'
 import { template } from './reportConfig'
 import dayjs from 'dayjs'
 import './css/customsManifest.less'
@@ -12,22 +12,18 @@ export default (props: {
 }) => {
     const { params, setParams, width = 1100 } = props;
     const getQuantitySum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
+        return params.data.reduce((sum, item) => {
             return sum + item.qty
         }, 0)
     }
     const getGwWeightSum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
-            return sum + parseFloat(item.g_w_weight)
-        }, 0).toFixed(3)
+        return params.gwWeightSum.toFixed(3)
     }
     const getNwWeightSum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
-            return sum + parseFloat(item.n_w_weight)
-        }, 0).toFixed(3)
+        return params.nwWeightSum.toFixed(3)
     }
     const getActualVolumeCbmSum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
+        return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.actual_volume_cbm)
         }, 0).toFixed(3)
     }
@@ -104,7 +100,7 @@ export default (props: {
                             <tr>
                                 <td /> <td /> <td /> <td /> <td /> <td /> <td /> <td />
                             </tr>
-                            {params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').map((item, index) => {
+                            {params.data.map((item, index) => {
                                 return <tr key={item.item} className='whole-node'>
                                     <td />
                                     <td>{item.item}</td>

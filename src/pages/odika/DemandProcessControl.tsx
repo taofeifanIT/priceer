@@ -138,7 +138,7 @@ const App: React.FC = () => {
             keyword: keyword || undefined, ...{
                 len: tableParams.pagination?.pageSize,
                 page: tableParams.pagination?.current,
-                priority: isDesigner ? 1 : undefined
+                // priority: isDesigner ? 1 : undefined
             }
         }).then(res => {
             if (res.code) {

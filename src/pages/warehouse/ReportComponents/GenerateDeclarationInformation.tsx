@@ -1,8 +1,9 @@
-import { Row, Col, Input } from 'antd';
+import { Row, Col } from 'antd';
 import './css/generateDeclarationInformation.less'
 import dayjs from 'dayjs'
-import type { paramType, tInfoByNSItems } from '@/services/warehouse/generateDeclarationInformation'
+import type { paramType } from '@/services/warehouse/generateDeclarationInformation'
 import { template } from './reportConfig'
+import TextEditor from './TextEditor'
 
 
 export default (props: {
@@ -11,28 +12,25 @@ export default (props: {
 }) => {
     const { params, setParams } = props
     const getWeightInIbsNum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
+        return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.weight_in_lbs)
         }, 0)
     }
     const getQtyNum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
+        return params.data.reduce((sum, item) => {
             return sum + item.qty
         }, 0)
     }
     const getTotalAmountNum = () => {
-        return params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').reduce((sum, item) => {
+        return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.total_amount)
         }, 0)
     }
     const getPremium = () => {
-        return getTotalAmountNum() * 0.0005
+        return params.premium?.toFixed(2)
     }
     const getFreightCost = () => {
-        if (params.data.length === 0) return 0
-        const shippingFee = params.data.find((item: tInfoByNSItems) => item.item === 'Shipping fee')
-        if (!shippingFee) return 0
-        return parseFloat(shippingFee.total_amount)
+        return parseFloat(params.shippingFee)
     }
     return (
         <Row style={{ height: '100%' }} >
@@ -136,8 +134,6 @@ export default (props: {
                                     <th colSpan={4} style={{ fontWeight: 'normal' }}>
                                         {template[params.templateNumber].importerOfRecord[6]}
                                     </th>
-
-
                                 </tr>}
                                 <tr>
                                     <th style={{ fontWeight: 'bold' }}>Terns of Freight</th>
@@ -158,7 +154,7 @@ export default (props: {
                                     <th>Air</th>
                                     {/* Invoice Number */}
                                     <th colSpan={3}>
-                                        <Input value={params.invoiceNumber} style={{ textAlign: 'center' }} onChange={e => {
+                                        <input value={params.invoiceNumber} style={{ textAlign: 'center', border: 'none', width: '100%' }} onChange={e => {
                                             // setInvoiceNumber(e.target.value)
                                             setParams({
                                                 ...params,
@@ -178,11 +174,17 @@ export default (props: {
                                     {/* NO. of PKGS */}
                                     <th colSpan={1} contentEditable />
                                     <th colSpan={1} contentEditable>
-                                        {template[params.templateNumber].termSale[0]}
+                                        <input style={{ border: 'none', textAlign: 'center' }} value={params.soldFor} onChange={(e) => {
+                                            const value = e.target.value
+                                            setParams({
+                                                ...params,
+                                                soldFor: value
+                                            })
+                                        }} />
                                     </th>
                                     {/* Ultimate Destination */}
                                     <th colSpan={1} contentEditable>
-                                        {template[params.templateNumber].ultimateDestination[0]}
+                                        {/* {template[params.templateNumber].ultimateDestination[0]} */}
                                     </th>
                                     {/* SO Number */}
                                     <th colSpan={2}>
@@ -205,7 +207,7 @@ export default (props: {
                                 </tr>
                             </thead>
                             <tbody>
-                                {params.data.filter((item: tInfoByNSItems) => item.item !== 'Shipping fee').map((item, index: number) => {
+                                {params.data.map((item, index: number) => {
                                     return <tr key={`template-${1 + index}`} className='whole-node'>
                                         <td>
                                             {item.item}
@@ -216,15 +218,37 @@ export default (props: {
                                         <td>
                                             {item.description}
                                         </td>
-                                        <td>
-                                            <input style={{ border: 'none' }} value={item.coo} onChange={(e) => {
+                                        <td
+                                        // dangerouslySetInnerHTML={{ __html: item.coo }}
+                                        // contentEditable
+                                        // onInput={e => {
+                                        //     const newData = [...params.data]
+                                        //     newData[index].coo = e.currentTarget.innerHTML
+                                        //     setParams({
+                                        //         ...params,
+                                        //         data: newData
+                                        //     })
+                                        // }}
+                                        >
+                                            <TextEditor
+                                                value={item.coo}
+                                                onChange={(e) => {
+                                                    const newData = [...params.data]
+                                                    newData[index].coo = e.value
+                                                    setParams({
+                                                        ...params,
+                                                        data: newData
+                                                    })
+                                                }}
+                                            />
+                                            {/* <input type='text' style={{ border: 'none', width: (item.coo.length + 1) * 15 }} className='my-input' value={item.coo} onChange={(e) => {
                                                 const newData = [...params.data]
                                                 newData[index].coo = e.target.value
                                                 setParams({
                                                     ...params,
                                                     data: newData
                                                 })
-                                            }} />
+                                            }} /> */}
                                         </td>
                                         <td>
                                             {item.hts}
@@ -273,7 +297,7 @@ export default (props: {
                                 <tr>
                                     <th colSpan={3}>Insurance Cost</th>
                                     {/* <th colSpan={1}>$  {data.premium.toFixed(2)}</th> */}
-                                    <th colSpan={1}>$  {getPremium().toFixed(2)}</th>
+                                    <th colSpan={1}>$  {getPremium()}</th>
                                 </tr>
                                 <tr>
                                     <th colSpan={3}>Total Invoice Value</th>

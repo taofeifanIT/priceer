@@ -11,7 +11,6 @@ import { exportPDFWithFont } from '@/utils/utils';
 import type { SelectProps } from 'antd/es/select';
 import styles from './checked.less'
 import { getImageUrl } from '@/utils/utils'
-import e from 'express';
 
 
 

@@ -26,6 +26,11 @@ export type paramType = {
     soNumber: string
     numberOfCases: string
     deliveryNumbers: string
+    shippingFee: string
+    premium: number
+    soldFor: string
+    gwWeightSum: number
+    nwWeightSum: number
     data: tInfoByNSItems[]
 }
 
