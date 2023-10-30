@@ -30,7 +30,7 @@ class TextEditor extends React.Component {
     render() {
         const { value } = this.props;
         return (
-            <div>
+            <div style={{ display: 'inline-block' }}>
                 <div contentEditable
                     dangerouslySetInnerHTML={{ __html: value }}
                     ref={this.ref}

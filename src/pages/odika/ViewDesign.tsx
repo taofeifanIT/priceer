@@ -181,7 +181,7 @@ export default () => {
                         </div>
                     </div>
                 </div></>)}
-            {checkMainPictures(designDetail?.mainPictures) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' />(2000:2000)</Title>
+            {checkMainPictures(designDetail?.mainPictures) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' />(2000:2000px)</Title>
                 <div>
                     {designDetail?.mainPictures?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.mainPictures?.length ? 10 : 0 }} key={index}>
@@ -204,7 +204,7 @@ export default () => {
                     })}
                 </div></>) : null}
             {(checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial)) &&
-                <Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' /> (2000:2000)</Title>}
+                <Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.mainPicture' /> (2000:2000px)</Title>}
             <div>
                 {checkWhiteBackgroundAndProps(designDetail?.mainPicture.whiteBackgroundAndProps) && (<div style={{ display: 'inline-block', verticalAlign: 'top' }}>
                     <Title level={5}><FormattedMessage id='pages.odika.ViewDesign.WhiteBackgroundPictureAndProps' /></Title>
@@ -221,7 +221,7 @@ export default () => {
                     </Space>
                 </div>)}
                 {checkSizeAndNaterial(designDetail?.mainPicture.sizeAndNaterial) && (<div style={{ verticalAlign: 'top', marginTop: '10px' }}>
-                    <Title level={3}><FormattedMessage id='pages.odika.ViewDesign.subscene' />(2000:2000)</Title>
+                    <Title level={3}><FormattedMessage id='pages.odika.ViewDesign.subscene' />(2000:2000px)</Title>
                     <Title level={5}><FormattedMessage id='pages.odika.ViewDesign.sizeAndMaterial' /></Title>
                     <div>
                         {designDetail?.mainPicture.sizeAndNaterial.url ? designDetail.mainPicture.sizeAndNaterial.url.map((item, index) => {
@@ -264,7 +264,7 @@ export default () => {
                         </div>
                     </div>
                 </div></>)} */}
-            {checkAuxiliaryPictures(designDetail?.auxiliaryPictures) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.secondPicture' />（2000:2000）&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.pictureTextDetailsIcon' /></Title>
+            {checkAuxiliaryPictures(designDetail?.auxiliaryPictures) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.secondPicture' />（2000:2000px）&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.pictureTextDetailsIcon' /></Title>
                 <div>
                     {designDetail?.auxiliaryPictures?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.auxiliaryPictures?.length ? 10 : 0 }} key={index}>
@@ -297,7 +297,7 @@ export default () => {
                     })}
                 </div></>) : null}
             {
-                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.RequirementList.sceneGraph' /></Title>
+                (checkAuxiliaryPictureScene(designDetail?.auxiliaryPictureScene)) ? (<><Title level={3} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.RequirementList.sceneGraph' /> (2000:2000px)</Title>
                     <div>
                         {designDetail?.auxiliaryPictureScene?.map((item, index) => {
                             return <div key={index} style={{ display: 'inline-block', verticalAlign: 'top' }}>
@@ -326,7 +326,7 @@ export default () => {
                     : null}
             {checkAPlus(designDetail?.aPlus) ? (<>
                 <Title level={5} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.template' /></Title>
-                <Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' /> (2928:1200)</Title>
+                <Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' /> (2928:1200px)</Title>
                 <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
                     {designDetail?.aPlus.aplusScene?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>

@@ -1,17 +1,41 @@
 import XLSX from 'xlsx';
 
+
+
+
+export function exportExcelFile(headers: any[], data: any[], fileName = 'demo.xlsx') {
+  const jsonWorkSheet = XLSX.utils.json_to_sheet(data);
+  // 设置表头
+  jsonWorkSheet['!cols'] = headers.map((item) => ({ wpx: item.width }));
+  const workBook: any = {
+    SheetNames: ['主数据上传文件无序列号'],
+    Sheets: {
+      ['主数据上传文件无序列号']: jsonWorkSheet,
+    }
+  };
+  return XLSX.writeFile(workBook, fileName);
+}
+
+
+
+
 /**
  * 导出excel
  * @param {*} headers
  * @param {*} data
  * @param {*} fileName
  */
+
+
+
 const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
   const _headers = headers
     .map((item, i) =>
       Object.assign(
         {},
-        { key: item.key, title: item.title, position: String.fromCharCode(65 + i) + 1 },
+        {
+          key: item.key, title: item.title, position: String.fromCharCode(65 + i) + 1
+        },
       ),
     )
     .reduce(
@@ -27,7 +51,7 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
           {
             content: item[key.key],
             position: String.fromCharCode(65 + j) + (i + 2),
-            type: key.type || 's',
+            type: key.type || 's'
           },
         ),
       ),
@@ -47,7 +71,6 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
   const outputPos = Object.keys(output);
   // 计算出范围 ,["A1",..., "H2"]
   const ref = `${outputPos[0]}:${outputPos[outputPos.length - 1]}`;
-
   // 构建 workbook 对象
   const wb = {
     SheetNames: ['mySheet'],

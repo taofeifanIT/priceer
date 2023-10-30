@@ -422,6 +422,7 @@ export const downloadPdf = (el: string, title: string) => {
     })
 }
 
+
 // A4纸横向打印
 export const downloadPdfAcross = (el: string, title: string) => {
     // 如果这个页面有左右移动,canvas 也要做响应的移动，不然会出现canvas 内容不全
@@ -498,5 +499,227 @@ export const downloadPdfAcross = (el: string, title: string) => {
         if (printWindow) {
             printWindow.print();
         }
+    })
+}
+
+// const getLengthwaysPdfObj = async (el) => {
+//     const PDF = new jsPDF('', 'pt', 'a4')
+//     return new Promise((resolve) => {
+//         const xOffset = window.pageXOffset
+//         const A4_WIDTH = 592.28
+//         const A4_HEIGHT = 841.89
+//         const printDom = document.getElementById(el)
+//         const pageHeight = printDom.offsetWidth / A4_WIDTH * A4_HEIGHT
+//         let wholeNodes = document.querySelectorAll('.whole-node')
+//         for (let i = 0; i < wholeNodes.length; i++) {
+//             const topPageNum = Math.ceil((wholeNodes[i].offsetTop) / pageHeight)
+//             const bottomPageNum = Math.ceil((wholeNodes[i].offsetTop + wholeNodes[i].offsetHeight) / pageHeight)
+//             if (topPageNum !== bottomPageNum) {
+//                 let divParent = wholeNodes[i].parentNode
+//                 let newBlock = document.createElement('div')
+//                 newBlock.className = 'emptyDiv'
+//                 newBlock.style.background = '#fff'
+//                 let _H = topPageNum * pageHeight - wholeNodes[i].offsetTop
+//                 newBlock.style.height = _H + 30 + 'px'
+//                 divParent.insertBefore(newBlock, wholeNodes[i])
+//                 wholeNodes = document.querySelectorAll('.whole-node')
+//             }
+//         }
+//         html2canvas(printDom, { height: printDom.offsetHeight, width: printDom.offsetWidth, scrollX: -xOffset, allowTaint: true, scale: 2 }).then(canvas => {
+//             const emptyDivs = document.querySelectorAll('.emptyDiv')
+//             for (let i = 0; i < emptyDivs.length; i++) {
+//                 emptyDivs[i].parentNode.removeChild(emptyDivs[i])
+//             }
+//             const contentWidth = canvas.width
+//             const contentHeight = canvas.height
+//             const pageHeight = contentWidth / A4_WIDTH * A4_HEIGHT
+//             let leftHeight = contentHeight
+//             let position = 0
+//             const imgWidth = A4_WIDTH
+//             const imgHeight = A4_WIDTH / contentWidth * contentHeight
+//             const pageData = canvas.toDataURL('image/jpeg', 1.0)
+//             if (leftHeight <= pageHeight + 10) {
+//                 PDF.addImage(pageData, 'JPEG', 0, 0, imgWidth + 3, imgHeight)
+//             } else {
+//                 while (leftHeight > 0) {
+//                     PDF.addImage(pageData, 'JPEG', 0, position, imgWidth + 3, imgHeight)
+//                     console.log('position', position);
+//                     leftHeight -= pageHeight
+//                     position -= A4_HEIGHT
+//                     if (leftHeight > 0) {
+//                         PDF.addPage()
+//                     }
+//                 }
+//             }
+//             resolve({
+//                 PDF,
+//                 position,
+//             })
+//         })
+//     })
+// }
+
+
+// const getAcrossPdfObj = async (el) => {
+//     const PDF = new jsPDF('l', 'pt', 'a4')
+//     return new Promise((resolve) => {
+//         const xOffset = window.pageXOffset
+//         // 避免笔下误 灯下黑 统一写
+//         const A4_WIDTH = 841.89
+//         const A4_HEIGHT = 592.28
+//         const printDom = document.getElementById(el)
+//         const pageHeight = printDom.offsetWidth / A4_WIDTH * A4_HEIGHT
+//         let wholeNodes = document.querySelectorAll('.whole-node')
+//         for (let i = 0; i < wholeNodes.length; i++) {
+//             const topPageNum = Math.ceil((wholeNodes[i].offsetTop) / pageHeight)
+//             const bottomPageNum = Math.ceil((wholeNodes[i].offsetTop + wholeNodes[i].offsetHeight) / pageHeight)
+//             if (topPageNum !== bottomPageNum) {
+//                 let divParent = wholeNodes[i].parentNode
+//                 let newBlock = document.createElement('div')
+//                 newBlock.className = 'emptyDiv'
+//                 newBlock.style.background = '#fff'
+//                 let _H = topPageNum * pageHeight - wholeNodes[i].offsetTop
+//                 newBlock.style.height = _H + 30 + 'px'
+//                 divParent.insertBefore(newBlock, wholeNodes[i])
+//                 wholeNodes = document.querySelectorAll('.whole-node')
+//             }
+
+//         }
+//         html2canvas(printDom, { height: printDom.offsetHeight, width: printDom.offsetWidth, scrollX: -xOffset, allowTaint: true, scale: 2 }).then(canvas => {
+//             const emptyDivs = document.querySelectorAll('.emptyDiv')
+//             for (let i = 0; i < emptyDivs.length; i++) {
+//                 emptyDivs[i].parentNode.removeChild(emptyDivs[i])
+//             }
+//             const contentWidth = canvas.width
+//             const contentHeight = canvas.height
+//             const pageHeight = contentWidth / A4_WIDTH * A4_HEIGHT
+//             let leftHeight = contentHeight
+//             let position = 0
+//             const imgWidth = A4_WIDTH
+//             const imgHeight = A4_WIDTH / contentWidth * contentHeight
+//             const pageData = canvas.toDataURL('image/jpeg', 1.0)
+//             if (leftHeight <= pageHeight) {
+//                 PDF.addImage(pageData, 'JPEG', 0, 0, imgWidth + 3, imgHeight)
+//             } else {
+//                 while (leftHeight > 0) {
+//                     PDF.addImage(pageData, 'JPEG', 0, position, imgWidth + 3, imgHeight)
+//                     leftHeight -= pageHeight
+//                     position -= A4_HEIGHT
+//                     if (leftHeight > 0) {
+//                         PDF.addPage()
+//                     }
+//                 }
+//             }
+//             resolve({
+//                 PDF,
+//                 position,
+
+//             })
+//         })
+//     })
+// }
+export const printAllReport = async (el: string, title: string) => {
+    // ['generateDeclarationInformationTable', 'customsManifestTable', 'customsDeclaration']
+    // 如果这个页面有左右移动,canvas 也要做响应的移动，不然会出现canvas 内容不全
+    const xOffset = window.pageXOffset
+    // 避免笔下误 灯下黑 统一写
+    const A4_WIDTH = 841.89
+    // const A4_HEIGHT = 841.89
+    const A4_HEIGHT = 592.28
+    const printDom = document.getElementById(el)
+    // 根据A4的宽高计算DOM页面一页应该对应的高度
+    const pageHeight = printDom.offsetWidth / A4_WIDTH * A4_HEIGHT
+    // 将所有不允许被截断的元素进行处理
+    let wholeNodes = document.querySelectorAll('.whole-node')
+    // const doms = 
+    for (let i = 0; i < wholeNodes.length; i++) {
+        //1、 判断当前的不可分页元素是否在两页显示
+        const topPageNum = Math.ceil((wholeNodes[i].offsetTop) / pageHeight)
+        const bottomPageNum = Math.ceil((wholeNodes[i].offsetTop + wholeNodes[i].offsetHeight) / pageHeight)
+        if (topPageNum !== bottomPageNum) {
+            //说明该dom会被截断
+            // 2、插入空白块使被截断元素下移
+            let divParent = wholeNodes[i].parentNode
+            let newBlock = document.createElement('div')
+            newBlock.className = 'emptyDiv'
+            newBlock.style.background = '#fff'
+
+            // 3、计算插入空白块的高度 可以适当流出空间使得内容太靠边，根据自己需求而定
+            let _H = topPageNum * pageHeight - wholeNodes[i].offsetTop
+            // newBlock.style.height = _H + 148 + 'px'
+            // divParent.insertBefore(newBlock, wholeNodes[i])
+            // 空白块高度等于剩余可用高度
+            newBlock.style.height = _H + 0 + 'px'
+            divParent.insertBefore(newBlock, wholeNodes[i])
+            wholeNodes = document.querySelectorAll('.whole-node')
+        }
+
+    }
+    // 将所有不允许被分页显示的元素进行处理
+    let noPageNodes = document.querySelectorAll('.no-page')
+    for (let i = 0; i < noPageNodes.length; i++) {
+        //1、 判断当前的不可分页元素是否在两页显示
+        const topPageNum = Math.ceil((noPageNodes[i].offsetTop) / pageHeight)
+        const bottomPageNum = Math.ceil((noPageNodes[i].offsetTop + noPageNodes[i].offsetHeight) / pageHeight)
+        if (topPageNum !== bottomPageNum) {
+            //说明该dom会被截断
+            // 2、插入空白块使被截断元素下移
+            let divParent = noPageNodes[i].parentNode
+            let newBlock = document.createElement('div')
+            newBlock.className = 'emptyDiv'
+            newBlock.style.background = '#fff'
+
+            // 3、计算插入空白块的高度 可以适当流出空间使得内容太靠边，根据自己需求而定
+            let _H = topPageNum * pageHeight - noPageNodes[i].offsetTop
+            // newBlock.style.height = _H + 148 + 'px'
+            // divParent.insertBefore(newBlock, wholeNodes[i])
+            // 空白块高度等于剩余可用高度
+            newBlock.style.height = _H + 0 + 'px'
+            divParent.insertBefore(newBlock, noPageNodes[i])
+            noPageNodes = document.querySelectorAll('.no-page')
+        }
+
+    }
+    const PDF = new jsPDF('l', 'pt', 'a4')
+    html2canvas(printDom, { height: printDom.offsetHeight, width: printDom.offsetWidth, scrollX: -xOffset, allowTaint: true, scale: 2 }).then(canvas => {
+        //dom 已经转换为canvas 对象，可以将插入的空白块删除了
+        const emptyDivs = document.querySelectorAll('.emptyDiv')
+        for (let i = 0; i < emptyDivs.length; i++) {
+            emptyDivs[i].parentNode.removeChild(emptyDivs[i])
+        }
+        // 有一点重复的代码
+        const contentWidth = canvas.width
+        const contentHeight = canvas.height
+        const pageDomHeight = contentWidth / A4_WIDTH * A4_HEIGHT  //pageDomHeight
+        let leftHeight = contentHeight
+        let position = 0
+
+        const imgWidth = A4_WIDTH
+        const imgHeight = A4_WIDTH / contentWidth * contentHeight
+        const pageData = canvas.toDataURL('image/jpeg', 1.0)
+        //   if (isPrint) {
+        //     //如果是打印，可以拿着分号页的数据 直接使用
+        //     printJs({ printable: pageData, type: 'image', base64: true, documentTitle: '\u200E' })
+        //     return
+        //   }
+        //计算分页的pdf 
+
+        if (leftHeight <= pageDomHeight + 10) {
+            PDF.addImage(pageData, 'JPEG', 0, 0, imgWidth + 3, imgHeight)
+        } else {
+            while (leftHeight > 0) {
+                PDF.addImage(pageData, 'JPEG', 0, position, imgWidth + 3, imgHeight)
+                leftHeight -= pageDomHeight
+                position -= A4_HEIGHT
+                if (leftHeight > 0) {
+                    PDF.addPage()
+                }
+            }
+        }
+        PDF.save(title + '.pdf')
+        // const printWindow = window.open(PDF.output('bloburl'), '_blank', 'fullscreen=yes');
+        // if (printWindow) {
+        //     printWindow.print();
+        // }
     })
 }

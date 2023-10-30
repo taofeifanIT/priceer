@@ -23,6 +23,12 @@ export type NewProductsItem = {
     first_memo: string;
     second_memo: string;
     created_at: string;
+    upc: string;
+    title: string;
+    length: number;
+    width: number;
+    height: number;
+    fullfill_cost: number;
 }
 
 // businessUnitData/getNewProduct
@@ -92,6 +98,22 @@ export async function pmSelfCheck(params: { id: number, status: number }) {
 // updateSalesPriceForNew
 export async function updateSalesPriceForNew(params: { id: number, sales_price: number }) {
     return request('/api/businessUnitData/updateSalesPriceForNew', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// businessUnitData/editStore
+export async function editStore(params: { id: number, store_id: string }) {
+    return request('/api/businessUnitData/editStore', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// businessUnitData/editPurchaseQuantity
+export async function editPurchaseQuantity(params: { id: number, purchase_unit: number }) {
+    return request('/api/businessUnitData/editPurchaseQuantity', {
         method: 'POST',
         data: params
     });

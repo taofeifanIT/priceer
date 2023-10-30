@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
-import { message, Spin, Typography, InputNumber } from 'antd'
+import { message, Spin, Typography, InputNumber, Select } from 'antd'
 import { EditTwoTone } from '@ant-design/icons'
+const { Option } = Select
 
 const SetValueComponent = (props: {
     id: number,
@@ -8,20 +9,32 @@ const SetValueComponent = (props: {
     value: string | number,
     api: any,
     refresh: () => void,
-    type?: 'text' | 'number',
+    type?: 'text' | 'number' | 'select',
     numberStep?: number,
     otherParams?: any,
     disabled?: boolean,
     prefix?: string
+    options?: { label: string, value: string | number }[]
 }) => {
-    const { id, editKey, value, api, refresh, type = 'text', numberStep = 1, otherParams = {}, disabled = false } = props
+    const {
+        id,
+        editKey,
+        value,
+        api,
+        refresh,
+        type = 'text',
+        numberStep = 1,
+        otherParams = {},
+        disabled = false,
+        options = []
+    } = props
     const [paramValue, setParamValue] = useState(value)
     const [spinning, setSpinning] = useState(false)
     const [numberIsEdit, setNumberIsEdit] = useState(false)
     const numberRef = useRef(null)
     const savgValue = (val: any) => {
         setSpinning(true)
-        api({ id, [editKey]: val, ...otherParams }).then((res: any) => {
+        api({ id, [editKey]: type === 'number' ? Number(val) : val, ...otherParams }).then((res: any) => {
             if (res.code) {
                 message.success(`${editKey} set successfully`)
                 refresh()
@@ -93,7 +106,41 @@ const SetValueComponent = (props: {
                         } />
                     </>}
             </>)}
-            {disabled && paramValue}
+            {/* select */}
+            {(type === 'select' && !disabled) && (<>
+                {(props.prefix && !numberIsEdit) && <span>{props.prefix}</span>}
+                {numberIsEdit ?
+                    <Select
+                        style={{ width: 120 }}
+                        autoFocus={true}
+                        onBlur={() => {
+                            setNumberIsEdit(false)
+                        }}
+                        size='small'
+                        value={paramValue}
+                        onChange={(val: any) => {
+                            setParamValue(val)
+                            setNumberIsEdit(false)
+                            // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
+                            if (val == value) {
+                                return
+                            }
+                            savgValue(val)
+                        }}
+                    >
+                        {options.map((item) => {
+                            return <Option key={item.value} value={item.value}>{item.label}</Option>
+                        })}
+                    </Select>
+                    :
+                    <>
+                        {options.find((item) => item.value == paramValue)?.label}
+                        <EditTwoTone onClick={() => {
+                            setNumberIsEdit(true)
+                        }
+                        } />
+                    </>}
+            </>)}
         </Spin>
 
     </>)

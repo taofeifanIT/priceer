@@ -186,6 +186,12 @@ export default [
         path: '/businessUnitData/CheckProduct',
         name: 'CheckProduct',
         component: './businessUnitData/CheckProduct',
+      },
+      // Secondary inspection product
+      {
+        path: '/businessUnitData/SecondaryInspectionProduct',
+        name: 'SecondaryInspectionProduct',
+        component: './businessUnitData/SecondaryInspectionProduct',
       }
     ]
   },

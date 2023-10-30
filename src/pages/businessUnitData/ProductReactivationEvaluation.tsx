@@ -80,18 +80,18 @@ export default () => {
     }[]>()
     const [profitPoint, setProfitPoint] = useState(0.1);
     const [selectedRows, setSelectedRows] = useState<ResaleListItem[]>([]); // 选中的行
-    const getRate = async () => {
-        // if (USDRate) return USDRate
-        let rate = 7.25;
-        const { data } = await axions('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
-        if (data.code === 0) {
-            rate = data.data.rate
-        } else {
-            // 递归调用
-            rate = await getRate()
-        }
-        return rate
-    }
+    // const getRate = async () => {
+    //     // if (USDRate) return USDRate
+    //     let rate = 7.25;
+    //     const { data } = await axions('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
+    //     if (data.code === 0) {
+    //         rate = data.data.rate
+    //     } else {
+    //         // 递归调用
+    //         rate = await getRate()
+    //     }
+    //     return rate
+    // }
 
     // const getPurchasePrice = (record: ResaleListItem, rate: number) => {
     //     const { last_purchase_price = 0, us_tax_rate = 0, purchase_price = 0 } = record;

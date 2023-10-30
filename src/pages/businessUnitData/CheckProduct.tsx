@@ -4,9 +4,11 @@ import { useRef, useState, useEffect } from 'react';
 import { getCheckList, updateStatus } from '@/services/businessUnitData/checkProduct'
 import type { NewProductsItem } from '@/services/businessUnitData/newProducts'
 import { message, Space, Popconfirm, Button, Select, InputNumber } from 'antd';
-import { getBrandForNew } from '@/services/businessUnitData/newProducts'
+import { getBrandForNew, editStore } from '@/services/businessUnitData/newProducts'
 import InputMemoComponent from './components/InputMemoComponent';
+import SetValueComponent from '@/components/SetValueComponent';
 import { statusConfig } from './config'
+import { useModel } from 'umi';
 
 const options: any = {
     1: 'Approve',
@@ -58,6 +60,14 @@ export default () => {
     const [brands, setBrands] = useState([])
     const [profitPoint, setProfitPoint] = useState(0.1);
     const [USDRate, setUSDRate] = useState(0);
+    const { initialState } = useModel('@@initialState');
+    const { configInfo } = initialState || {};
+    const storeOptions = configInfo?.store?.map((item: any) => {
+        return {
+            label: item.name,
+            value: item.id
+        }
+    })
     const getBrand = async () => {
         if (brands.length) return
         let brandData: any = []
@@ -255,7 +265,7 @@ export default () => {
             dataIndex: 'status',
             key: 'status',
             valueType: 'select',
-            width: 110,
+            width: 150,
             valueEnum: statusConfig,
         },
         // first_status: number; // pm审核的
@@ -292,6 +302,14 @@ export default () => {
             }
         },
         {
+            // purchase_quantity
+            title: 'Purchase Quantity',
+            dataIndex: 'purchase_quantity',
+            key: 'purchase_quantity',
+            search: false,
+            width: 140,
+        },
+        {
             title: 'Operation Status',
             dataIndex: 'second_status',
             key: 'second_status',
@@ -318,6 +336,24 @@ export default () => {
                     api={updateStatus}
                     refresh={() => { actionRef.current?.reload() }}
                     otherParams={{ type: 2, status: record.second_status }} />
+            }
+        },
+        {
+            // store
+            title: 'Store',
+            dataIndex: 'store',
+            key: 'store',
+            search: false,
+            width: 170,
+            render: (_, record) => {
+                return <SetValueComponent
+                    id={record.id}
+                    type='select'
+                    options={storeOptions}
+                    editKey='store_id'
+                    value={record.store_id}
+                    api={editStore}
+                    refresh={() => { actionRef.current?.reload() }} />
             }
         },
         {

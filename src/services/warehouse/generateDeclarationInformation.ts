@@ -17,7 +17,11 @@ export type tInfoByNSItems = {
     n_w_weight: string;
     actual_volume_cbm: string;
     needEdit: boolean; // 前端自定义字段
+    blankSpaceBehindUnit: string; // 前端自定义字段
+    currency: string; // 前端自定义字段
+    unit: string; //unit
     cn_hs_code: string;
+    brand: string;
 }
 
 export type paramType = {
@@ -29,8 +33,8 @@ export type paramType = {
     shippingFee: string
     premium: number
     soldFor: string
-    gwWeightSum: number
-    nwWeightSum: number
+    ultimateDestination: string
+    countrtOfOrigin: string
     data: tInfoByNSItems[]
 }
 
@@ -39,6 +43,45 @@ export async function getInfoByNS(params?: {
     tranid: string;
 }) {
     return request('/api/shipment/getInfoByNS', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// warehouse/list_hs_code
+export async function list_hs_code() {
+    return request('/api/warehouse/list_hs_code', {
+        method: 'POST'
+    });
+}
+
+// warehouse/add_hs_code
+export async function add_hs_code(params: {
+    name: string;
+    unit: string;
+}) {
+    return request('/api/warehouse/add_hs_code', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// edit_hs_code
+export async function edit_hs_code(params: {
+    id: number;
+    unit: string;
+}) {
+    return request('/api/warehouse/edit_hs_code', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// del_hs_code
+export async function del_hs_code(params: {
+    id: number;
+}) {
+    return request('/api/warehouse/del_hs_code', {
         method: 'POST',
         data: params
     });

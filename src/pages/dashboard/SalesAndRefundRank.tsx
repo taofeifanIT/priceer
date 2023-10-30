@@ -46,6 +46,8 @@ const tagColor: any = {
     'NO_REASON_GIVEN': '#6672f7',
     'NOT_AS_DESCRIBED': '#b0c778',
     'UNDELIVERABLE_REFUSED': '#c138be',
+    'APPAREL_TOO_LARGE': '#a78ef5',
+    'UNAUTHORIZED_PURCHASE': '#00d7a3',
 }
 
 
