@@ -574,7 +574,6 @@ export default () => {
                 pageSize: 30,
                 showQuickJumper: true,
                 pageSizeOptions: ['30', '50', '100', '200', '300', '500'],
-                // onChange: (page) => console.log(page),
             }}
             revalidateOnFocus={false}
             dateFormatter="string"

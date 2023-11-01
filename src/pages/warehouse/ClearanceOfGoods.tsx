@@ -1,44 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Tabs, Button, Select, Input, message, Spin, Modal, Space, Checkbox, Dropdown } from 'antd';
 import type { TabsProps, MenuProps } from 'antd';
-import { GenerateDeclarationInformation, CustomsManifest, CustomsDeclaration, CustomsManifestTable } from './ReportComponents';
+import { GenerateDeclarationInformation, CustomsManifest, CustomsDeclaration, CustomsManifestTable, SettingComponent } from './ReportComponents';
 import type { paramType, tInfoByNSItems } from '@/services/warehouse/generateDeclarationInformation'
-import { getInfoByNS, list_hs_code } from '@/services/warehouse/generateDeclarationInformation'
-import { SettingOutlined } from '@ant-design/icons';
+import { getInfoByNS } from '@/services/warehouse/generateDeclarationInformation'
 import { downloadPdf, downloadPdfAcross, printAllReport } from '@/utils/utils'
 import { template } from './ReportComponents/reportConfig'
 
 
-
-const SettingComponent = () => {
-    const [openModal, setOpenModal] = useState(false);
-    const [data, setData] = useState<any[]>([]);
-    const initData = () => {
-        list_hs_code().then((res) => {
-            console.log(res)
-        })
-    }
-    useEffect(() => {
-        if (!openModal) return
-        initData()
-    }, [openModal])
-    return <>
-        <Button icon={<SettingOutlined />} onClick={() => {
-            setOpenModal(true)
-        }} />
-        <Modal
-            open={openModal}
-            onCancel={() => {
-                setOpenModal(false)
-            }}
-            onOk={() => {
-                setOpenModal(false)
-            }}
-        >
-            not yet
-        </Modal>
-    </>
-}
 
 
 let merchandiseDom: any = null
@@ -58,6 +27,7 @@ const App: React.FC = () => {
         countrtOfOrigin: template[0].countryOrigin[0],
         ultimateDestination: template[0].ultimateDestination[0],
         data: [],
+        hsCode: [],
     });
     const [printDoms, setPrintDoms] = useState<any>({
         generateDeclarationInformationTable: true,
@@ -133,19 +103,24 @@ const App: React.FC = () => {
             return sum + parseFloat(item.total_amount || "0")
         }, 0)
     }
-
     const genarateData = () => {
         setLoading(true)
         getInfoByNS({
             tranid: generateDeclarationInformationParams.soNumber,
         }).then((res) => {
-            if (res.code) {
-                let tempData = res.data.map((item: tInfoByNSItems) => {
+            const { code, data, msg } = res
+            if (code) {
+                const hsCode = data.hs_code
+                let tempData = data.ns_data.map((item: tInfoByNSItems) => {
+                    const cn_hs_code = item.cn_hs_code.replace(/\./g, "") + '999'
+                    const unit = hsCode.find((hsItem: any) => hsItem.name === cn_hs_code)?.unit || '个'
+                    const blankSpaceBehindUnit = unit === '千克' ? item.qty : ''
                     return {
                         ...item,
-                        unit: '个',
-                        blankSpaceBehindUnit: '',
                         currency: 'USD',
+                        cn_hs_code,
+                        unit,
+                        blankSpaceBehindUnit,
                         needEdit: item.actual_volume_cbm == '0.0000000'
                     }
                 })
@@ -164,10 +139,11 @@ const App: React.FC = () => {
                     shippingFee: shippingFee ? shippingFee.total_amount : 0,
                     premium: getTotalAmountNum(tempData) * 0.0005,
                     data: tempData,
+                    hsCode,
                     countrtOfOrigin,
                 })
             } else {
-                throw res.msg
+                throw msg
             }
         }).catch((err) => {
             message.error(err)
@@ -220,7 +196,9 @@ const App: React.FC = () => {
                         all: false,
                     })
                     printAll()
-                }}>Download</Button>
+                }}>
+                Download
+            </Button>
         }
     ];
     return <div >
@@ -283,17 +261,21 @@ const App: React.FC = () => {
                 }}>
                 Download All
             </Dropdown.Button>
-            {/* <SettingComponent /> */}
+            <SettingComponent reload={genarateData} />
         </Space>
         <Modal
             title='View'
             width={1600}
+            style={{
+                minWidth: '1600px'
+            }}
             open={openModal}
             onCancel={() => {
                 setOpenModal(false)
             }}
             bodyStyle={{
                 overflowX: 'scroll',
+                maxWidth: '1600px',
             }}
             okText='Download'>
             <div id='printAllDom'>

@@ -10,6 +10,7 @@ import { message, Button } from "antd";
 import { DownloadOutlined } from '@ant-design/icons';
 import TextEditor from './TextEditor'
 import { exportExcel } from '@/utils/excelHelper'
+import { P } from '@antv/g2plot';
 
 const cooMap: any = {
     "TW (TAIWAN PROVINCE OF CHINA)": "台湾",
@@ -55,7 +56,6 @@ export default (props: {
     width?: number,
 }) => {
     const { params, setParams, width = 1600 } = props;
-    const [excelData, setExcelData] = useState<any[]>([])
     const [ultimateDestinationCn, setUltimateDestinationCn] = useState('')
     const getTotalAmountNum = () => {
         return params.data.reduce((sum, item) => {
@@ -63,13 +63,11 @@ export default (props: {
         }, 0)
     }
     const getGwWeightSum = () => {
-        // return params.gwWeightSum.toFixed(3)
         return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.g_w_weight)
         }, 0).toFixed(0)
     }
     const getNwWeightSum = () => {
-        // return params.nwWeightSum.toFixed(3)
         return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.n_w_weight)
         }, 0).toFixed(2)
@@ -174,6 +172,29 @@ export default (props: {
             }
 
         })
+    }
+    const getValueByUnit = (item: tInfoByNSItems) => {
+        return item.unit === '千克' ? (<TextEditor
+            value={item.n_w_weight}
+            onChange={(e) => {
+                const data = [...params.data];
+                data[index].n_w_weight = e.value;
+                setParams({
+                    ...params,
+                    data
+                })
+            }}
+        />) : (<TextEditor
+            value={item.qty}
+            onChange={(e) => {
+                const data = [...params.data];
+                data[index].qty = e.value;
+                setParams({
+                    ...params,
+                    data
+                })
+            }}
+        />)
     }
     useEffect(() => {
         translate()
@@ -343,7 +364,34 @@ export default (props: {
                             params.data.map((item: tInfoByNSItems, index) => {
                                 return <tr key={`customsDeclaration-${index}`} className='whole-node'>
                                     <td>{index + 1}</td>
-                                    <td contentEditable>{item.cn_hs_code.replace(/\./g, "")}999</td>
+                                    <td>
+                                        <TextEditor
+                                            value={item.cn_hs_code}
+                                            onChange={(e) => {
+                                                const data = [...params.data];
+                                                data[index].cn_hs_code = e.value;
+                                                setParams({
+                                                    ...params,
+                                                    data
+                                                })
+                                            }}
+                                            onBlur={(e) => {
+                                                const newUnit = params.hsCode.find((hsItem) => hsItem.name === e.value)?.unit || '个'
+                                                const data = [...params.data];
+                                                data[index].unit = newUnit;
+                                                // 如果是千克，就把数量改成净重
+                                                if (newUnit === '千克') {
+                                                    data[index].blankSpaceBehindUnit = item.qty + ''
+                                                } else {
+                                                    data[index].blankSpaceBehindUnit = ''
+                                                }
+                                                setParams({
+                                                    ...params,
+                                                    data
+                                                })
+                                            }}
+                                        />
+                                    </td>
                                     <td>
                                         <TextEditor
                                             value={item.chinese_customs_clearance_name}
@@ -358,29 +406,7 @@ export default (props: {
                                         />
                                     </td>
                                     <td>
-                                        {
-                                            item.unit === '千克' ? (<TextEditor
-                                                value={item.n_w_weight}
-                                                onChange={(e) => {
-                                                    const data = [...params.data];
-                                                    data[index].n_w_weight = e.value;
-                                                    setParams({
-                                                        ...params,
-                                                        data
-                                                    })
-                                                }}
-                                            />) : (<TextEditor
-                                                value={item.qty}
-                                                onChange={(e) => {
-                                                    const data = [...params.data];
-                                                    data[index].qty = e.value;
-                                                    setParams({
-                                                        ...params,
-                                                        data
-                                                    })
-                                                }}
-                                            />)
-                                        }
+                                        {getValueByUnit(item)}
                                     </td>
                                     <td>
                                         <select

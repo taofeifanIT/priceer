@@ -6,6 +6,7 @@ class TextEditor extends React.Component {
         super(props);
         this.ref = React.createRef();
         this.onChange = this.onChange.bind(this);
+        this.onBlur = this.onBlur.bind(this);
     }
 
 
@@ -17,6 +18,14 @@ class TextEditor extends React.Component {
         this.lastHtml = html;
     }
 
+    // 写一个失去焦点的方法
+    onBlur() {
+        const html = this.ref.current.innerHTML;
+        if (this.props.onBlur) {
+            this.props.onBlur({ value: html });
+        }
+        this.lastHtml = html;
+    }
     shouldComponentUpdate(nextProps) {
         return nextProps.value !== this.ref.current.innerHTML;
     }
@@ -26,16 +35,17 @@ class TextEditor extends React.Component {
             this.ref.current.innerHTML = this.props.value;
         }
     }
+    // 
 
     render() {
-        const { value } = this.props;
+        const { value, width = '' } = this.props;
         return (
-            <div style={{ display: 'inline-block' }}>
+            <div style={{ display: 'inline-block', minWidth: width }}>
                 <div contentEditable
                     dangerouslySetInnerHTML={{ __html: value }}
                     ref={this.ref}
                     onInput={this.onChange}
-                    onBlur={this.onChange}
+                    onBlur={this.onBlur}
                     className="editable"
                     placeholder="Optional Notes..."
                 />

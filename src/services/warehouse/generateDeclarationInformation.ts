@@ -36,6 +36,21 @@ export type paramType = {
     ultimateDestination: string
     countrtOfOrigin: string
     data: tInfoByNSItems[]
+    hsCode: {
+        id: number;
+        name: string;
+        unit: string;
+        type: number;
+
+    }[]
+}
+
+
+export type UnitItem = {
+    id: number;
+    name: string;
+    unit: string;
+    type: number;
 }
 
 // shipment/getInfoByNS
@@ -49,9 +64,10 @@ export async function getInfoByNS(params?: {
 }
 
 // warehouse/list_hs_code
-export async function list_hs_code() {
+export async function list_hs_code(params: any) {
     return request('/api/warehouse/list_hs_code', {
-        method: 'POST'
+        method: 'POST',
+        data: params
     });
 }
 
