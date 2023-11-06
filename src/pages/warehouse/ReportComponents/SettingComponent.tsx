@@ -6,7 +6,6 @@ import type { UnitItem } from '@/services/warehouse/generateDeclarationInformati
 import type { ProColumns } from '@ant-design/pro-table';
 import type { FormInstance } from 'antd';
 import { EditableProTable } from '@ant-design/pro-table';
-import { set } from 'lodash'
 
 
 

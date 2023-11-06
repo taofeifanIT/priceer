@@ -24,7 +24,6 @@ import dayjs from 'dayjs';
 import { getToken } from '@/utils/token';
 import { exportExcel, exportExcelFile } from '@/utils/excelHelper';
 import { statusConfig } from './config';
-// import TestComputer from './components/TestComputer';
 
 
 const DownloadTemplate = () => {
@@ -231,7 +230,6 @@ export default () => {
         }
         setBrands(brandData)
     }
-
     const downloadData = () => {
         const header = [
             {
@@ -607,69 +605,11 @@ export default () => {
                 "Member1": '',
                 "Member2": '',
                 "Member3": '',
-
-                // sku: item.sku,
-                // invoice_item_name: "",
-                // serialized: 'NO',
-                // upc: item.upc,
-                // asin: item.asin,
-                // asin_ca: '',
-                // asin_au: '',
-                // username: item.username,
-                // title: item.title,
-                // brand: item.brand,
-                // cn_hs_code: '',
-                // cn_tax_rebate_rate: 0.13,
-                // us_hs_code: '',
-                // canada_hts_code: '',
-                // coo: '',
-                // us_import_tax: item.us_import_tax,
-                // canada_import_tax: '',
-                // kind_of_item: '',
-                // platform_fee: item.platform_fee,
-                // amazon_can_referral_fee: '',
-                // amazon_au_referral_fee: '',
-                // shipping_risk: '',
-                // upc_ca: '',
-                // height: item.height,
-                // width: item.width,
-                // length: item.length,
-                // currency1: 'USD',
-                // price1: item.sales_price * 0.95,
-                // sales_price: item.sales_price,
-                // price_level1: 'Itemminprice',
-                // currency2: 'USD',
-                // price2: item.sales_price * 1.15,
-                // price_level2: 'Itemmaxprice',
-                // fullfill_cost: item.fullfill_cost,
-                // fullfill_cost_can: '',
-                // fullfill_cost_au: '',
-                // amazon_ca_price: '',
-                // amazon_au_price: '',
-                // store_approved_to_sell: 'EPICFAN US',
-                // tax_schedule: '',
-                // include_children: 'Yes',
-                // member1: '',
-                // member2: '',
-                // member3: '',
             }
 
         })
-        // console.log(data)
         exportExcelFile(header, data, 'New_Products.xlsx')
     }
-    // const getRate = async () => {
-    //     // if (USDRate) return USDRate
-    //     let rate = 7.25;
-    //     const { data } = await axios('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
-    //     if (data.code === 0) {
-    //         rate = data.data.rate
-    //     } else {
-    //         // 递归调用
-    //         rate = await getRate()
-    //     }
-    //     return rate
-    // }
     const columns: ProColumns<NewProductsItem>[] = [
         {
             dataIndex: 'index',

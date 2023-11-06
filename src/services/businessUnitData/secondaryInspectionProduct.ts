@@ -41,6 +41,7 @@ export type SecondaryInspectionProductItem = {
     amazon_ca_price: string;
     amazon_au_price: string;
     store_id: string;
+    storeName: string; // 前端添加字段
     nick_name: string;
     tax_schedule: string;
     include_children: string;
@@ -68,5 +69,12 @@ export async function modifyParam(params: {
     return request('/api/businessUnitData/modifyParam', {
         method: 'POST',
         data: params
+    });
+}
+
+// businessUnitData/getCategoryAndRisk
+export async function getCategoryAndRisk() {
+    return request('/api/businessUnitData/getCategoryAndRisk', {
+        method: 'POST'
     });
 }

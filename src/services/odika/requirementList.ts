@@ -23,7 +23,7 @@ export interface saveDesignParams {
         }
     },
     auxiliaryPicture: {
-        sellingPoint: string[];
+        sellingPoint: any[];
         url: string[];
         memo: string;
         thumbnail?: string[];
@@ -59,7 +59,7 @@ export interface saveDesignParams {
 }
 export interface submitDesignParams {
     sku: string;
-    competitor: string;
+    competitor: string[];
     mainPictures: {
         url: string[];
         memo: string;
@@ -122,6 +122,8 @@ export type RequirementListItem = {
     creator: string;
     memo: string;
     creator_id: number;
+    state: number;
+    state_reason: string;
     mainPictures: {
         url: string[];
         memo: string;
@@ -277,5 +279,13 @@ export async function uploadTemplate(file: any, type: string) {
         data: formData,
         formData,
         requestType: 'form'
+    });
+}
+
+// design/checkImage
+export async function checkImage(params: { id: number, status: 1 | 0, type: 1 | 2, reason?: string }) {
+    return request('/api/design/checkImage', {
+        method: 'POST',
+        data: params
     });
 }

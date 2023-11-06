@@ -55,10 +55,6 @@ const App: React.FC = () => {
         }).then(res => {
             if (res.code) {
                 const sourceData = res.data.data
-                // const tempData1 = sourceData.filter((item: any) => item.close_sort === 0 && item.status !== 7)
-                // const tempData2 = sourceData.filter((item: any) => item.close_sort !== 0 && item.status >= 3).sort((a: any, b: any) => a.close_sort - b.close_sort)
-                // const tempData3 = sourceData.filter((item: any) => item.close_sort === 0 && item.status > 3)
-                // const newData = tempData1.concat(tempData2).concat(tempData3)
                 setDataSource(sourceData)
                 setSorts(res.data.sorts)
                 setTableParams({
@@ -84,7 +80,7 @@ const App: React.FC = () => {
         let color = ''
         let text = null
         switch (status) {
-            // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成
+            // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成  null:待审核
             case 2:
                 color = ''
                 text = localFrontFromRequirementList('PendingSorting')
@@ -107,6 +103,10 @@ const App: React.FC = () => {
             case 7:
                 color = 'green'
                 text = localFrontFromRequirementList('Completed')
+                break;
+            case -10:
+                color = '#2db7f5'
+                text = localFrontFromRequirementList('PendingReview')
                 break;
         }
         // 字体加粗
@@ -157,6 +157,9 @@ const App: React.FC = () => {
             key: 'priority',
             width: 100,
             render: (_, record) => {
+                if (record.state !== 2) {
+                    return ''
+                }
                 if (record.status === 7) {
                     return ''
                 }
@@ -188,7 +191,7 @@ const App: React.FC = () => {
             key: 'status',
             width: 120,
             render: (_, record) => {
-                return getColor(record.status)
+                return record.state ? getColor(record.status) : getColor(-10)
             }
         },
         {
@@ -198,6 +201,11 @@ const App: React.FC = () => {
             fixed: 'right',
             width: 150,
             render: (_, record) => {
+                if (record.state !== 2) {
+                    return <Button type="link" onClick={() => {
+                        window.open(`/odika/ViewDesign?id=${record.id}&check=true&state=1`)
+                    }}><FormattedMessage id='pages.odika.requirementSortList.check' /></Button>
+                }
                 return <Space>
                     {record.status !== 7 ? (<>
                         <Switch style={{ width: '70px' }} checkedChildren={localFront('locked')} unCheckedChildren={localFront('lock')} disabled={record.status > 5} checked={!!record.close_sort || record.status === 7} onChange={val => {

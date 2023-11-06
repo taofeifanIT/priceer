@@ -74,7 +74,10 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
     const checkStatus = false;
     const handleCancel = () => {
         setVisible(false);
-        setEditRecord({} as RequirementListItem)
+        if (editRecord.id) {
+            setEditRecord({} as RequirementListItem)
+        }
+        // setEditRecord({} as RequirementListItem)
         // setCurrentSku('')
         // form.resetFields();
     };
@@ -98,7 +101,9 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
 
     const setDetail = (data: submitDesignParams) => {
         const formParams = {
-            competitor: data.competitor || undefined,
+            competitor: (data?.competitor.length ? data.competitor : []).map(item => {
+                return { asin: item }
+            }) || undefined,
             mainPictures: data.mainPictures?.map((item, index) => ({
                 memo: item.memo,
                 file: item.url ? item.url.map((url: string, i: number) => ({
@@ -139,7 +144,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 url: getImageUrl(url)
             })) : [],
             auxiliaryPictures: data.auxiliaryPictures?.map((item, index) => ({
-                sellingPoint: item.sellingPoint,
+                sellingPoint: item.sellingPoint.map((point: string) => ({ point })),
                 memo: item.memo,
                 file: item.url ? item.url.map((url: string, i: number) => ({
                     uid: 'auxiliaryPictures' + index + i,
@@ -196,7 +201,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         setDetailLoading(true);
         getDesignDetail({ id }).then(res => {
             if (!res.code) {
-                console.log(res)
+                // console.log(res)
                 throw res.msg
             } else {
                 setDetail(res.data)
@@ -217,7 +222,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         form.validateFields().then(values => {
             const params: saveDesignParams = {
                 sku: currentSku,
-                competitor: values.competitor || '',
+                competitor: values.competitor?.map((item: { asin: any; }) => item.asin) || '',
                 mainPictures: values.mainPictures?.map((item: { memo: any; file: any; }) => ({
                     memo: item.memo,
                     url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
@@ -237,8 +242,10 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                     memo: values.auxiliaryPictureMemo,
                     url: (values.auxiliaryPictureFile && values.auxiliaryPictureFile.length) ? values?.auxiliaryPictureFile.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : '',
                 },
-                auxiliaryPictures: values.auxiliaryPictures?.map((item: { sellingPoint: string; memo: any; file: any; }) => ({
-                    sellingPoint: item.sellingPoint,
+                auxiliaryPictures: values.auxiliaryPictures?.map((item: { sellingPoint: { point: string }[]; memo: any; file: any; }) => ({
+                    sellingPoint: item.sellingPoint?.map((point) => {
+                        return point.point
+                    }),
                     memo: item.memo,
                     url: (item.file && item.file.length) ? item?.file.map((file: { response: { data: { file_name: any; }; }; }) => file.response?.data?.file_name) : undefined
                 })),
@@ -271,7 +278,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             loading(true);
             api(params).then(res => {
                 if (res.code) {
-                    message.success('保存成功')
+                    message.success('save successfully！')
                 } else {
                     throw res.msg
                 }
@@ -343,6 +350,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
             setVisible(true);
             getSkulist()
             if (record) {
+                setEditRecord({} as RequirementListItem)
                 setEditRecord(record)
                 setCurrentSku(record.sku)
                 getDetail(record.id)
@@ -386,7 +394,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 {...formItemLayout}
             >
                 <Divider plain>{localFront('CompetitiveAsin')}</Divider>
-                <Form.Item
+                {/* <Form.Item
                     name={'competitor'}
                     label={" "}
                     colon={false}
@@ -396,7 +404,32 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                         mode="tags"
                         placeholder="Add Asin"
                     />
-                </Form.Item>
+                </Form.Item> */}
+                <Form.List name="competitor">
+                    {(fields, { add, remove }) => (
+                        <div style={{ paddingLeft: '100px' }}>
+                            {fields.map((field) => (
+                                <Space key={field.key} align='baseline' style={{ position: 'relative' }}>
+                                    <Form.Item
+                                        {...field}
+                                        label={'Asin' + (field.name + 1)}
+                                        name={[field.name, 'asin']}
+                                    // rules={[{ required: true, message: 'Missing asin' }]}
+                                    >
+                                        <Input style={{ width: 400 }} />
+                                    </Form.Item>
+                                    <MinusCircleOutlined onClick={() => remove(field.name)} style={{ position: 'absolute', right: -50, top: 7 }} />
+                                </Space>
+                            ))}
+
+                            <Form.Item>
+                                <Button style={{ marginLeft: 73, width: 400 }} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                                    Add Asin
+                                </Button>
+                            </Form.Item>
+                        </div>
+                    )}
+                </Form.List>
                 <Divider plain>
                     {getTitle(localFrontFromViewDesign('mainPicture'), '2000:2000')}
                 </Divider>
@@ -460,7 +493,8 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                         <>
                             {fields.map(({ key, name, ...restField }) => (
                                 <div key={key} style={{ marginBottom: 8, position: 'relative' }}>
-                                    <Form.Item
+                                    {name !== 0 && <Divider plain style={{ marginBottom: '40px' }} />}
+                                    {/* <Form.Item
                                         {...restField}
                                         name={[name, 'sellingPoint']}
                                         label={<>{localFrontFromViewDesign('SellingPoint')}{name + 1}</>}
@@ -470,9 +504,38 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                             mode="tags"
                                             style={{ width: '100%' }}
                                             placeholder="Tags Mode"
+
                                         />
-                                    </Form.Item>
-                                    <MinusCircleOutlined onClick={() => remove(name)} style={{ position: 'absolute', right: 90, top: 7 }} />
+                                    </Form.Item> */}
+                                    <MinusCircleOutlined onClick={() => remove(name)} style={{ position: 'absolute', right: 10, top: name !== 0 ? 10 : -30, fontSize: '20px' }} />
+                                    <Form.List name={[name, 'sellingPoint']}>
+                                        {(fields, { add, remove }) => (
+                                            <div style={{ paddingLeft: '71px' }}>
+                                                {fields.map((field) => (
+                                                    <Space key={field.key} align='baseline' >
+                                                        <div style={{ display: 'inline-block', position: 'relative', width: '190px', }}>
+                                                            <Form.Item
+                                                                {...field}
+                                                                labelCol={{ span: 8 }}
+                                                                label={"Point " + (field.name + 1)}
+                                                                name={[field.name, 'point']}
+                                                                style={{ display: 'inline-block' }}
+                                                            >
+                                                                <Input style={{ width: 100 }} />
+                                                            </Form.Item>
+                                                            <MinusCircleOutlined onClick={() => remove(field.name)} style={{ position: 'absolute', top: 10, }} />
+                                                        </div>
+                                                    </Space>
+                                                ))}
+
+                                                <Form.Item>
+                                                    <Button style={{ marginLeft: 106, width: 380 }} type="dashed" onClick={() => add()} size='small' block icon={<PlusOutlined />}>
+                                                        Add Point
+                                                    </Button>
+                                                </Form.Item>
+                                            </div>
+                                        )}
+                                    </Form.List>
                                     <Form.Item
                                         {...restField}
                                         name={[name, 'memo']}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getQueryVariable } from '@/utils/utils'
-import { getDesignDetail, checkDesign } from '@/services/odika/requirementList';
+import { getDesignDetail, checkDesign, checkImage } from '@/services/odika/requirementList';
 import type { saveDesignParams } from '@/services/odika/requirementList';
 import { FormattedMessage } from 'umi';
 import { message, Space, Typography, Image, Empty, Tag, Button, Affix, Drawer, Form, Input, Radio } from 'antd';
@@ -32,10 +32,18 @@ const CheckForm = (props: { check?: string }) => {
     const finish = () => {
         form.validateFields().then(values => {
             setLoading(true)
-            checkDesign({ id: parseInt(getQueryVariable('id')), status: values.status, reason: values.reason }).then(res => {
+            const state = getQueryVariable('state')
+            const params = {
+                id: parseInt(getQueryVariable('id')),
+                status: state ? undefined : values.status,
+                reason: values.reason,
+                state: state ? parseInt(state) : undefined,
+                type: parseInt(state)
+            }
+            const api: any = state ? checkImage : checkDesign
+            api(params).then((res: any) => {
                 if (res.code) {
-                    message.success('审核完成！')
-
+                    message.success('Audit completed！')
                 } else {
                     message.error(res.msg)
                 }
@@ -68,17 +76,21 @@ const CheckForm = (props: { check?: string }) => {
                 <Form layout="vertical" form={form}>
                     <Form.Item
                         name="status"
-                        label="结果"
+                        label={<FormattedMessage id='pages.odika.RequirementList.result' />}
                         rules={[{ required: true, message: 'Please select a result' }]}
                     >
                         <Radio.Group>
-                            <Radio value="1">通过</Radio>
-                            <Radio value="0">不通过</Radio>
+                            <Radio value="1">
+                                <FormattedMessage id='pages.odika.RequirementList.pass' />
+                            </Radio>
+                            <Radio value="0">
+                                <FormattedMessage id='pages.odika.RequirementList.fail' />
+                            </Radio>
                         </Radio.Group>
                     </Form.Item>
                     <Form.Item
                         name="reason"
-                        label="备注"
+                        label={<FormattedMessage id='pages.odika.RequirementList.remark' />}
                         rules={[{ required: false, message: 'Please enter reason' }]}
                     >
                         <Input.TextArea
@@ -174,7 +186,7 @@ export default () => {
                             <Space size={'small'} style={{ 'marginTop': '10px' }} align='start'>
                                 <div>
                                     {designDetail?.competitor.map((item) => {
-                                        return <Tag key={item}>{item}</Tag>
+                                        return <a href={`https://www.amazon.com/dp/${item}`} target='_blank' rel="noreferrer" key={item}><Tag key={item}>{item}</Tag></a>
                                     })}
                                 </div>
                             </Space>

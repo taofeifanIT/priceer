@@ -4,6 +4,7 @@ export default {
   'pages.odika.requirementSortList.status': '状态',
   'pages.odika.requirementSortList.locked': '已锁定',
   'pages.odika.requirementSortList.lock': '锁定',
+  'pages.odika.requirementSortList.check': '审核',
   // ----------odika RequirementList
   // 替换Listing页面模版
   'pages.odika.RequirementList.replaceContentTemplate': '替换Listing内容模版',
@@ -53,6 +54,10 @@ export default {
   'pages.odika.RequirementList.pictureRequirement': '请输入画面要求',
   'pages.odika.RequirementList.addMore': '添加细节图',
   'pages.odika.RequirementList.screenRequirement': '请输入画面需求',
+  'pages.odika.RequirementList.result': '结果',
+  'pages.odika.RequirementList.pass': '通过',
+  'pages.odika.RequirementList.fail': '不通过',
+  'pages.odika.RequirementList.remark': '备注',
   // -----------odika viewDesign--------------
   // 场景轮播图
   'pages.odika.ViewDesign.sceneRotograph': '场景轮播图',

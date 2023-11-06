@@ -19,6 +19,11 @@ export type tInfoByNSItems = {
     needEdit: boolean; // 前端自定义字段
     blankSpaceBehindUnit: string; // 前端自定义字段
     currency: string; // 前端自定义字段
+    sharedEqually: boolean; // 前端自定义字段
+    sharedEquallyAmount: number; // 前端自定义字段
+    shipingFeeInItem: number; // 前端自定义字段
+    premiumInItem: number; // 前端自定义字段
+    declarationSum: number; // 前端自定义字段
     unit: string; //unit
     cn_hs_code: string;
     brand: string;
@@ -35,6 +40,8 @@ export type paramType = {
     soldFor: string
     ultimateDestination: string
     countrtOfOrigin: string
+    totalInvoiceValue: number
+    totalAmountAll: number
     data: tInfoByNSItems[]
     hsCode: {
         id: number;
@@ -42,7 +49,8 @@ export type paramType = {
         unit: string;
         type: number;
 
-    }[]
+    }[],
+    declarationTotal: number; // 前端自定义字段
 }
 
 

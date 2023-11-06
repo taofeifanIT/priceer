@@ -7,6 +7,7 @@ import { getInfoByNS } from '@/services/warehouse/generateDeclarationInformation
 import { downloadPdf, downloadPdfAcross, printAllReport } from '@/utils/utils'
 import { template } from './ReportComponents/reportConfig'
 
+import { round, chain, multiply, divide, subtract, add } from 'mathjs'
 
 
 
@@ -18,7 +19,7 @@ const App: React.FC = () => {
     const [generateDeclarationInformationParams, setGenerateDeclarationInformationParams] = useState<paramType>({
         invoiceNumber: '',
         templateNumber: 0,
-        soNumber: REACT_APP_ENV === 'stag' ? 'SO-581330' : '',
+        soNumber: REACT_APP_ENV === 'stag' ? 'SO-S243142' : '',
         deliveryNumbers: '',
         numberOfCases: '',
         shippingFee: '',
@@ -28,6 +29,9 @@ const App: React.FC = () => {
         ultimateDestination: template[0].ultimateDestination[0],
         data: [],
         hsCode: [],
+        totalInvoiceValue: 0,
+        totalAmountAll: 0,
+        declarationTotal: 0,
     });
     const [printDoms, setPrintDoms] = useState<any>({
         generateDeclarationInformationTable: true,
@@ -55,7 +59,19 @@ const App: React.FC = () => {
             children: <CustomsDeclaration params={generateDeclarationInformationParams} setParams={setGenerateDeclarationInformationParams} />,
         }
     ];
-
+    // 判断数字小数点后是否有两位，没有则补0
+    const checkDecimal = (num: number) => {
+        const str = num.toString()
+        const index = str.indexOf('.')
+        if (index !== -1) {
+            const decimal = str.substring(index + 1, str.length)
+            if (decimal.length < 2) {
+                return `${num}0`
+            }
+            return num
+        }
+        return `${num}.00`
+    }
     const cloneCustomsDeclaration = () => {
         setTimeout(() => {
             const tempCustomsDeclarationDom = document.getElementById('tempCustomsDeclaration');
@@ -88,6 +104,12 @@ const App: React.FC = () => {
             setOpenModal(false)
         }, 500)
     }
+    const getPremium = (data: tInfoByNSItems[]) => {
+        const premium = data.reduce((sum, item) => {
+            return chain(Number(item.total_amount || "0")).multiply(0.0005).add(sum).done()
+        }, 0)
+        return premium
+    }
     const onChange = (key: string) => {
         if (tabIndex === 'customsDeclaration') {
             customsDeclarationDom = document.getElementById('customsDeclarationBox')
@@ -98,11 +120,6 @@ const App: React.FC = () => {
         setTabIndex(key);
 
     };
-    const getTotalAmountNum = (data: tInfoByNSItems[]) => {
-        return data.reduce((sum, item) => {
-            return sum + parseFloat(item.total_amount || "0")
-        }, 0)
-    }
     const genarateData = () => {
         setLoading(true)
         getInfoByNS({
@@ -111,21 +128,40 @@ const App: React.FC = () => {
             const { code, data, msg } = res
             if (code) {
                 const hsCode = data.hs_code
+                const shippingFee = data.ns_data.find((item: tInfoByNSItems) => item.item.toLocaleLowerCase() === 'shipping fee')
                 let tempData = data.ns_data.map((item: tInfoByNSItems) => {
                     const cn_hs_code = item.cn_hs_code.replace(/\./g, "") + '999'
                     const unit = hsCode.find((hsItem: any) => hsItem.name === cn_hs_code)?.unit || '个'
                     const blankSpaceBehindUnit = unit === '千克' ? item.qty : ''
+                    const total_amount = item.item.toLocaleLowerCase() === 'shipping fee' ? item.total_amount : checkDecimal(round(Number(item.unit_price_usd) * Number(item.qty), 2))
                     return {
                         ...item,
                         currency: 'USD',
                         cn_hs_code,
                         unit,
                         blankSpaceBehindUnit,
+                        total_amount,
                         needEdit: item.actual_volume_cbm == '0.0000000'
                     }
                 })
-                const shippingFee = tempData.find((item: tInfoByNSItems) => item.item.toLocaleLowerCase() === 'shipping fee')
                 tempData = tempData.filter((item: tInfoByNSItems) => item.item.toLocaleLowerCase() !== 'shipping fee')
+                const totalAmountAll = tempData.reduce((sum: number, item: tInfoByNSItems) => {
+                    // console.log(item.total_amount)
+                    return chain(Number(item.total_amount || "0")).add(sum).done()
+                }, 0)
+                const premium = getPremium(tempData)
+                const totalInvoiceValue = chain(Number(totalAmountAll)).add(shippingFee ? Number(shippingFee.total_amount) : 0).round(2).done()
+
+                tempData = tempData.map((item: tInfoByNSItems) => {
+                    const shipingFeeInItem = round(multiply(divide(Number(item.total_amount), totalAmountAll), subtract(Number(shippingFee.total_amount), premium)), 2)
+                    const premiumInItem = Number(item.total_amount) * 0.0005
+                    return {
+                        ...item,
+                        shipingFeeInItem,
+                        premiumInItem,
+                        declarationSum: round(add(add(shipingFeeInItem, Number(item.total_amount)), premiumInItem), 2),
+                    }
+                })
                 const cooArray = tempData.map((item: tInfoByNSItems) => item.coo)
                 // 去重
                 const cooSet = new Set(cooArray)
@@ -134,19 +170,37 @@ const App: React.FC = () => {
                 if (cooArr.length > 1) {
                     countrtOfOrigin = 'Multiple'
                 }
+                let declarationTotal = tempData.reduce((sum: number, item: { declarationSum: any; }) => {
+                    return chain(sum).add(item.declarationSum).done()
+                }, 0)
+                // let different = totalInvoiceValue - declarationTotal
+                const different = subtract(totalInvoiceValue, declarationTotal)
+                if (different !== 0) {
+                    const lastItem = tempData[tempData.length - 1]
+                    lastItem.shipingFeeInItem = add(lastItem.shipingFeeInItem, different)
+                    lastItem.declarationSum = round(add(add(lastItem.shipingFeeInItem, Number(lastItem.total_amount)), lastItem.premiumInItem), 2)
+                    tempData[tempData.length - 1] = lastItem
+                    declarationTotal = tempData.reduce((sum: number, item: { declarationSum: any; }) => {
+                        return chain(sum).add(item.declarationSum).done()
+                    }, 0)
+                }
                 setGenerateDeclarationInformationParams({
                     ...generateDeclarationInformationParams,
                     shippingFee: shippingFee ? shippingFee.total_amount : 0,
-                    premium: getTotalAmountNum(tempData) * 0.0005,
+                    premium,
                     data: tempData,
                     hsCode,
+                    totalAmountAll,
+                    totalInvoiceValue,
                     countrtOfOrigin,
+                    declarationTotal,
                 })
             } else {
                 throw msg
             }
         }).catch((err) => {
-            message.error(err)
+            console.log(err)
+            message.error(JSON.stringify(err))
         }).finally(() => {
             setLoading(false)
         })

@@ -4,6 +4,7 @@ export default {
   'pages.odika.requirementSortList.status': 'Status',
   'pages.odika.requirementSortList.locked': 'Locked',
   'pages.odika.requirementSortList.lock': 'Lock',
+  'pages.odika.requirementSortList.check': 'Check',
   // ----------odika RequirementList
   'pages.odika.RequirementList.replaceContentTemplate': 'Replace The Listing Content Template',
   'pages.odika.RequirementList.replacePageTemplate': 'Replace The Listing Page Template',
@@ -17,7 +18,7 @@ export default {
   'pages.odika.RequirementList.template': 'Template',
   'pages.odika.RequirementList.addNewMainPicture': 'Add New Main Picture',
   'pages.odika.RequirementList.CompetitiveAsin': 'Competitive Asin',
-  'pages.odika.RequirementList.info': 'info',
+  'pages.odika.RequirementList.info': 'Info',
   'pages.odika.RequirementList.CreateInfo': 'Create Info',
   'pages.odika.RequirementList.status': 'Status',
   'pages.odika.RequirementList.All': 'All',
@@ -52,6 +53,10 @@ export default {
   'pages.odika.RequirementList.pictureRequirement': 'Please enter picture requirement',
   'pages.odika.RequirementList.addMore': 'Add more',
   'pages.odika.RequirementList.screenRequirement': 'Please enter screen requirement',
+  'pages.odika.RequirementList.result': 'Result',
+  'pages.odika.RequirementList.pass': 'Pass',
+  'pages.odika.RequirementList.fail': 'Fail',
+  'pages.odika.RequirementList.remark': 'Remark',
   // -----------odika viewDesign--------------
   // 继续添加新卖点图
   'pages.odika.ViewDesign.sceneRotograph': 'Scene Rotograph',

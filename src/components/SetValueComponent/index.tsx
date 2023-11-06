@@ -15,6 +15,7 @@ const SetValueComponent = (props: {
     disabled?: boolean,
     prefix?: string
     options?: { label: string, value: string | number }[]
+    style?: React.CSSProperties
 }) => {
     const {
         id,
@@ -26,7 +27,8 @@ const SetValueComponent = (props: {
         numberStep = 1,
         otherParams = {},
         disabled = false,
-        options = []
+        options = [],
+        style = {}
     } = props
     const [paramValue, setParamValue] = useState(value)
     const [spinning, setSpinning] = useState(false)
@@ -111,7 +113,7 @@ const SetValueComponent = (props: {
                 {(props.prefix && !numberIsEdit) && <span>{props.prefix}</span>}
                 {numberIsEdit ?
                     <Select
-                        style={{ width: 120 }}
+                        style={style}
                         autoFocus={true}
                         onBlur={() => {
                             setNumberIsEdit(false)

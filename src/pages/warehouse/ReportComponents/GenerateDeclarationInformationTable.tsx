@@ -3,8 +3,6 @@ import dayjs from 'dayjs'
 import type { paramType } from '@/services/warehouse/generateDeclarationInformation'
 import { template } from './reportConfig'
 import TextEditor from './TextEditor'
-
-
 export default (props: {
     params: paramType,
     setParams: (param: paramType) => void
@@ -26,7 +24,7 @@ export default (props: {
         }, 0)
     }
     const getPremium = () => {
-        return params.premium?.toFixed(2)
+        return params.premium
     }
     const getFreightCost = () => {
         return parseFloat(params.shippingFee || "0")
@@ -321,12 +319,12 @@ export default (props: {
                 <tr>
                     <th colSpan={3}>Insurance Cost</th>
                     {/* <th colSpan={1}>$  {data.premium.toFixed(2)}</th> */}
-                    <th colSpan={1}>$  {getPremium()}</th>
+                    <th colSpan={1}>$  {getPremium().toFixed(2)}</th>
                 </tr>
                 <tr>
                     <th colSpan={3}>Total Invoice Value</th>
                     {/* <th colSpan={1}>$  {(data.freightCost + data.totalAmountNum).toFixed(2)}</th> */}
-                    <th colSpan={1}>$  {(getFreightCost() + getTotalAmountNum()).toFixed(2)}</th>
+                    <th colSpan={1}>$  {params.totalInvoiceValue}</th>
                 </tr>
                 <tr>
                     <th colSpan={9}>I hereby certify this commercial invoice to be true and correct.</th>

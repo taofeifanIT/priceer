@@ -10,7 +10,7 @@ import { message, Button } from "antd";
 import { DownloadOutlined } from '@ant-design/icons';
 import TextEditor from './TextEditor'
 import { exportExcel } from '@/utils/excelHelper'
-import { P } from '@antv/g2plot';
+import { round, chain, subtract } from 'mathjs'
 
 const cooMap: any = {
     "TW (TAIWAN PROVINCE OF CHINA)": "台湾",
@@ -57,10 +57,14 @@ export default (props: {
 }) => {
     const { params, setParams, width = 1600 } = props;
     const [ultimateDestinationCn, setUltimateDestinationCn] = useState('')
-    const getTotalAmountNum = () => {
-        return params.data.reduce((sum, item) => {
-            return sum + parseFloat(item.total_amount)
-        }, 0)
+    // 传入一个数字，如果有小数点只保留两位小数点，不用四舍五入
+    const getFixedNum = (num: number) => {
+        const str = num + ''
+        const index = str.indexOf('.')
+        if (index === -1) {
+            return num
+        }
+        return parseFloat(str.slice(0, index + 3))
     }
     const getGwWeightSum = () => {
         return params.data.reduce((sum, item) => {
@@ -72,18 +76,8 @@ export default (props: {
             return sum + parseFloat(item.n_w_weight)
         }, 0).toFixed(2)
     }
-    const getCustomsDeclarationTotalAmount = (item: tInfoByNSItems) => {
-        return parseFloat(item.total_amount) / getTotalAmountNum() * (parseFloat(params.shippingFee) - params.premium) + parseFloat(item.total_amount) + parseFloat(item.total_amount) * 0.0005
-    }
-    const getCustomsDeclarationTotalAmountSum = () => {
-        return params.data.reduce((sum, item) => {
-            return sum + getCustomsDeclarationTotalAmount(item)
-        }, 0).toFixed(2)
-    }
-
     const getInvoiceTitle = (title: string) => {
         const titles = ['威昱', '巢威']
-        // 如果title中包含威昱或巢威，返回威昱或巢威
         if (titles.some((item) => title.includes(item))) {
             return titles.find((item) => title.includes(item))
         }
@@ -92,7 +86,6 @@ export default (props: {
 
     const exportExcelFile = () => {
         const excelHeader = [
-            // 发票号 品名 数量 单位报关金额 抬头 币种 Salse order
             {
                 title: '发票号',
                 dataIndex: 'invoiceNumber',
@@ -140,7 +133,7 @@ export default (props: {
                 chinese_customs_clearance_name: item.chinese_customs_clearance_name,
                 qty: item.unit === '千克' ? item.n_w_weight : item.qty,
                 unit: item.unit,
-                total_amount: getCustomsDeclarationTotalAmount(item).toFixed(2),
+                total_amount: chain(Number(item.total_amount)).add(item.shipingFeeInItem).add(item.premiumInItem).done(),
                 soldFor: getInvoiceTitle(template[params.templateNumber].overseasConsignor.name),
                 currency: item.currency,
                 salesOrder: params.soNumber
@@ -333,7 +326,8 @@ export default (props: {
                             <th colSpan={1}>
                                 {params.soldFor}
                             </th>
-                            <th colSpan={1} >$ {(parseFloat(params.shippingFee) - params.premium).toFixed(2)}</th>
+                            {/* <th colSpan={1} >$ {(parseFloat(params.shippingFee) - params.premium).toFixed(2)}</th> */}
+                            <th colSpan={1} >$ {round(subtract(parseFloat(params.shippingFee), params.premium), 2)}</th>
                             <th colSpan={1}>$ {params.premium.toFixed(2)}</th>
                             <th colSpan={1} >
                                 $ <span style={{ width: '100%' }} contentEditable />
@@ -437,11 +431,13 @@ export default (props: {
                                     <td>{item.n_w_weight}</td>
                                     <td style={{ textAlign: 'center' }}>
                                         {/* {item.unit_price_usd} */}
-                                        {(getCustomsDeclarationTotalAmount(item) / item.qty).toFixed(2)}
+                                        {(item.declarationSum / item.qty).toFixed(2)}
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
                                         {/* {item.total_amount} */}
-                                        {getCustomsDeclarationTotalAmount(item).toFixed(2)}
+                                        {/* {getCustomsDeclarationTotalAmount(item)} */}
+
+                                        {item.declarationSum}
                                     </td>
                                     <td>
                                         <TextEditor
@@ -481,7 +477,7 @@ export default (props: {
                             <td contentEditable />
                             <td contentEditable />
                             <td contentEditable style={{ textAlign: 'center' }}>总计</td>
-                            <td contentEditable style={{ textAlign: 'center' }}>{getCustomsDeclarationTotalAmountSum()}</td>
+                            <td contentEditable style={{ textAlign: 'center' }}>{getFixedNum(round(params.declarationTotal, 2))}</td>
                             <td contentEditable />
                             <td contentEditable />
                             <td contentEditable />

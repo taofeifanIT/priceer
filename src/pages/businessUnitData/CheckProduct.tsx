@@ -347,6 +347,7 @@ export default () => {
             width: 170,
             render: (_, record) => {
                 return <SetValueComponent
+                    style={{ width: '120px' }}
                     id={record.id}
                     type='select'
                     options={storeOptions}
