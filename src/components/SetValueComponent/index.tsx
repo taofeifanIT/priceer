@@ -57,7 +57,7 @@ const SetValueComponent = (props: {
     return (<>
         <Spin spinning={spinning}>
             {(type === 'text' && !disabled) && <Typography.Text
-                style={{ width: '100%' }}
+                style={style}
                 ellipsis={{ rows: 1, expandable: true, symbol: 'more', tooltip: paramValue }}
                 editable={{
                     onChange(val) {
@@ -72,33 +72,36 @@ const SetValueComponent = (props: {
             </Typography.Text>}
             {(type === 'number' && !disabled) && (<>
                 {(props.prefix && !numberIsEdit) && <span>{props.prefix}</span>}
-                {numberIsEdit ? <InputNumber
-                    ref={numberRef}
-                    step={numberStep}
-                    value={paramValue}
-                    // 回车保存
-                    onPressEnter={(e: any) => {
-                        setNumberIsEdit(false)
-                        // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                        if (e.target.value == value) {
-                            return
-                        }
-                        savgValue(e.target.value)
-                    }}
-                    onBlur={(e) => {
-                        setNumberIsEdit(false)
-                        // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
-                        if (e.target.value == value) {
-                            return
-                        }
-                        savgValue(e.target.value)
-                    }}
-                    onChange={(val: any) => {
-                        setParamValue(val)
-                    }}
-                /> :
+                {numberIsEdit ?
+                    <InputNumber
+                        ref={numberRef}
+                        // min={0.0001}
+                        step={numberStep}
+                        value={paramValue}
+                        // 回车保存
+                        onPressEnter={(e: any) => {
+                            setNumberIsEdit(false)
+                            // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
+                            if (e.target.value == value) {
+                                return
+                            }
+                            savgValue(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                            setNumberIsEdit(false)
+                            // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
+                            if (e.target.value == value) {
+                                return
+                            }
+                            savgValue(e.target.value)
+                        }}
+                        onChange={(val: any) => {
+                            setParamValue(val)
+                        }}
+                    />
+                    :
                     <>
-                        {paramValue}
+                        {value}
                         <EditTwoTone onClick={() => {
                             setNumberIsEdit(true)
                             setTimeout(() => {
@@ -115,18 +118,19 @@ const SetValueComponent = (props: {
                     <Select
                         style={style}
                         autoFocus={true}
+                        showSearch
                         onBlur={() => {
                             setNumberIsEdit(false)
                         }}
                         size='small'
                         value={paramValue}
                         onChange={(val: any) => {
-                            setParamValue(val)
                             setNumberIsEdit(false)
                             // 判断是否为空 如果为空则不提交 判断值是否相同 如果相同则不提交
                             if (val == value) {
                                 return
                             }
+                            // 获取小数点位数
                             savgValue(val)
                         }}
                     >
@@ -147,5 +151,27 @@ const SetValueComponent = (props: {
 
     </>)
 }
+
+// bymemo
+// const SetValueComponentMemo = (props: any) => {
+//     const { id, editKey, value, api, refresh, type, numberStep, otherParams, disabled, prefix, options, style } = props
+//     const memoProps = useMemo(() => {
+//         return {
+//             id,
+//             editKey,
+//             value,
+//             api,
+//             refresh,
+//             type,
+//             numberStep,
+//             otherParams,
+//             disabled,
+//             prefix,
+//             options,
+//             style
+//         }
+//     }, [id, editKey, value, api, refresh, type, numberStep, otherParams, disabled, prefix, options, style])
+//     return <SetValueComponent {...memoProps} />
+// }
 
 export default SetValueComponent

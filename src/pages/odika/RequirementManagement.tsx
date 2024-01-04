@@ -1,20 +1,12 @@
-import { Button, Card, Table, Input, message, Typography } from 'antd';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { FilterValue, SorterResult } from 'antd/es/table/interface';
-import React, { useState, useEffect } from 'react';
+import { Button, Typography } from 'antd';
+import React from 'react';
 import { getListForCheck } from '@/services/odika/requirementList';
 import type { RequirementListItem } from '@/services/odika/requirementList';
 import getInfoComponent from './components/getInfoComponent'
 import { FormattedMessage } from 'umi';
+import { ProTable } from '@ant-design/pro-components';
+import type { ProColumns } from '@ant-design/pro-components';
 const { Text } = Typography;
-const { Search } = Input;
-
-interface TableParams {
-    pagination?: TablePaginationConfig;
-    sortField?: string;
-    sortOrder?: string;
-    filters?: Record<string, FilterValue>;
-}
 
 const localFrontFromRequirementList = (key: string) => {
     return <FormattedMessage id={`pages.odika.RequirementList.${key}`} />
@@ -24,12 +16,19 @@ const localFront = (key: string) => {
     return <FormattedMessage id={`pages.odika.requirementSortList.${key}`} />
 }
 
-const columns: ColumnsType<RequirementListItem> = [
+const columns: ProColumns<RequirementListItem> = [
+    {
+        title: <FormattedMessage id={`pages.odika.RequirementList.keyword`} />,
+        dataIndex: 'keyword',
+        key: 'keyword',
+        hideInTable: true,
+    },
     {
         title: localFrontFromRequirementList('info'),
         dataIndex: 'info',
         key: 'info',
         width: 385,
+        search: false,
         render: (text: any, record: any) => getInfoComponent(record)
     },
     {
@@ -37,6 +36,7 @@ const columns: ColumnsType<RequirementListItem> = [
         dataIndex: 'creator',
         key: 'creator',
         width: 200,
+        search: false,
         render: (text: any, record: any) => {
             return <div style={{ 'width': '200px' }}>
                 <div><Text type="secondary">{localFrontFromRequirementList('creator')}：</Text>{record.creator}</div>
@@ -49,17 +49,20 @@ const columns: ColumnsType<RequirementListItem> = [
         title: localFront('priority'),
         dataIndex: 'close_sort',
         key: 'close_sort',
+        width: 100,
+        search: false,
     },
     {
         title: <FormattedMessage id='pages.odika.RequirementList.operation' />,
         dataIndex: 'action',
         key: 'action',
         fixed: 'right',
+        search: false,
         render: (text: any, record) => {
             return <>
                 <Button type="link" onClick={() => {
-                    window.open(`/odika/ViewDesign?id=${record.id}&check=true`)
-                }}><FormattedMessage id='pages.layouts.View' /></Button>
+                    window.open(`/odika/ViewDesign?id=${record.id}&check=true&type=2`)
+                }}><FormattedMessage id='pages.odika.requirementSortList.check' /></Button>
             </>
         }
     }
@@ -67,82 +70,34 @@ const columns: ColumnsType<RequirementListItem> = [
 
 
 const App: React.FC = () => {
-    const [dataSource, setDataSource] = useState<any>([]);
-    const [keyword, setKeyword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [tableParams, setTableParams] = useState<TableParams>({
-        pagination: {
-            showSizeChanger: true,
-            showQuickJumper: true,
-            current: 1,
-            pageSize: 5,
-        },
-    });
-    const handleTableChange = (
-        pagination: TablePaginationConfig,
-        filters: Record<string, FilterValue>,
-        sorter: SorterResult<any>,
-    ) => {
-        setTableParams({
-            pagination,
-            filters,
-            ...sorter,
-        });
-
-        // `dataSource` is useless since `pageSize` changed
-        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-            setDataSource([]);
-        }
-    };
-    const onSearch = (value: string) => {
-        setKeyword(value)
-    };
-    const initData = () => {
-        setLoading(true);
-        getListForCheck({
-            keyword: keyword || undefined, ...{
-                len: tableParams.pagination?.pageSize,
-                page: tableParams.pagination?.current
-            }
-        }).then(res => {
-            if (res.code) {
-                const sourceData = res.data.data
-                // sourceData.sort((a: any, b: any) => { return a.close_sort - b.close_sort })
-                setDataSource(sourceData)
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: res.data.total,
-                    },
-                });
-            } else {
-                throw res.msg
-            }
-        }).finally(() => {
-            setLoading(false);
-        }).catch(err => {
-            message.error(err)
-        })
-    }
-    useEffect(() => {
-        initData()
-    }, [keyword, JSON.stringify(tableParams)])
     return (
-        <Card
+        <ProTable<RequirementListItem>
+            rowKey="id"
+            columns={columns}
+            request={async (params = {}) => {
+                const tempParams = {
+                    ...params,
+                    len: params.pageSize,
+                    page: params.current
+                };
+                const res = await getListForCheck(tempParams)
+                const { data } = res;
+                return {
+                    data: data.data,
+                    success: res.code === 1,
+                    total: data.total,
+                };
+            }}
             size='small'
-            title={<Search placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />}
-            extra={<Button type="primary" onClick={initData}><FormattedMessage id='pages.layouts.Refresh' /></Button>}
-        >
-            <Table
-                loading={loading}
-                rowKey="id"
-                columns={columns}
-                dataSource={dataSource}
-                pagination={tableParams.pagination}
-                onChange={handleTableChange}
-            />
-        </Card>
+            options={{
+                density: false,
+                fullScreen: false,
+                setting: false,
+            }}
+            pagination={{
+                pageSize: 10,
+            }}
+        />
     );
 };
 

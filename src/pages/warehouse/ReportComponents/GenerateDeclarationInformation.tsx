@@ -14,6 +14,7 @@ export default (props: {
             <Col span={16}>
                 <div className='tableContrain' style={{ width: '100%', 'textAlign': 'center' }}>
                     <div style={{ width: '876px' }}>
+                        {/* Unit Price Calculate scale:<Input /> */}
                         <GenerateDeclarationInformationTable params={params} setParams={setParams} />
                     </div>
                 </div>

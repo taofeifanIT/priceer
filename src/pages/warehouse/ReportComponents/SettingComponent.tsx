@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react'
-import { Button, Modal, message, Popconfirm } from 'antd'
+import { Button, Modal, message, Popconfirm, Input } from 'antd'
 import { SettingOutlined } from '@ant-design/icons'
 import { list_hs_code, add_hs_code, edit_hs_code, del_hs_code } from '@/services/warehouse/generateDeclarationInformation'
 import type { UnitItem } from '@/services/warehouse/generateDeclarationInformation'
 import type { ProColumns } from '@ant-design/pro-table';
 import type { FormInstance } from 'antd';
 import { EditableProTable } from '@ant-design/pro-table';
-
 
 
 const SettingComponent = (props: {
@@ -18,6 +17,7 @@ const SettingComponent = (props: {
     const [unitData, setUnitData] = useState<any[]>([]);
     const [editableKeys, setEditableRowKeys] = useState<React.Key[]>(() => []);
     const [units, setUnits] = useState<any[]>([]);
+    const [searchValue, setSearchValue] = useState('');
     // 设置一个字段判断是否有操作或者编辑
     const [isEdit, setIsEdit] = useState(false)
     const columns: ProColumns<UnitItem>[] = [
@@ -32,6 +32,7 @@ const SettingComponent = (props: {
             dataIndex: 'unit',
             width: 100,
             ellipsis: true,
+            search: false,
             valueType: 'select',
             valueEnum: units.reduce((pre, cur) => {
                 pre[cur] = {
@@ -100,6 +101,18 @@ const SettingComponent = (props: {
                 }
             }}
         >
+            <Input.Search
+                placeholder="HS Code Search"
+                onSearch={(value) => {
+                    setSearchValue(value)
+                    actionRef.current?.reload()
+                }}
+                style={{
+                    marginBottom: 8,
+                    marginLeft: 24,
+                    width: 200
+                }}
+            />
             <EditableProTable<UnitItem>
                 rowKey="id"
                 actionRef={actionRef}
@@ -126,6 +139,7 @@ const SettingComponent = (props: {
                     const tempParams = {
                         page: current,
                         len: pageSize,
+                        name: searchValue,
                     }
                     const res = await list_hs_code(tempParams)
                     if (res.code) {

@@ -77,11 +77,6 @@ export default [
     ],
   },
   {
-    path: '/PreListing',
-    name: 'pre-listing',
-    component: './PreListing',
-  },
-  {
     path: '/ReportView',
     name: 'ReportView',
     routes: [
@@ -102,11 +97,6 @@ export default [
         component: './ReportView/FbaInventoryAge',
       }
     ],
-  },
-  {
-    path: '/Listed',
-    name: 'report view',
-    component: './Listed',
   },
   {
     path: '/Shipment',
@@ -237,6 +227,18 @@ export default [
         path: '/odika/OdikaOrder',
         name: 'Order',
         component: './odika/OdikaOrder',
+      },
+      // SkuMatching
+      {
+        path: '/odika/SkuMatching',
+        name: 'SkuMatching',
+        component: './odika/SkuMatching',
+      },
+      // InventoryWarning
+      {
+        path: '/odika/InventoryWarning',
+        name: 'InventoryWarning',
+        component: './odika/InventoryWarning',
       }
     ]
   },

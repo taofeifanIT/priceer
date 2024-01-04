@@ -40,16 +40,14 @@ class TextEditor extends React.Component {
     render() {
         const { value, width = '' } = this.props;
         return (
-            <div style={{ display: 'inline-block', minWidth: width }}>
-                <div contentEditable
-                    dangerouslySetInnerHTML={{ __html: value }}
-                    ref={this.ref}
-                    onInput={this.onChange}
-                    onBlur={this.onBlur}
-                    className="editable"
-                    placeholder="Optional Notes..."
-                />
-            </div>
+            <span contentEditable
+                dangerouslySetInnerHTML={{ __html: value }}
+                ref={this.ref}
+                onInput={this.onChange}
+                onBlur={this.onBlur}
+                className="editable"
+                placeholder="Optional Notes..."
+            />
         )
     }
 }

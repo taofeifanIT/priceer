@@ -28,9 +28,9 @@ export function exportExcelFile(headers: any[], data: any[], fileName = 'demo.xl
 
 
 
-const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
+const exportExcel = (headers: any, data: any, fileName: any = 'demo.xlsx') => {
   const _headers = headers
-    .map((item, i) =>
+    .map((item: { key: any; title: any; }, i: number) =>
       Object.assign(
         {},
         {
@@ -39,13 +39,13 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
       ),
     )
     .reduce(
-      (prev, next) =>
+      (prev: any, next: { position: any; key: any; title: any; }) =>
         Object.assign({}, prev, { [next.position]: { key: next.key, v: next.title } }),
       {},
     );
   const _data = data
-    .map((item, i) =>
-      headers.map((key, j) =>
+    .map((item: Record<string, any>, i: number) =>
+      headers.map((key: { key: string | number; type: any; }, j: number) =>
         Object.assign(
           {},
           {
@@ -57,10 +57,10 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
       ),
     )
     // 对刚才的结果进行降维处理（二维数组变成一维数组）
-    .reduce((prev, next) => prev.concat(next))
+    .reduce((prev: string | any[], next: any) => prev.concat(next))
     // 转换成 worksheet 需要的结构
     .reduce(
-      (prev, next) =>
+      (prev: any, next: { position: any; content: any; type: any; }) =>
         Object.assign({}, prev, { [next.position]: { v: next.content, t: next.type } }),
       {},
     );
@@ -97,9 +97,46 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
 
 
 // 导出table为excel
-const exportTableExcel = (table, fileName = 'demo.xlsx') => {
+const exportTableExcel = (table: HTMLElement | null, fileName = 'demo.xlsx') => {
   const wb = XLSX.utils.table_to_book(table);
   XLSX.writeFile(wb, fileName);
 }
 
-export { exportExcel, exportTableExcel };
+const exportTablesExcel = (tableIds: string[], fileName = 'demo.xlsx') => {
+  const wb = XLSX.utils.book_new();
+  tableIds.forEach((domId: string, index: number) => {
+    const table = document.getElementById(domId);
+    const sheetName = `sheet${index + 1}`;
+    const ws = XLSX.utils.table_to_sheet(table);
+    // 设置边框和背景色
+    ws['!cols'] = [{ wpx: 100 }, { wpx: 100 }, { wpx: 100 }, { wpx: 100 }, { wpx: 100 }];
+    ws['!rows'] = [{ hpx: 30 }];
+    // 设置边框
+    ws.A1.s = {
+      border: {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' }
+      },
+      color: {
+        rgb: 'FFFFAA00',
+        theme: 8,
+      },
+      // fill: { fgColor: { rgb: 'FF0000FF' } },
+      // 红字
+      font: { color: { rgb: 'FFFF0000' } },
+      // 背景色绿色
+      fill: {
+        fgColor: {
+          rgb: '#badf94',
+          theme: 8,
+        }
+      },
+      alignment: { horizontal: 'center', vertical: 'center' }
+    };
+    console.log(ws);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+  XLSX.writeFile(wb, fileName);
+}
+
+export { exportExcel, exportTableExcel, exportTablesExcel };

@@ -30,5 +30,10 @@ export const statusConfig = {
         // Standard Fail
         text: 'Standard Fail',
         status: 'Error',
+    },
+    // 增加状态9 等待操作员审核
+    9: {
+        text: 'Waiting Operator Review',
+        status: 'Warning',
     }
 }

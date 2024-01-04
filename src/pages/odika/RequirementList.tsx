@@ -1,19 +1,35 @@
-import { Button, Card, Table, Radio, Input, Modal, Space, Select, Divider, Alert, Form, Upload, message, Typography, Steps, Spin, Tooltip, Popconfirm, Dropdown } from 'antd';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { FilterValue, SorterResult } from 'antd/es/table/interface';
+import {
+    Button,
+    Input,
+    Modal,
+    Space,
+    Select,
+    Divider,
+    Alert,
+    Form,
+    Upload,
+    message,
+    Typography,
+    Steps,
+    Spin,
+    Tooltip,
+    Popconfirm,
+    Dropdown,
+} from 'antd';
 import type { MenuProps } from 'antd';
-import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
+import { useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { getSkuList, saveDesign, editDesign, getDesignList, getDesignDetail } from '@/services/odika/requirementList';
+import { getSkuList, saveDesign, editDesign, getDesignList, getDesignDetail, read } from '@/services/odika/requirementList';
 import type { RequirementListItem, submitDesignParams, saveDesignParams } from '@/services/odika/requirementList';
 import { getToken } from '@/utils/token'
 import { getImageUrl } from '@/utils/utils'
 import { FormattedMessage, getLocale } from 'umi';
-import { FilePdfOutlined } from '@ant-design/icons';
+import { FilePdfOutlined, EyeFilled } from '@ant-design/icons';
 import getInfoComponent from './components/getInfoComponent'
+import { ProTable } from '@ant-design/pro-components';
+import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import axios from 'axios';
 import { useModel } from 'umi';
-const { Search } = Input;
 const { Text } = Typography;
 // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成
 
@@ -26,14 +42,17 @@ const localFrontFromViewDesign = (key: string) => {
 }
 
 const ProcessItem = [
-    { value: 0, label: localFront('All') },
     { value: 1, label: localFront('InEditing') },
-    { value: 2, label: localFront('PendingSorting') },
-    { value: 3, label: localFront('PendingReview') },
-    { value: 4, label: localFront('Review') },
-    { value: 5, label: localFront('PendingScheduling') },
-    { value: 6, label: localFront('InProduction') },
-    { value: 7, label: localFront('Completed') },
+    { value: 2, label: localFront('RequirementsAudit') },
+    { value: 3, label: localFront('PendingSorting') },
+    { value: 4, label: localFront('PendingReview') },
+    { value: 5, label: localFront('Review') },
+    { value: 6, label: localFront('PendingScheduling') },
+    { value: 7, label: localFront('InProduction') },
+    { value: 8, label: localFront('Completed') },
+    { value: 9, label: localFront('failTheAudit') },
+    { value: 10, label: localFront('qualityAudit') },
+    { value: 11, label: localFront('Completed') },
 ]
 
 const SceneList = [
@@ -77,18 +96,12 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
         if (editRecord.id) {
             setEditRecord({} as RequirementListItem)
         }
-        // setEditRecord({} as RequirementListItem)
-        // setCurrentSku('')
-        // form.resetFields();
     };
 
     const onChange = (value: string) => {
         setCurrentSku(value)
     };
 
-    const onSearch = (value: string) => {
-        console.log('search:', value);
-    };
 
     const getSkulist = () => {
         if (skuList.length) return;
@@ -216,7 +229,7 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
 
     const onFinish = (type: string) => {
         if (!currentSku) {
-            message.error('请选择SKU!')
+            message.error('Please select SKU!')
             return
         }
         form.validateFields().then(values => {
@@ -303,7 +316,6 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 optionFilterProp="children"
                 loading={skuListLoading}
                 onChange={onChange}
-                onSearch={onSearch}
                 disabled={!!editRecord.sku}
                 style={{ width: 200 }}
                 value={currentSku}
@@ -394,17 +406,6 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                 {...formItemLayout}
             >
                 <Divider plain>{localFront('CompetitiveAsin')}</Divider>
-                {/* <Form.Item
-                    name={'competitor'}
-                    label={" "}
-                    colon={false}
-                    rules={[{ required: checkStatus, message: 'Missing Memo' }]}
-                >
-                    <Select
-                        mode="tags"
-                        placeholder="Add Asin"
-                    />
-                </Form.Item> */}
                 <Form.List name="competitor">
                     {(fields, { add, remove }) => (
                         <div style={{ paddingLeft: '100px' }}>
@@ -494,19 +495,6 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                             {fields.map(({ key, name, ...restField }) => (
                                 <div key={key} style={{ marginBottom: 8, position: 'relative' }}>
                                     {name !== 0 && <Divider plain style={{ marginBottom: '40px' }} />}
-                                    {/* <Form.Item
-                                        {...restField}
-                                        name={[name, 'sellingPoint']}
-                                        label={<>{localFrontFromViewDesign('SellingPoint')}{name + 1}</>}
-                                        rules={[{ required: checkStatus, message: 'Missing SellingPoint' }]}
-                                    >
-                                        <Select
-                                            mode="tags"
-                                            style={{ width: '100%' }}
-                                            placeholder="Tags Mode"
-
-                                        />
-                                    </Form.Item> */}
                                     <MinusCircleOutlined onClick={() => remove(name)} style={{ position: 'absolute', right: 10, top: name !== 0 ? 10 : -30, fontSize: '20px' }} />
                                     <Form.List name={[name, 'sellingPoint']}>
                                         {(fields, { add, remove }) => (
@@ -665,8 +653,16 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
                                 </div>
                             ))}
                             <Form.Item label={" "} colon={false}>
-                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                    {localFront('sceneRotograph')} (2928:1200)
+                                <Button
+                                    type="dashed"
+                                    onClick={() => add()}
+                                    block
+                                    style={{ height: 'auto' }}
+                                    icon={<PlusOutlined />}>
+                                    {/* {localFront('sceneRotograph')} (2928:1200) */}
+                                    {localFront('sceneRotograph')}  {localFront('sceneMemoLine1')}
+                                    <br />
+                                    {localFront('sceneMemoLine2')}
                                 </Button>
                             </Form.Item>
                         </>
@@ -720,132 +716,88 @@ const ActionModel = forwardRef((props: { refresh: () => void }, ref) => {
 })
 
 export default () => {
-    const [status, setStatus] = useState<number>(0);
-    const actionRef: any = useRef();
-    const [data, setData] = useState<RequirementListItem[]>([]);
-    const [keyword, setKeyword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [tableParams, setTableParams] = useState({
-        pagination: {
-            showSizeChanger: true,
-            showQuickJumper: true,
-            current: 1,
-            total: 0,
-            pageSize: 10,
-        },
-    });
-    const statusWidth = getLocale() === 'en-US' ? 900 : 660
-
+    const actionRef = useRef();
+    const actionTableRef = useRef<ActionType>();
+    const statusWidth = getLocale() === 'en-US' ? 1050 : 950
     const { initialState } = useModel('@@initialState');
     const { currentUser } = initialState || {};
     const isOperationsAdministrator = currentUser?.authGroup.title === 'Operations administrator'
+    const currrentUserName = currentUser?.username
+    const isRequirementsManager = currentUser?.authGroup.title === 'Requirements manager'
 
-    const initData = () => {
-        setLoading(true);
-        getDesignList({
-            status: status || undefined, keyword: keyword || undefined, ...{
-                len: tableParams.pagination?.pageSize,
-                page: tableParams.pagination?.current
-            }
-        }).then(res => {
-            if (res.code) {
-                setData(res.data.data)
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: res.data.total,
-                    },
-                });
-            } else {
-                throw res.msg
-            }
-        }).finally(() => {
-            setLoading(false);
-        }).catch(err => {
-            message.error(err)
-        })
-    }
-    const getParams = (changeParams: any) => {
-        const params = {
-            status: status || undefined, keyword: keyword || undefined, ...{
-                len: tableParams.pagination?.pageSize,
-                page: tableParams.pagination?.current
-            },
-            ...changeParams
-        }
-        return params
-    }
-    const newInitData = (params: any) => {
-        setLoading(true);
-        getDesignList(params).then(res => {
-            if (res.code) {
-                setData(res.data.data)
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: res.data.total,
-                    },
-                });
-            } else {
-                throw res.msg
-            }
-        }).finally(() => {
-            setLoading(false);
-        }).catch(err => {
-            message.error(err)
-        })
-    }
-    const handleTableChange = (
-        pagination: TablePaginationConfig,
-        filters: Record<string, FilterValue>,
-        sorter: SorterResult<any>,
-    ) => {
-        setTableParams({
-            pagination,
-            filters,
-            ...sorter,
-        });
-        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-            setData([]);
-        }
-    };
-
-    const onSearch = (value: string) => {
-        setKeyword(value)
-        setTableParams({
-            ...tableParams,
-            pagination: {
-                ...tableParams.pagination,
-                current: 1
-            }
-        })
-    };
     const getErrorMsg = (record: RequirementListItem, currentStatus: { value: number, label: string }) => {
-        if (currentStatus.value === 4 && record.reason && record.status === 4) {
-            return <Tooltip placement="top" title={record.reason}><span style={{ color: 'red' }}>审核</span></Tooltip>
+        let errorMsg = ''
+        let tempStatus = 0
+        if (currentStatus.value === 4 && record.reason) {
+            errorMsg = record.reason
+            tempStatus = 1
+        } else if (currentStatus.value === 2 && record.reason_require) {
+            errorMsg = record.reason_require
+            tempStatus = 1
+        } else if (currentStatus.value === 10 && record.reason_canto) {
+            errorMsg = record.reason_canto
+            tempStatus = 1
         } else {
-            return currentStatus.label
+            errorMsg = currentStatus.label
         }
-
+        const error = <Tooltip placement="top" title={<div style={{
+            // 保留换行
+            wordBreak: 'break-word', whiteSpace: 'pre-wrap'
+        }}>
+            {errorMsg}
+        </div>} >
+            <span style={{ color: 'red' }}>
+                {/* {(record.status === currentStatus.value) ? }
+                <FormattedMessage id='pages.odika.RequirementList.failTheAudit' /> {record.status}{currentStatus.value} */}
+                {currentStatus.label}
+            </span>
+        </Tooltip>
+        if (tempStatus) {
+            return error
+        }
+        return currentStatus.label
     }
+    const translateStep = (statusValue: number) => {
+        if (statusValue === 8 || statusValue === 9) {
+            return 2
+        }
+        if (statusValue === 2) {
+            return 3
+        }
+        if (statusValue === 3) {
+            return 4
+        }
+        return statusValue
+    }
+
+    const toRead = (id: number) => {
+        read({ id }).then(res => {
+            if (res.code === 1) {
+                actionTableRef?.current?.reload()
+            } else {
+                message.error(res.msg)
+            }
+        })
+    }
+
     const getStepComponent = (record: RequirementListItem) => {
         return (<div style={{ 'width': statusWidth }}>
             <Steps
                 size="small"
-                current={record.status - 1}
-                items={ProcessItem.filter(item => item.value !== 0).map((item) => ({ title: getErrorMsg(record, item) }))}
+                current={translateStep(record.status) - 1}
+                items={ProcessItem.filter(item => ![0, 5, 8, 9].includes(item.value)).map((item) => ({ title: getErrorMsg(record, item) }))}
             />
         </div>)
     }
 
     const getOperationEdit = (record: RequirementListItem) => {
         const obj = { disabled: true, color: '' }
-        if (record.status === 1 || record.status === 4) {
+        if (record.status === 1 || record.status === 9) {
             obj.disabled = false
         }
         if (record.status === 4) {
+            obj.color = '#f39f6c'
+        } else if (record.status === 9) {
             obj.color = '#f39f6c'
         }
         return obj
@@ -854,20 +806,23 @@ export default () => {
     const getCantoUrl = (sku: string) => {
         return `https://telstraight.canto.com/library?keyword=${sku}&viewIndex=0&gSortingForward=false&gOrderProp=uploadDate&display=fitView&from=fitView`
     }
-    const columns: ColumnsType<RequirementListItem> = [
+
+    const columns: ProColumns<RequirementListItem>[] = [
         {
             title: localFront('info'),
             dataIndex: 'info',
             key: 'info',
             width: 385,
-            render: (text: any, record: any) => getInfoComponent(record)
+            search: false,
+            render: (_, record) => getInfoComponent(record)
         },
         {
             title: localFront('CreateInfo'),
             dataIndex: 'creator',
             key: 'creator',
             width: 200,
-            render: (text: any, record: any) => {
+            search: false,
+            render: (_, record) => {
                 return <div style={{ 'width': '200px' }}>
                     <div><Text type="secondary">{localFront('creator')}：</Text>{record.creator}</div>
                     <div><Text type="secondary">{localFront('creationTime')}：</Text>{record.createTime}</div>
@@ -875,17 +830,56 @@ export default () => {
             }
         },
         {
+            title: 'SKU',
+            dataIndex: 'sku',
+            key: 'sku',
+            hideInTable: true,
+        },
+        {
+            title: <FormattedMessage id='page.layouts.userLayout.username.placeholder' />,
+            dataIndex: 'username',
+            key: 'username',
+            hideInTable: true,
+        },
+        {
             title: localFront('status'),
             dataIndex: 'status',
             key: 'status',
             width: statusWidth + 50,
-            render: (text: any, record: any) => getStepComponent(record)
+            valueType: 'select',
+            valueEnum: {
+                'option-1': { text: localFront('InEditing') },
+                'option-8': { text: localFront('RequirementsAudit') },
+                'option-9': { text: localFront('firstInstance') },
+                'option-2': { text: localFront('PendingSorting') },
+                'option-3': { text: localFront('PendingReview') },
+                'option-4': { text: localFront('designInstance') },
+                'option-5': { text: localFront('PendingScheduling') },
+                'option-6': { text: localFront('InProduction') },
+                'option-7': { text: localFront('qualityAudit') },
+                'option-10': { text: localFront('Canto') },
+                'option-11': { text: localFront('lastInstance') },
+            },
+            render: (_, record) => getStepComponent(record)
+        },
+        // is_read
+        {
+            title: localFront('isRead'),
+            dataIndex: 'is_read',
+            key: 'is_read',
+            hideInTable: true,
+            valueType: 'select',
+            valueEnum: {
+                '1': { text: localFront('unRead') },
+                '2': { text: localFront('read') },
+            },
         },
         {
             // 预计完成时间
             title: localFront('EstimatedCompletionTime'),
             dataIndex: 'expectTime',
             key: 'expectTime',
+            search: false,
             width: 250
         },
         {
@@ -893,21 +887,42 @@ export default () => {
             dataIndex: 'action',
             key: 'action',
             width: 160,
+            search: false,
             fixed: 'right',
-            render: (text: any, record) => {
+            render: (_, record) => {
                 const { disabled, color } = getOperationEdit(record)
-                return <Space align='start'>
+                const { status } = record
+                let actionBtn = <Button type="link" onClick={() => {
+                    window.open(`/odika/ViewDesign?id=${record.id}`)
+                }}><FormattedMessage id='pages.layouts.View' /></Button>
+                if (isRequirementsManager && status === 7) {
+                    actionBtn = <Button type="link" onClick={() => {
+                        window.open(`/odika/ViewDesign?id=${record.id}&check=true&type=3`)
+                    }}><FormattedMessage id='pages.odika.requirementSortList.check' /></Button>
+                }
+                return <Space>
                     {!disabled && <Button type="link" style={{ color: color }} onClick={() => {
-                        actionRef.current.showModal(record);
+                        actionRef?.current.showModal(record);
                     }}>{localFront('Edit')}</Button>}
-                    <Button type="link" onClick={() => {
-                        window.open(`/odika/ViewDesign?id=${record.id}`)
-                    }}><FormattedMessage id='pages.layouts.View' /></Button>
-                    {record.status === 7 ? <a target='blank' href={getCantoUrl(record.sku)}><img width={'25'} src='/canto.png' /></a> : ''}
+                    {actionBtn}
+                    {record.status === 10 ? <a target='blank' href={getCantoUrl(record.sku)}><img width={'25'} src='/canto.png' /></a> : ''}
+                    {(record.status === 10 && currrentUserName === record.creator && record.is_read === 1) &&
+                        <EyeFilled
+                            style={{
+                                fontSize: '20px',
+                                verticalAlign: 'bottom',
+                                marginLeft: '10px',
+                                color: '#1890ff'
+                            }}
+                            onClick={() => {
+                                toRead(record.id)
+                            }}
+                        />}
                 </Space>
             }
         }
     ]
+
     const onMenuClick: MenuProps['onClick'] = (e) => {
         const type = e.key;
         // 上传页面模板
@@ -942,19 +957,16 @@ export default () => {
             label: localFront('replacePageTemplate'),
         },
     ];
-    // listingContentTemplateItems
+
     const listingContentTemplateItems = [
         {
             key: '1',
             label: localFront('replaceContentTemplate'),
         },
     ];
+
     const titleCpmponent = () => {
         return <Space>
-            <Button size='small' type="primary" onClick={() => {
-                actionRef.current.showModal();
-            }}>{localFront('CreateRequirement')}</Button>
-
             {isOperationsAdministrator ?
                 <>
                     <Dropdown.Button
@@ -964,7 +976,8 @@ export default () => {
                         onClick={() => {
                             const fileUrl = `${API_URL}/storage/upload/design/Listing_page.pdf`;
                             window.open(fileUrl)
-                        }}>{localFront('viewPageTemplate')}
+                        }}>
+                        {localFront('viewPageTemplate')}
                     </Dropdown.Button>
                     <Dropdown.Button
                         size='small'
@@ -982,51 +995,71 @@ export default () => {
                         onClick={() => {
                             const fileUrl = `${API_URL}/storage/upload/design/Listing_page.pdf`;
                             window.open(fileUrl)
-                        }}>{localFront('viewPageTemplate')}
+                        }}>
+                        {localFront('viewPageTemplate')}
                     </Button>
                     <Button
                         size='small'
                         onClick={() => {
                             const fileUrl = `${API_URL}/storage/upload/design/Listing_content.pdf`;
                             window.open(fileUrl)
-                        }}>{localFront('viewContentTemplate')}
+                        }}>
+                        {localFront('viewContentTemplate')}
                     </Button>
                 </>}
+            <Button size='small' type="primary" onClick={() => {
+                actionRef?.current.showModal();
+            }}>
+                {localFront('CreateRequirement')}
+            </Button>
         </Space>
     }
 
-    useEffect(() => {
-        newInitData(getParams({ 'init': undefined }))
-    }, [JSON.stringify(tableParams.pagination), keyword, status])
-
-    return (<div style={{ 'background': '#fff' }}>
-        <Card
+    return (<div >
+        <ProTable<RequirementListItem>
+            columns={columns}
+            actionRef={actionTableRef}
+            cardBordered
+            request={async (params) => {
+                // 表单搜索项会从 params 传入，传递给后端接口。
+                const tempParams: any = {
+                    ...params,
+                    // status: params.status ? translateStatus(params.status) : undefined,
+                    status: params.status ? params.status.split('-')[1] : undefined,
+                    len: params.pageSize,
+                    page: params.current
+                };
+                const res = await getDesignList(tempParams);
+                return {
+                    data: res.data.data,
+                    // success 请返回 true，
+                    // 不然 table 会停止解析数据，即使有数据
+                    success: res.code === 1,
+                    // 不传会使用 data 的长度，如果是分页一定要传
+                    total: res.data.total,
+                };
+            }}
+            scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
+            rowKey="id"
+            search={{
+                labelWidth: 'auto',
+            }}
             size='small'
-            title={titleCpmponent()}
-            extra={<>
-                <Radio.Group size='small' value={status} onChange={(e) => {
-                    setStatus(e.target.value)
-                    setTableParams({
-                        ...tableParams,
-                        pagination: {
-                            ...tableParams.pagination,
-                            current: 1
-                        }
-                    })
-                }}>
-                    {ProcessItem.map(item => <Radio.Button key={item.value} value={item.value}>{item.label}</Radio.Button>)}
-                </Radio.Group>
-                <Search size='small' placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />
-            </>}
-        >
-            <Table<RequirementListItem>
-                loading={loading}
-                columns={columns}
-                scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
-                pagination={tableParams.pagination}
-                onChange={handleTableChange}
-                dataSource={data} />
-        </Card>
-        <ActionModel refresh={initData} ref={actionRef} />
+            options={{
+                density: false,
+                fullScreen: false,
+                setting: false,
+            }}
+            pagination={{
+                pageSize: 10,
+            }}
+            dateFormatter="string"
+            toolBarRender={() => [
+                titleCpmponent()
+            ]}
+        />
+        <ActionModel refresh={() => {
+            actionTableRef.current?.reload()
+        }} ref={actionRef} />
     </div>)
 }

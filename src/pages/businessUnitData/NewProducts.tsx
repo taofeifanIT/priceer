@@ -11,10 +11,11 @@ import {
     getBrandForNew,
     pmSelfCheck,
     updateSalesPriceForNew,
-    editPurchaseQuantity
+    editPurchaseQuantity,
+    updateSkuForNew
 } from '@/services/businessUnitData/newProducts'
 import type { NewProductsItem } from '@/services/businessUnitData/newProducts'
-import { Input, message, Space, Modal, Button, InputNumber, Form, Select, Popconfirm, Table } from 'antd';
+import { Input, message, Space, Modal, Button, InputNumber, Form, Select, Popconfirm } from 'antd';
 import { PlusOutlined, MinusCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
 import SetValueComponent from '@/components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
@@ -24,6 +25,8 @@ import dayjs from 'dayjs';
 import { getToken } from '@/utils/token';
 import { exportExcel, exportExcelFile } from '@/utils/excelHelper';
 import { statusConfig } from './config';
+import { getCategoryAndRisk } from '@/services/businessUnitData/secondaryInspectionProduct'
+import { modifyConsistent } from '@/services/businessUnitData/checkProduct'
 
 
 const DownloadTemplate = () => {
@@ -162,10 +165,14 @@ const AddProduct = (props: { reload: () => void }) => {
     )
 }
 
-const PmSelfCheck = (props: { id: number, status: number, reload: () => void, recordValue: any, text: string, buttonType?: string }) => {
-    const { id, status, reload, recordValue, text, buttonType = 'primary' } = props
+const PmSelfCheck = (props: { id: number, status: number, reload: () => void, recordValue: any, text: string, buttonType?: string, purchase_price?: number }) => {
+    const { id, status, reload, recordValue, text, buttonType = 'primary', purchase_price } = props
     const [loading, setLoading] = useState(false)
     const handleOk = () => {
+        if (recordValue === 4 && !purchase_price) {
+            message.error('Please enter the purchase price')
+            return
+        }
         setLoading(true)
         pmSelfCheck({ id, status: recordValue }).then((res: any) => {
             if (res.code) {
@@ -206,6 +213,31 @@ export default () => {
     const [profitPoint, setProfitPoint] = useState(0.1);
     const [brands, setBrands] = useState([])
     const [selectedRows, setSelectedRows] = useState<NewProductsItem[]>([]); // 选中的行
+    const [kindOfItemAndShipingRisk, setKindOfItemAndShipingRisk] = useState<{
+        kindOfItem: string[],
+        shipingRish: string[],
+        pm: {
+            id: number,
+            username: string
+        }[]
+    }>({
+        kindOfItem: [],
+        shipingRish: [],
+        pm: []
+    })
+
+    const getKindOfItemAndShipingRisk = async () => {
+        if (kindOfItemAndShipingRisk.kindOfItem.length) return
+        const res = await getCategoryAndRisk()
+        const { data, code } = res
+        if (code) {
+            setKindOfItemAndShipingRisk({
+                kindOfItem: data.category,
+                shipingRish: data.risk,
+                pm: data.pm
+            })
+        }
+    }
     const getTargetPurchasePrice = (record: NewProductsItem) => {
         const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_import_tax = 0, exchange_rate } = record;
         const dividend = (sales_price * (1 - platform_fee) - ship_fee)
@@ -553,6 +585,20 @@ export default () => {
                 key: 'member3',
                 dataIndex: 'member3',
                 width: 100,
+            },
+            // Purchase Quantity
+            {
+                title: 'Purchase Quantity',
+                key: 'purchase_quantity',
+                dataIndex: 'purchase_quantity',
+                width: 100,
+            },
+            // PM Memo
+            {
+                title: 'PM Memo',
+                key: 'first_memo',
+                dataIndex: 'first_memo',
+                width: 100,
             }
         ]
         const data: any = selectedRows.map((item: NewProductsItem) => {
@@ -605,6 +651,8 @@ export default () => {
                 "Member1": '',
                 "Member2": '',
                 "Member3": '',
+                "Purchase Quantity": item.purchase_quantity,
+                "PM Memo": item.first_memo
             }
 
         })
@@ -643,9 +691,72 @@ export default () => {
             dataIndex: 'sku',
             key: 'sku',
             valueType: 'text',
-            copyable: true,
+            // copyable: true,
             ellipsis: true,
             width: 160,
+            render: (_, record) => {
+                return <SetValueComponent
+                    id={record.id}
+                    editKey='sku'
+                    style={{ width: '140px' }}
+                    value={record.sku}
+                    api={updateSkuForNew}
+                    refresh={() => { actionRef.current?.reload() }}
+                    type='text'
+                />
+            }
+        },
+        {
+            title: 'Item PM',
+            dataIndex: 'username',
+            key: 'username',
+            width: 130,
+            hideInTable: true,
+            renderFormItem: (
+                _,
+                { type, defaultRender, formItemProps, fieldProps },
+                form,
+            ) => {
+                if (type === 'form') {
+                    return null;
+                }
+                const status = form.getFieldValue('brand');
+                if (status !== 'open') {
+                    return (
+                        // value 和 onchange 会通过 form 自动注入。
+                        <Select
+                            allowClear
+                            showSearch
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            options={kindOfItemAndShipingRisk.pm.map((item: any) => ({ label: item.username, value: item.username }))}
+                        />
+                    );
+                }
+                return defaultRender(_);
+            }
+        },
+        {
+            // is_consistent
+            title: 'Consistent',
+            dataIndex: 'is_consistent',
+            key: 'is_consistent',
+            valueType: 'select',
+            width: 100,
+            search: false,
+            render: (_, record) => {
+                return <SetValueComponent
+                    style={{ width: '85px' }}
+                    id={record.id}
+                    type='select'
+                    options={[{ label: '一致', value: 1 }, { label: '不一致', value: 0 }] as any}
+                    editKey='is_consistent'
+                    value={record.is_consistent}
+                    api={modifyConsistent}
+                    refresh={() => { actionRef.current?.reload() }} />
+            }
         },
         // brand
         {
@@ -669,6 +780,7 @@ export default () => {
                         <Select
                             allowClear
                             showSearch
+                            mode='multiple'
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -831,9 +943,12 @@ export default () => {
             width: 160,
             align: 'center',
             render: (_, record) => {
+                if ([3, 4, 5].includes(record.status)) {
+                    return null
+                }
                 return <Space>
                     <PmSelfCheck id={record.id} status={record.status} recordValue={3} reload={() => actionRef.current?.reload()} text='Denied' buttonType='default' />
-                    <PmSelfCheck id={record.id} status={record.status} recordValue={4} reload={() => actionRef.current?.reload()} text='Submit' />
+                    <PmSelfCheck id={record.id} status={record.status} recordValue={4} purchase_price={record.purchase_price} reload={() => actionRef.current?.reload()} text='Submit' />
                 </Space>
             }
         },
@@ -868,9 +983,6 @@ export default () => {
             columns={columns}
             actionRef={actionRef}
             rowSelection={{
-                // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
-                // 注释该行则默认不显示下拉选项
-                selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
                 selectedRowKeys: selectedRows.map(item => item.id),
                 onSelect: (record, selected) => {
                     if (selected) {
@@ -900,6 +1012,7 @@ export default () => {
             headerTitle={`The Current Dollar Rate is ${USDRate}`}
             cardBordered
             request={async (params = {}, sort, filter) => {
+                await getKindOfItemAndShipingRisk()
                 await getBrand()
                 const tempParams = { ...params, ...filter, ...sort, len: params.pageSize, page: params.current, margin_rate: params.margin_rate ? params.margin_rate / 100 : undefined }
                 const res = await getNewProduct(tempParams)
@@ -930,22 +1043,23 @@ export default () => {
             search={{
                 labelWidth: 'auto',
             }}
-            form={{
-                // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-                syncToUrl: (values, type) => {
-                    if (type === 'get') {
-                        return {
-                            ...values,
-                            created_at: [values.startTime, values.endTime],
-                        };
-                    }
-                    return values;
-                },
-            }}
+            // form={{
+            //     // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+            //     syncToUrl: (values, type) => {
+            //         if (type === 'get') {
+            //             return {
+            //                 ...values,
+            //                 created_at: [values.startTime, values.endTime],
+            //             };
+            //         }
+            //         return values;
+            //     },
+            // }}
             pagination={{
                 pageSize: 30,
                 showQuickJumper: true,
                 pageSizeOptions: ['30', '50', '100', '200', '300', '500'],
+                showSizeChanger: true
                 // onChange: (page) => console.log(page),
             }}
             revalidateOnFocus={false}

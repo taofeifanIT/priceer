@@ -98,7 +98,7 @@ const ActionModel = React.forwardRef((props: actionItems, ref) => {
     }));
     return (
         <>
-            <Modal title={editRecordId ? 'edit' : 'add'} op={isModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
+            <Modal title={editRecordId ? 'edit' : 'add'} open={isModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
                 <Form
                     layout={"horizontal"}
                     form={form}

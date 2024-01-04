@@ -50,6 +50,12 @@ export type SecondaryInspectionProductItem = {
     member2: string;
     member3: string;
     username: string;
+    purchase_quantity: number;
+    status: number; // 1 未上传 2 已上传
+    chinese_customs_clearance_name: string;
+    lead_time: string;
+    purchase_price: string;
+    ekko: string;
 }
 
 // businessUnitData/listProduct
@@ -76,5 +82,15 @@ export async function modifyParam(params: {
 export async function getCategoryAndRisk() {
     return request('/api/businessUnitData/getCategoryAndRisk', {
         method: 'POST'
+    });
+}
+
+// businessUnitData/reject
+export async function reject(params: {
+    id: number,
+}) {
+    return request('/api/businessUnitData/reject', {
+        method: 'POST',
+        data: params
     });
 }

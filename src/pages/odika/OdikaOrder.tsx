@@ -1,11 +1,11 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { FormInstance } from 'antd';
 import { ProTable } from '@ant-design/pro-components';
-import { getList } from '@/services/odika/order'
+import { getList, check_auto_order } from '@/services/odika/order'
 import type { OrderListItem } from '@/services/odika/order';
 import { AmazonOutlined } from '@ant-design/icons';
-import { Typography, Space, Tag } from 'antd';
+import { Typography, Space, Tag, Button, message } from 'antd';
 const { Text, Link, Paragraph } = Typography;
 
 // 0：未自动下单    1:  自动下单成功    2：  自动下单失败    3：回填物流单成功   4： 手动下单
@@ -19,6 +19,7 @@ const autoOrderOtions = [
 
 export default () => {
     const actionRef: any = useRef<FormInstance>();
+    const [loading, setLoading] = useState<boolean>(false);
     const columns: ProColumns<OrderListItem>[] = [
         {
             title: 'Amazon Order ID',
@@ -305,7 +306,21 @@ export default () => {
             }
         },
     ];
-
+    const autoOrder = () => {
+        setLoading(true)
+        check_auto_order().then(res => {
+            setLoading(false)
+            if (res.code === 1) {
+                actionRef.current?.reload()
+            } else {
+                throw res.msg
+            }
+        }).catch(err => {
+            message.error(err)
+        }).finally(() => {
+            setLoading(false)
+        })
+    }
     return (<>
         <ProTable<OrderListItem>
             columns={columns}
@@ -343,6 +358,11 @@ export default () => {
             bordered
             dateFormatter="string"
             headerTitle="OdiKa Order List"
+            toolBarRender={() => [
+                <Button key="autoOrder" type="primary" onClick={autoOrder} loading={loading}>
+                    Auto Order
+                </Button>
+            ]}
         />
     </>);
 };

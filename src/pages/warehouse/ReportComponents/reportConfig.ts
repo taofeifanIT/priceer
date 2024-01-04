@@ -1,4 +1,4 @@
-export const template = [
+export const template: any = [
     {
         tempLateName: 'CW AU -WY',
         overseasConsignor: {
@@ -366,13 +366,21 @@ export const template = [
             '',
             '',
         ],
+        // importerOfRecord: [
+        //     'Moving IT Ltd',
+        //     'Regus, Office 513,The Quays Digital World Centre',
+        //     '1 Lowry Plaza,Salford, Manchester,M50 3UB',
+        //     'TEL:+0161 216 4101',
+        //     'Cathryn@ccb.ab.ca',
+        //     "'Importer Number:' 706850278RM0001",
+        // ],
         importerOfRecord: [
             'Moving IT Ltd',
-            'Regus, Office 513,The Quays Digital World Centre',
-            '1 Lowry Plaza,Salford, Manchester,M50 3UB',
+            '21250 Hawthorne Blvd Ste 500',
+            'Torrance, CA 90503',
             'TEL:+0161 216 4101',
             'Cathryn@ccb.ab.ca',
-            "'Importer Number:' 706850278RM0001",
+            "'Importer Number:' 771475753RM0001",
         ],
         termsFreight: [
             'Prepaid'
@@ -389,8 +397,11 @@ export const template = [
         ultimateDestination: [
             'Canada'
         ],
+        // notes: [
+        //     'Non-resident Importer.  Calgary Customs Broker Account #20200638A.  Broker has all docs'
+        // ],
         notes: [
-            'Non-resident Importer.  Calgary Customs Broker Account #20200638A.  Broker has all docs'
+            'Non-resident Importer.  Calgary Customs Broker Account 20200638H.  Broker has all docs'
         ],
         customsDeclaration: {
             phone: '15800960591'
@@ -823,13 +834,21 @@ export const template = [
             '',
             '',
         ],
+        // importerOfRecord: [
+        //     'Moving IT Ltd',
+        //     'Regus, Office 513,The Quays Digital World Centre',
+        //     '1 Lowry Plaza,Salford, Manchester,M50 3UB',
+        //     'TEL:+0161 216 4101',
+        //     'Cathryn@ccb.ab.ca',
+        //     "'Importer Number:' 706850278RM0001",
+        // ],
         importerOfRecord: [
             'Moving IT Ltd',
-            'Regus, Office 513,The Quays Digital World Centre',
-            '1 Lowry Plaza,Salford, Manchester,M50 3UB',
+            '21250 Hawthorne Blvd Ste 500',
+            'Torrance, CA 90503',
             'TEL:+0161 216 4101',
             'Cathryn@ccb.ab.ca',
-            "'Importer Number:' 706850278RM0001",
+            "'Importer Number:' 771475753RM0001",
         ],
         termsFreight: [
             'Prepaid'
@@ -846,8 +865,11 @@ export const template = [
         ultimateDestination: [
             'Canada'
         ],
+        // notes: [
+        //     'Non-resident Importer.  Calgary Customs Broker Account #20200638A.  Broker has all docs'
+        // ],
         notes: [
-            'Non-resident Importer.  Calgary Customs Broker Account #20200638A.  Broker has all docs'
+            'Non-resident Importer.  Calgary Customs Broker Account  20200638H.  Broker has all docs'
         ],
         customsDeclaration: {
             phone: '15800960591'
@@ -900,6 +922,564 @@ export const template = [
         ],
         notes: [
             'Non-resident Importer.  Calgary Customs Broker Account #20200638C.  Broker has all docs'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // mellon
+    {
+        tempLateName: 'CGG-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+            ''
+        ],
+        consionee: [
+            'Convenient Gadgets & Gifts LLC',
+            '250 Mill St.',
+            'Rochester, NY, 14614',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        importerOfRecord: [
+            'Convenient Gadgets & Gifts LLC',
+            '250 Mill St.',
+            'Rochester, NY, 14614',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // Chaste US
+    {
+        tempLateName: 'Chaste US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+            ''
+        ],
+        consionee: [
+            'Chaste Inc.',
+            '6424 E GREENWAY PKWY STE 100',
+            'SCOTTSDALE, AZ, 85254',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        importerOfRecord: [
+            'Chaste Inc.',
+            '6424 E GREENWAY PKWY STE 100',
+            'SCOTTSDALE, AZ, 85254',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    //CW-US
+    {
+        tempLateName: 'CW-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+            ''
+        ],
+        consionee: [
+            'Shanghai ChaoWei Computer Technology Co., Ltd.',
+            '552 E. Carson St. Ste 104 #346',
+            'Carson, CA 90745',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        importerOfRecord: [
+            'Shanghai ChaoWei Computer Technology Co., Ltd.',
+            '552 E. Carson St. Ste 104 #346',
+            'Carson, CA 90745',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // DSS-US
+    {
+        tempLateName: 'DSS-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+            ''
+        ],
+        consionee: [
+            'DocStockerStore LLC',
+            '250 Mill St.',
+            'Littleton, CO, 80120',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        importerOfRecord: [
+            'DocStockerStore LLC',
+            '250 Mill St.',
+            'Littleton, CO, 80120',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // ESC US
+    {
+        tempLateName: 'ESC US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+            ''
+        ],
+        consionee: [
+            'Electronic Safari Company Inc',
+            '351 Paseo Nuevo Fl 2',
+            'Santa Barbara, CA, 93101',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        importerOfRecord: [
+            'Electronic Safari Company Inc',
+            '351 Paseo Nuevo Fl 2',
+            'Santa Barbara, CA, 93101',
+            'US',
+            'Tax ID: 46-3791646',
+            ''
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // HHH-US
+    {
+        tempLateName: 'HHH-US',
+        headNum: 6, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+        ],
+        consionee: [
+            'Helpful Household',
+            '15331 W BELL RD',
+            'STE 212',
+            'SURPRISE, AZ',
+            'US',
+            'Tax ID: 46-3791646'
+        ],
+        importerOfRecord: [
+            'Helpful Household',
+            '15331 W BELL RD',
+            'STE 212',
+            'SURPRISE, AZ',
+            'US',
+            'Tax ID: 46-3791646'
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // HJR-US
+    {
+        tempLateName: 'HJR-US',
+        headNum: 6, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+        ],
+        consionee: [
+            'HJR World-Wide, LLC',
+            '3355 Lenox Rd.',
+            'Suite 750',
+            'Atlanta, GA 30326',
+            'US',
+            'Tax ID: 46-3791646'
+        ],
+        importerOfRecord: [
+            'HJR World-Wide, LLC',
+            '3355 Lenox Rd.',
+            'Suite 750',
+            'Atlanta, GA 30326',
+            'US',
+            'Tax ID: 46-3791646'
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // MIT-US
+    {
+        tempLateName: 'MIT-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+        ],
+        consionee: [
+            'MovingIT Ltd.',
+            '21143 Hawthorne Blvd #320',
+            'Torrance, CA 90503',
+            'US',
+            'Tax ID: 46-3791646',
+        ],
+        importerOfRecord: [
+            'MovingIT Ltd.',
+            '21143 Hawthorne Blvd #320',
+            'Torrance, CA 90503',
+            'US',
+            'Tax ID: 46-3791646',
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // TTM-US
+    {
+        tempLateName: 'TTM-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+        ],
+        consionee: [
+            'JGJC Enterprises Inc',
+            '2751 Plaza del Amo Ste 306',
+            'Torrance, CA, 90503',
+            'US',
+            'Tax ID: 46-3791646',
+        ],
+        importerOfRecord: [
+            'JGJC Enterprises Inc',
+            '2751 Plaza del Amo Ste 306',
+            'Torrance, CA, 90503',
+            'US',
+            'Tax ID: 46-3791646',
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // JL-US
+    {
+        tempLateName: 'JL-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+        ],
+        consionee: [
+            'Shanghai Jiela Trading Co., Ltd.',
+            'No. 361, Xinzhan Road, Xinqiao Town',
+            'Songjiangqu, Shanghai',
+            '201612',
+            'China',
+        ],
+        importerOfRecord: [
+            'Shanghai Jiela Trading Co., Ltd.',
+            'No. 361, Xinzhan Road, Xinqiao Town',
+            'Songjiangqu, Shanghai',
+            '201612',
+            'China',
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
+        ],
+        customsDeclaration: {
+            phone: '15800960591'
+        }
+    },
+    // EPIC-US
+    {
+        tempLateName: 'EPIC-US',
+        headNum: 5, // 表头行数
+        overseasConsignor: {
+            phone: '3118962327',
+            fax: '9131011757079288XJ',
+            name: '上海威昱网络科技有限公司',
+        },
+        exporter: [
+            'SHANGHAI WEI YU NETWORK TECHNOLOGY CO., LTD .',
+            'Building C5, Weiheng Creative Park, No. 16 Shenbei 1st Road, Songjiang District, Shanghai，201612，China',
+        ],
+        consionee: [
+            'Epic Fan Inc.',
+            '17224 S FIGUEROA ST STE A5642',
+            '90248-3023',
+            'US',
+            '',
+        ],
+        importerOfRecord: [
+            'Epic Fan Inc.',
+            '17224 S FIGUEROA ST STE A5642',
+            '90248-3023',
+            'US',
+            '',
+        ],
+        termsFreight: [
+            'Prepaid'
+        ],
+        countryOrigin: [
+            'CN'
+        ],
+        carrier: [
+            'Fedex'
+        ],
+        termSale: [
+            'DAP'
+        ],
+        ultimateDestination: [
+            'US'
+        ],
+        notes: [
+            'Bill Duties and Tax to Tax ID 46-3791646'
         ],
         customsDeclaration: {
             phone: '15800960591'

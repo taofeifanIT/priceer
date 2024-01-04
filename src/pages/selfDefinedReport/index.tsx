@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { getInventoryAge } from '@/services/reportView';
 import { ExportOutlined } from '@ant-design/icons';
 import { exportTableExcel } from '@/utils/excelHelper'
-
+import { useModel } from 'umi';
 
 const { Option } = Select;
 
@@ -13,9 +13,44 @@ const reportConfig: any = {
         needSorterColumns: [],
         needSelectColumns: {
             "Inventory Location": {
+                value: '',   // select的值
+                options: [], // select的options
+                filterName: 'Inventory Location_map', // 隐射搜索的字段
+                lable: 'Store', // 展示的lable名称
+                // 需要转换的map
+                map: {
+                    "AMAZON AU CHAOWEI": "CW AU",
+                    "AMAZON CANADA EPIC": "EpicFan CA",
+                    "AMAZON CANADA MHH": "MHH CA",
+                    "AMAZON CANADA MIT": "MIT CA",
+                    "AMAZON US CGG": "CGG US",
+                    "AMAZON US CHASTE": "Chaste US",
+                    "AMAZON US DSS": "DSS US",
+                    "AMAZON US EPIC": "EpicFan US",
+                    "AMAZON US ESC": "ESC US",
+                    "AMAZON US GREAT FOURTEEN": "GF US",
+                    "AMAZON US HH": "HHH US",
+                    "AMAZON US HJR": "HJR US",
+                    "AMAZON US JGJC": "TTM US",
+                    "AMAZON US JL": "JL US",
+                    "AMAZON US MHH": "MHH US",
+                    "AMAZON US MIT": "MIT US",
+                    "AMAZON.US CHAOWEI": "CW US",
+                    "DOA US": "DOA US",
+                    "OPEN BOX US": "Open Box US",
+                    "USED US": "Used US",
+                    "CLEAN US": "Clean US",
+                    "WALMART US TEL": "Walmart US",
+                    "PARCEL JET": "Parcel Jet",
+                    "WYD - ATLANTA": "WYD - Atlanta",
+                    "WYD - LA": "WYD - LA",
+                }
+            },
+            "Brand": {
                 value: '',
                 options: [],
-            },
+                lable: 'Brand',
+            }
         },
         boldCol: [
             "Qty Aged 60 ~ 90 Days",
@@ -24,6 +59,15 @@ const reportConfig: any = {
         ]
     }
 }
+
+const userDataPermission: any = {
+    18: ["WYD - ATLANTA"],
+    19: ["WYD - LA"],
+    31: ["PARCEL JET"],
+    42: ["AMAZON US MHH"],
+    16: ["AMAZON CANADA MHH"],
+    // 7: ["AMAZON US MHH"],
+};
 
 let allData: any = [];
 export default () => {
@@ -41,6 +85,9 @@ export default () => {
     });
     const [loading, setLoading] = useState(false);
     const [reportTemplate, setReportTemplate] = useState('inventory_age');
+    const { initialState } = useModel('@@initialState');
+    const { currentUser } = initialState;
+
     const initData = (params: {
         type: string;
         page: number;
@@ -52,24 +99,46 @@ export default () => {
             if (!code) {
                 throw msg
             };
-            const tempColumns: any = Object.keys(data.content[0]).map((item) => {
+            let content = data.content;
+            if (userDataPermission[currentUser.id]) {
+                content = data.content.filter((item: any) => {
+                    return userDataPermission[currentUser.id].includes(item['Inventory Location'].toUpperCase())
+                })
+            }
+
+            const tempColumns: any = Object.keys(content[0]).map((item) => {
                 // 判断是否是需要select的列
-                if (Object.keys(configInfo[reportTemplate].needSelectColumns).includes(item)) {
+                const needSelectColumns = Object.keys(configInfo[reportTemplate].needSelectColumns).includes(item)
+                const tempConfigInfo = { ...configInfo };
+                const itemMap = tempConfigInfo[reportTemplate].needSelectColumns[item]?.map;
+                if (needSelectColumns) {
                     // 获取需要select的列的值
-                    const selectValues = data.content.map((columnItem: any) => {
+                    const selectValues = content.map((columnItem: any) => {
                         return columnItem[item]
                     });
-                    // 去重
-                    const uniqueSelectValues = Array.from(new Set(selectValues));
-                    // 设置select的值
-                    const tempConfigInfo = { ...configInfo };
+                    // 设置select的值 去重
+                    let uniqueSelectValues = Array.from(new Set(selectValues)).filter((record: any) => {
+                        if (itemMap) {
+                            return Object.keys(itemMap).includes(record.toUpperCase())
+                        }
+                        return record
+                    })
+                    if (itemMap) {
+                        uniqueSelectValues = uniqueSelectValues.map((record: any) => {
+                            const innerData = itemMap[record]
+                            if (!innerData) {
+                                return itemMap[record.toUpperCase()]
+                            }
+                            return innerData
+                        })
+                    }
                     tempConfigInfo[reportTemplate].needSelectColumns[item].options = uniqueSelectValues;
                     setConfigInfo(tempConfigInfo);
                 }
                 // 判断值得类型，数字的话需要大小排序，字符串的话A-Z排序
                 let sorter: any = false;
                 let columnType = 'string';
-                if (!isNaN(data.content[0][item])) {
+                if (!isNaN(content[0][item])) {
                     columnType = 'number';
                     sorter = (a: any, b: any) => a[item] - b[item]
                 } else {
@@ -79,7 +148,6 @@ export default () => {
                     title: item,
                     dataIndex: item,
                     key: item,
-                    // sorter: configInfo[reportTemplate].needSorterColumns.includes(item) ? (a: any, b: any) => a[item] - b[item] : false,
                     sorter: (item !== 'Location Average Cost' && item !== 'Currency') ? sorter : false,
                     render: (text: any) => {
                         if (text === null) {
@@ -95,21 +163,31 @@ export default () => {
                             }
                         }
                         return valueStr
-
                     }
                 };
             });
-            allData = data.content;
+
+            allData = content.map((item: any) => {
+                //    判断是否需要转换
+                const tempItem = { ...item }
+                Object.keys(configInfo[reportTemplate].needSelectColumns).forEach((selectItem) => {
+                    const itemMap = configInfo[reportTemplate].needSelectColumns[selectItem].map;
+                    if (itemMap) {
+                        tempItem[selectItem + "_map"] = itemMap[item[selectItem].toUpperCase()] || item[selectItem]
+                    }
+                })
+                return tempItem
+            });
             setReportData({
                 columns: tempColumns,
-                dataSource: data.content,
+                dataSource: allData,
                 alreadyInit: true,
             });
             setPagination({
                 ...pagination,
                 current: params.page,
                 pageSize: params.len,
-                total: data.length,
+                total: content.length,
             });
         }).catch((err) => {
             console.log(err);
@@ -125,12 +203,16 @@ export default () => {
         const selectData = Object.keys(configInfo[reportTemplate].needSelectColumns).map((item) => {
             const targetValue = configInfo[reportTemplate].needSelectColumns[item]
             return <span key={item}>
-                <span>{item}：</span>
-                <Select allowClear style={{ width: 220 }} value={targetValue.value} onChange={(val) => {
-                    const tempConfigInfo = { ...configInfo };
-                    tempConfigInfo[reportTemplate].needSelectColumns[item].value = val || '';
-                    setConfigInfo(tempConfigInfo);
-                }}>
+                <span>{targetValue.lable || item}：</span>
+                <Select
+                    showSearch
+                    allowClear
+                    style={{ width: 220 }}
+                    value={targetValue.value} onChange={(val) => {
+                        const tempConfigInfo = { ...configInfo };
+                        tempConfigInfo[reportTemplate].needSelectColumns[item].value = val || '';
+                        setConfigInfo(tempConfigInfo);
+                    }}>
                     {
                         targetValue.options.map((selectItem: any) => {
                             return <Option key={selectItem} value={selectItem}>{selectItem}</Option>
@@ -149,9 +231,17 @@ export default () => {
         if (filterColumns.length) {
             const filterData = allData.filter((item: any) => {
                 let flag = true;
+                // 如果有map的话，需要转换
                 filterColumns.forEach((filterItem) => {
-                    if (item[filterItem] !== configInfo[reportTemplate].needSelectColumns[filterItem].value) {
-                        flag = false;
+                    const needSelectColumns = configInfo[reportTemplate].needSelectColumns
+                    if (needSelectColumns[filterItem].map) {
+                        if (item[filterItem + '_map'] !== needSelectColumns[filterItem].value) {
+                            flag = false;
+                        }
+                    } else {
+                        if (item[filterItem] !== needSelectColumns[filterItem].value) {
+                            flag = false;
+                        }
                     }
                 })
                 return flag
@@ -204,7 +294,7 @@ export default () => {
                     Export
                 </Button>}
                 title={<Space>
-                    <Button type="primary" loading={loading} onClick={() => {
+                    {/* <Button type="primary" loading={loading} onClick={() => {
                         initData({
                             type: reportTemplate,
                             page: pagination.current,
@@ -220,7 +310,7 @@ export default () => {
                                 return <Option key={item} value={item}>{configInfo[item].reportName}</Option>
                             })
                         }
-                    </Select>
+                    </Select> */}
                     {getSelectComponent()}
                 </Space>}
             >

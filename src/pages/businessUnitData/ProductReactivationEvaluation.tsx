@@ -11,6 +11,7 @@ import { getToken } from '@/utils/token';
 import axions from 'axios';
 import SetValueComponent from '@/components/SetValueComponent';
 import InputMemoComponent from './components/InputMemoComponent';
+
 import './index.less'
 // import TestComputer from './components/TestComputer';
 
@@ -101,13 +102,25 @@ export default () => {
     // }
 
     const getTargetPurchasePrice = (record: ResaleListItem) => {
-        const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_tax_rate = 0, exchange_rate, person_sales_price = 0, tax_rate = 0 } = record;
+        // const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_tax_rate = 0, exchange_rate, person_sales_price = 0, tax_rate = 0 } = record;
+        const tempRecord = {
+            sales_price: parseFloat(record.sales_price),
+            platform_fee: parseFloat(record.platform_fee),
+            ship_fee: parseFloat(record.ship_fee),
+            us_tax_rate: parseFloat(record.us_tax_rate),
+            exchange_rate: record.exchange_rate,
+            person_sales_price: parseFloat(record.person_sales_price),
+            tax_rate: parseFloat(record.tax_rate),
+        }
+        const { sales_price, platform_fee, ship_fee, us_tax_rate, exchange_rate, person_sales_price, tax_rate } = tempRecord
+
         const targetSalesPrice = person_sales_price > 0 ? person_sales_price : sales_price
         const targetTaxRate = tax_rate > 0 ? tax_rate : us_tax_rate
         const dividend = (targetSalesPrice * (1 - platform_fee) - ship_fee)
         const divisor = (1 + targetTaxRate)
         // const ts = dividend / divisor * (1 - 0.1) * USDRate * 1.13
         const ts = dividend / divisor * (1 - profitPoint) * exchange_rate
+        // console.table({ targetSalesPrice, targetTaxRate, platform_fee, exchange_rate, ship_fee, dividend, divisor, profitPoint })
         // 保留两位小数
         return ts.toFixed(2)
     }
@@ -262,6 +275,7 @@ export default () => {
                         <Select
                             allowClear
                             showSearch
+                            mode='multiple'
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -293,6 +307,7 @@ export default () => {
                     id={record.id}
                     editKey='sales_target'
                     value={record.sales_target}
+                    prefix={record.sales_target === null ? "NA" : ""}
                     api={updateSalesTarget}
                     refresh={() => actionRef.current?.reload()}
                     type='number'
@@ -319,6 +334,7 @@ export default () => {
                 return <SetValueComponent
                     id={record.id}
                     editKey='sales_price'
+                    prefix={record.person_sales_price === null ? "NA" : ""}
                     value={record.person_sales_price}
                     api={updateSalesPrice}
                     refresh={() => actionRef.current?.reload()}
@@ -343,16 +359,19 @@ export default () => {
             search: false,
             width: 150,
             render: (_, record) => {
-                return <SetValueComponent
-                    id={record.id}
-                    editKey='tax'
-                    value={record.tax_rate}
-                    api={updateTax}
-                    refresh={() => actionRef.current?.reload()}
-                    type='number'
-                    disabled={record.status === 2}
-                    numberStep={0.01}
-                />
+                return <>
+                    <SetValueComponent
+                        id={record.id}
+                        editKey='tax'
+                        prefix={record.tax_rate === null ? "NA" : ""}
+                        value={record.tax_rate}
+                        api={updateTax}
+                        refresh={() => actionRef.current?.reload()}
+                        type='number'
+                        disabled={record.status === 2}
+                        numberStep={0.01}
+                    />
+                </>
             }
         },
         {
@@ -397,7 +416,17 @@ export default () => {
             search: false,
             width: 172,
             tooltip: 'untaxed price',
-            render: (_, record) => [<SetValueComponent key={'purchase_price'} id={record.id} editKey='purchase_price' value={record.purchase_price} api={updatePurchasePrice} refresh={() => actionRef.current?.reload()} type='number' disabled={record.status === 2} />],
+            render: (_, record) => [
+                <SetValueComponent
+                    key={'purchase_price'}
+                    id={record.id}
+                    editKey='purchase_price'
+                    value={record.purchase_price}
+                    api={updatePurchasePrice}
+                    prefix={record.purchase_price === null ? "NA" : ""}
+                    refresh={() => actionRef.current?.reload()}
+                    type='number'
+                    disabled={record.status === 2} />],
         },
         {
             title: 'Operator',
@@ -424,7 +453,9 @@ export default () => {
             search: false,
             width: 135,
             sorter: (a, b) => a.unit_price - b.unit_price,
-            render: (_, record) => [<span key='purchase_price'>${record.unit_price}</span>],
+            render: (_, record) => {
+                return !record.unit_price ? "NA" : <span key='purchase_price'>${record.unit_price}</span>
+            },
         },
         // updated_at
         {
@@ -444,7 +475,11 @@ export default () => {
             align: 'center',
             sorter: (a, b) => a.margin_rate - b.margin_rate,
             fixed: 'right',
-            render: (_, record) => [<span key='margin_rate'>{(record.margin_rate * 100).toFixed(0) + '%'}</span>],
+            render: (_, record) => {
+                // if (!record.unit_price) return null
+                if (!record.margin_rate) return <span style={{ color: 'red' }}>{record.reason}</span>
+                return <span key='margin_rate'>{(record.margin_rate * 100).toFixed(0) + '%'}</span>
+            },
         },
         // action
         {
@@ -467,8 +502,6 @@ export default () => {
             columns={columns}
             rowSelection={{
                 // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
-                // 注释该行则默认不显示下拉选项
-                selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
                 // defaultSelectedRowKeys: [1],
                 selectedRowKeys: selectedRows.map(item => item.id),
                 onChange: (RowKeys, rows) => {
@@ -479,6 +512,7 @@ export default () => {
                     setSelectedRows(selectedRows.concat(rows.filter(item => !selectedRows.includes(item))));
                 },
             }}
+            id='id'
             actionRef={actionRef}
             cardBordered
             headerTitle={`The Current Dollar Rate is ${USDRate}`}
@@ -530,7 +564,7 @@ export default () => {
                 pageSize: 15,
                 showQuickJumper: true,
                 pageSizeOptions: ['15', '30', '50', '100', '200', '300', '500'],
-                // onChange: (page) => console.log(page),
+                showSizeChanger: true
             }}
             revalidateOnFocus={false}
             dateFormatter="string"

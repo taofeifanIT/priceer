@@ -55,7 +55,10 @@ export interface saveDesignParams {
         url: string[];
         memo: string;
         thumbnail?: string[];
-    }[]
+    }[],
+    reason: string;
+    reason_require: string;
+    reason_canto: string;
 }
 export interface submitDesignParams {
     sku: string;
@@ -119,6 +122,7 @@ export type RequirementListItem = {
     status: number;
     priority: number;
     reason: string;
+    reason_require: string;
     creator: string;
     memo: string;
     creator_id: number;
@@ -144,11 +148,15 @@ export type RequirementListItem = {
     expectTime: string;
     canto_url: string;
     close_sort: number;
+    reason_canto: string;
+    is_read: 0 | 1 | 2; // 0 默认 1 已读 2 未读
 }
 
 interface DesignListParams {
     status: number | undefined;
     keyword: string | undefined;
+    len: number;
+    page: number;
 }
 
 // design/getSkuList
@@ -285,6 +293,15 @@ export async function uploadTemplate(file: any, type: string) {
 // design/checkImage
 export async function checkImage(params: { id: number, status: 1 | 0, type: 1 | 2, reason?: string }) {
     return request('/api/design/checkImage', {
+        method: 'POST',
+        data: params
+    });
+}
+
+
+// design/read
+export async function read(params: { id: number }) {
+    return request('/api/design/read', {
         method: 'POST',
         data: params
     });

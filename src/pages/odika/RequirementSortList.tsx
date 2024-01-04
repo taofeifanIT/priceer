@@ -1,21 +1,12 @@
-import { Button, Card, Table, Input, Space, message, Typography, InputNumber, Divider, Switch } from 'antd';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import React, { useState, useEffect } from 'react';
+import { Button, Space, message, Typography, InputNumber, Divider, Switch, Select } from 'antd';
+import React, { useState } from 'react';
 import { getListForSort, editSortV3 } from '@/services/odika/requirementList';
 import type { RequirementListItem } from '@/services/odika/requirementList';
-import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import getInfoComponent from './components/getInfoComponent'
 import { FormattedMessage } from 'umi';
+import { ProTable } from '@ant-design/pro-components';
+import type { ProColumns } from '@ant-design/pro-components';
 const { Text } = Typography;
-const { Search } = Input;
-
-
-interface TableParams {
-    pagination?: TablePaginationConfig;
-    sortField?: string;
-    sortOrder?: string;
-    filters?: Record<string, FilterValue>;
-}
 
 
 const localFrontFromRequirementList = (key: string) => {
@@ -28,58 +19,15 @@ const localFront = (key: string) => {
 
 
 const App: React.FC = () => {
-    const [dataSource, setDataSource] = useState<any>([]);
-    const [keyword, setKeyword] = useState('');
-    const [loading, setLoading] = useState(false);
     const [sorts, setSorts] = useState<number[]>([]);
-    const [tableParams, setTableParams] = useState<TableParams>({
-        pagination: {
-            showSizeChanger: true,
-            showQuickJumper: true,
-            current: 1,
-            pageSize: 10,
-        },
-    });
-    // 设置页数
-
-    const onSearch = (value: string) => {
-        setKeyword(value)
-    };
-    const initData = () => {
-        setLoading(true);
-        getListForSort({
-            keyword: keyword || undefined, ...{
-                len: tableParams.pagination?.pageSize,
-                page: tableParams.pagination?.current
-            }
-        }).then(res => {
-            if (res.code) {
-                const sourceData = res.data.data
-                setDataSource(sourceData)
-                setSorts(res.data.sorts)
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: res.data.total,
-                    },
-                });
-            } else {
-                throw res.msg
-            }
-        }).finally(() => {
-            setLoading(false);
-        }).catch(err => {
-            message.error(err)
-        })
-    }
     const checkSort = (sort: number) => {
         return sorts.includes(sort)
     }
-    const getColor = (status: number) => {
+    const getColor = (record: RequirementListItem) => {
         let color = ''
         let text = null
-        switch (status) {
+        let msg = ''
+        switch (record.status) {
             // 1:可编辑   2：待排序   3：待审核  4:审核失败   5：待排期   6：制作中 7：完成  null:待审核
             case 2:
                 color = ''
@@ -92,6 +40,8 @@ const App: React.FC = () => {
             case 4:
                 color = 'red'
                 text = localFrontFromRequirementList('FailTheAudit')
+                msg = record.reason
+                break;
             case 5:
                 color = '#f39f6c'
                 text = localFrontFromRequirementList('PendingScheduling')
@@ -104,46 +54,37 @@ const App: React.FC = () => {
                 color = 'green'
                 text = localFrontFromRequirementList('Completed')
                 break;
-            case -10:
+            case 8:
                 color = '#2db7f5'
-                text = localFrontFromRequirementList('PendingReview')
+                text = localFrontFromRequirementList('RequirementsAudit')
                 break;
         }
         // 字体加粗
-        return <span style={{ color: color, fontWeight: 'bold' }}>{text}</span>
+        return <span style={{ color: color, fontWeight: record.status === 4 ? 'bold' : '' }}>{text}{msg ? `(${msg})` : ''}</span>
     }
 
-    const handleTableChange = (
-        pagination: TablePaginationConfig,
-        filters: Record<string, FilterValue>,
-        sorter: SorterResult<any>,
-    ) => {
-        setTableParams({
-            pagination,
-            filters,
-            ...sorter,
-        });
-
-        // `dataSource` is useless since `pageSize` changed
-        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-            setDataSource([]);
-        }
-    };
-
-    const columns: ColumnsType<RequirementListItem> = [
+    const columns: ProColumns<RequirementListItem>[] = [
+        {
+            title: <FormattedMessage id={`pages.odika.RequirementList.keyword`} />,
+            dataIndex: 'keyword',
+            key: 'keyword',
+            hideInTable: true,
+        },
         {
             title: localFrontFromRequirementList('info'),
             dataIndex: 'info',
             key: 'info',
             width: 385,
-            render: (text: any, record: any) => getInfoComponent(record)
+            search: false,
+            render: (_, record) => getInfoComponent(record)
         },
         {
             title: localFrontFromRequirementList('CreateInfo'),
             dataIndex: 'creator',
             key: 'creator',
             width: 200,
-            render: (text: any, record: any) => {
+            search: false,
+            render: (_, record) => {
                 return <div style={{ 'width': '200px' }}>
                     <div><Text type="secondary">{localFrontFromRequirementList('creator')}：</Text>{record.creator}</div>
                     <div><Text type="secondary">{localFrontFromRequirementList('creationTime')}：</Text>{record.createTime}</div>
@@ -156,24 +97,22 @@ const App: React.FC = () => {
             dataIndex: 'priority',
             key: 'priority',
             width: 100,
-            render: (_, record) => {
-                if (record.state !== 2) {
-                    return ''
-                }
-                if (record.status === 7) {
+            search: false,
+            render: (_, record, __, action) => {
+                if (record.status === 7 || record.status === 8 || record.status === 4) {
                     return ''
                 }
                 if (!!record.close_sort) {
                     return record.close_sort
                 }
-                return <InputNumber
-                    min={1}
+                return <Select
                     defaultValue={record.priority}
+                    style={{ width: 70 }}
                     onChange={(value) => {
                         if (value) {
                             editSortV3({ id: record.id, no: value, is_lock: 0 }).then(res => {
                                 if (res.code) {
-                                    initData()
+                                    action?.reload()
                                 } else {
                                     throw res.msg
                                 }
@@ -182,7 +121,18 @@ const App: React.FC = () => {
                             })
                         }
                     }}
-                />
+                >
+                    {
+                        Array.from({ length: 50 }, (_, i) => i + 1).map(item => {
+                            return <Select.Option
+                                value={item}
+                                disabled={checkSort(item)}
+                                key={item}>
+                                {item}
+                            </Select.Option>
+                        })
+                    }
+                </Select>
             }
         },
         {
@@ -190,8 +140,9 @@ const App: React.FC = () => {
             dataIndex: 'status',
             key: 'status',
             width: 120,
+            search: false,
             render: (_, record) => {
-                return record.state ? getColor(record.status) : getColor(-10)
+                return getColor(record)
             }
         },
         {
@@ -200,10 +151,11 @@ const App: React.FC = () => {
             key: 'action',
             fixed: 'right',
             width: 150,
-            render: (_, record) => {
-                if (record.state !== 2) {
+            search: false,
+            render: (_, record, __, action) => {
+                if (record.status === 8 || record.status === 4) {
                     return <Button type="link" onClick={() => {
-                        window.open(`/odika/ViewDesign?id=${record.id}&check=true&state=1`)
+                        window.open(`/odika/ViewDesign?id=${record.id}&check=true&type=${record.status === 4 ? 4 : 1}`)
                     }}><FormattedMessage id='pages.odika.requirementSortList.check' /></Button>
                 }
                 return <Space>
@@ -215,7 +167,7 @@ const App: React.FC = () => {
                             }
                             editSortV3({ id: record.id, no: record.priority, is_lock: val ? 1 : 0 }).then(res => {
                                 if (res.code) {
-                                    initData()
+                                    action?.reload()
                                 } else {
                                     throw res.msg
                                 }
@@ -232,24 +184,35 @@ const App: React.FC = () => {
             }
         }
     ]
-    useEffect(() => {
-        initData()
-    }, [keyword, JSON.stringify(tableParams)])
     return (
-        <Card
+        <ProTable<RequirementListItem>
+            rowKey="id"
+            columns={columns}
+            request={async (params = {}) => {
+                const tempParams = {
+                    ...params,
+                    len: params.pageSize,
+                    page: params.current
+                };
+                const res = await getListForSort(tempParams);
+                const { data } = res;
+                setSorts(data.sorts)
+                return {
+                    data: data.data,
+                    success: res.code === 1,
+                    total: data.total,
+                };
+            }}
             size='small'
-            title={<Search placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />}
-            extra={<Button type="primary" onClick={initData}><FormattedMessage id='pages.layouts.Refresh' /></Button>}
-        >
-            <Table
-                loading={loading}
-                rowKey="id"
-                columns={columns}
-                pagination={tableParams.pagination}
-                onChange={handleTableChange}
-                dataSource={dataSource}
-            />
-        </Card>
+            options={{
+                density: false,
+                fullScreen: false,
+                setting: false,
+            }}
+            pagination={{
+                pageSize: 10,
+            }}
+        />
     );
 };
 

@@ -36,3 +36,14 @@ export async function updateStatus(params?: any) {
         data: params
     });
 }
+
+// businessUnitData/modifyConsistent
+export async function modifyConsistent(params?: {
+    id: number;
+    is_consistent: number; // 1: 一致 2: 不一致
+}) {
+    return request('/api/businessUnitData/modifyConsistent', {
+        method: 'POST',
+        data: params
+    });
+}

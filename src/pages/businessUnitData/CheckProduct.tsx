@@ -1,13 +1,14 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef, useState, useEffect } from 'react';
-import { getCheckList, updateStatus } from '@/services/businessUnitData/checkProduct'
+import { getCheckList, updateStatus, modifyConsistent } from '@/services/businessUnitData/checkProduct'
 import type { NewProductsItem } from '@/services/businessUnitData/newProducts'
 import { message, Space, Popconfirm, Button, Select, InputNumber } from 'antd';
-import { getBrandForNew, editStore } from '@/services/businessUnitData/newProducts'
+import { getBrandForNew, editStore, editInvoiceItemName, modifyCompany } from '@/services/businessUnitData/newProducts'
 import InputMemoComponent from './components/InputMemoComponent';
 import SetValueComponent from '@/components/SetValueComponent';
 import { statusConfig } from './config'
+import { getCategoryAndRisk } from '@/services/businessUnitData/secondaryInspectionProduct'
 import { useModel } from 'umi';
 
 const options: any = {
@@ -60,11 +61,25 @@ export default () => {
     const [brands, setBrands] = useState([])
     const [profitPoint, setProfitPoint] = useState(0.1);
     const [USDRate, setUSDRate] = useState(0);
+    const [kindOfItemAndShipingRisk, setKindOfItemAndShipingRisk] = useState<{
+        kindOfItem: string[],
+        shipingRish: string[],
+        pm: {
+            id: number,
+            username: string
+        }[]
+    }>({
+        kindOfItem: [],
+        shipingRish: [],
+        pm: []
+    })
     const { initialState } = useModel('@@initialState');
-    const { configInfo } = initialState || {};
+    const { configInfo, currentUser } = initialState || {};
+    const isOperationManager = (currentUser?.authGroup.title === 'Operation Manager' || currentUser?.authGroup.title === 'Super Admin')
+    const isPm = (currentUser?.authGroup.title === 'product development' || currentUser?.authGroup.title === 'Super Admin')
     const storeOptions = configInfo?.store?.map((item: any) => {
         return {
-            label: item.name,
+            label: item.nick_name,
             value: item.id
         }
     })
@@ -82,18 +97,19 @@ export default () => {
         }
         setBrands(brandData)
     }
-    // const getRate = async () => {
-    //     // if (USDRate) return USDRate
-    //     let rate = 7.25;
-    //     const { data } = await axios('https://api.it120.cc/gooking/forex/rate?fromCode=CNY&toCode=USD')
-    //     if (data.code === 0) {
-    //         rate = data.data.rate
-    //     } else {
-    //         // 递归调用
-    //         rate = await getRate()
-    //     }
-    //     return rate
-    // }
+
+    const getKindOfItemAndShipingRisk = async () => {
+        if (kindOfItemAndShipingRisk.kindOfItem.length) return
+        const res = await getCategoryAndRisk()
+        const { data, code } = res
+        if (code) {
+            setKindOfItemAndShipingRisk({
+                kindOfItem: data.category,
+                shipingRish: data.risk,
+                pm: data.pm
+            })
+        }
+    }
     const getTargetPurchasePrice = (record: NewProductsItem) => {
         const { sales_price = 0, platform_fee = 0, ship_fee = 0, us_import_tax = 0, exchange_rate } = record;
         const dividend = (sales_price * (1 - platform_fee) - ship_fee)
@@ -140,6 +156,60 @@ export default () => {
             ellipsis: true,
             width: 160,
         },
+        {
+            title: 'Item PM',
+            dataIndex: 'username',
+            key: 'username',
+            hideInTable: true,
+            renderFormItem: (
+                _,
+                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                form,
+            ) => {
+                if (type === 'form') {
+                    return null;
+                }
+                const status = form.getFieldValue('brand');
+                if (status !== 'open') {
+                    return (
+                        // value 和 onchange 会通过 form 自动注入。
+                        <Select
+                            allowClear
+                            showSearch
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            options={kindOfItemAndShipingRisk.pm.map((item: any) => ({ label: item.username, value: item.username }))}
+                        />
+                    );
+                }
+                return defaultRender(_);
+            }
+        },
+        {
+            // is_consistent
+            title: 'Consistent',
+            dataIndex: 'is_consistent',
+            key: 'is_consistent',
+            valueType: 'select',
+            width: 100,
+            search: false,
+            render: (_, record) => {
+                if (isOperationManager || isPm) {
+                    return <SetValueComponent
+                        style={{ width: '85px' }}
+                        id={record.id}
+                        type='select'
+                        options={[{ label: '一致', value: 1 }, { label: '不一致', value: 0 }] as any}
+                        editKey='is_consistent'
+                        value={record.is_consistent}
+                        api={modifyConsistent}
+                        refresh={() => { actionRef.current?.reload() }} />
+                }
+                return <span>{record.is_consistent ? 'Yes' : 'No'}</span>
+            }
+        },
         // brand
         {
             title: 'Brand',
@@ -163,6 +233,7 @@ export default () => {
                         <Select
                             allowClear
                             showSearch
+                            mode='multiple'
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -279,10 +350,14 @@ export default () => {
             width: 180,
             search: false,
             render(_, record) {
-                return <Space>
-                    <EditStatusComponent id={record.id} value={record.first_status} type={1} refresh={() => { actionRef.current?.reload() }} targetValue={1} />
-                    <EditStatusComponent id={record.id} value={record.first_status} type={1} refresh={() => { actionRef.current?.reload() }} targetValue={2} />
-                </Space>
+                if (isPm && record.is_consistent !== null) {
+                    return <Space>
+                        <EditStatusComponent id={record.id} value={record.first_status} type={1} refresh={() => { actionRef.current?.reload() }} targetValue={1} />
+                        <EditStatusComponent id={record.id} value={record.first_status} type={1} refresh={() => { actionRef.current?.reload() }} targetValue={2} />
+                    </Space>
+                } else {
+                    return <span>{options[record.first_status]}</span>
+                }
             }
         },
         {
@@ -292,6 +367,9 @@ export default () => {
             width: 160,
             search: false,
             render: (_, record) => {
+                if (!isPm) {
+                    return <span>{record.first_memo}</span>
+                }
                 return <InputMemoComponent
                     id={record.id}
                     editKey='memo'
@@ -316,10 +394,13 @@ export default () => {
             width: 180,
             search: false,
             render(_, record) {
-                return <Space>
-                    <EditStatusComponent id={record.id} value={record.second_status} type={2} refresh={() => { actionRef.current?.reload() }} targetValue={1} />
-                    <EditStatusComponent id={record.id} value={record.second_status} type={2} refresh={() => { actionRef.current?.reload() }} targetValue={2} />
-                </Space>
+                if ((isOperationManager || isPm) && record.is_consistent !== null) {
+                    return <Space>
+                        <EditStatusComponent id={record.id} value={record.second_status} type={2} refresh={() => { actionRef.current?.reload() }} targetValue={1} />
+                        <EditStatusComponent id={record.id} value={record.second_status} type={2} refresh={() => { actionRef.current?.reload() }} targetValue={2} />
+                    </Space>
+                }
+                return <span>{options[record.second_status]}</span>
             }
         },
         {
@@ -329,6 +410,9 @@ export default () => {
             width: 160,
             search: false,
             render: (_, record) => {
+                if (!isOperationManager && !isPm) {
+                    return <span>{record.second_memo}</span>
+                }
                 return <InputMemoComponent
                     id={record.id}
                     editKey='memo'
@@ -346,6 +430,11 @@ export default () => {
             search: false,
             width: 170,
             render: (_, record) => {
+                if (!isOperationManager && !isPm) {
+                    return <span>{
+                        storeOptions.find((item: any) => item.value === record.store_id)?.label
+                    }</span>
+                }
                 return <SetValueComponent
                     style={{ width: '120px' }}
                     id={record.id}
@@ -355,6 +444,49 @@ export default () => {
                     value={record.store_id}
                     api={editStore}
                     refresh={() => { actionRef.current?.reload() }} />
+            }
+        },
+        // invoice_item_name
+        {
+            title: 'INVOICE ITEM NAME',
+            dataIndex: 'invoice_item_name',
+            key: 'invoice_item_name',
+            search: false,
+            width: 170,
+            render: (_, record) => {
+                if (!isOperationManager && !isPm) {
+                    return <span>{record.invoice_item_name}</span>
+                }
+                return <SetValueComponent
+                    style={{ width: '120px' }}
+                    id={record.id}
+                    type='text'
+                    editKey='invoice_item_name'
+                    value={record.invoice_item_name}
+                    api={editInvoiceItemName}
+                    refresh={() => { actionRef.current?.reload() }} />
+            }
+        },
+        {
+            title: 'Company',
+            dataIndex: 'ekko',
+            key: 'ekko',
+            width: 90,
+            search: false,
+            render: (_, record) => {
+                if (!isOperationManager && !isPm) {
+                    return <span>{record.ekko}</span>
+                }
+                return <SetValueComponent
+                    id={record.id}
+                    editKey='ekko'
+                    type='select'
+                    options={[{ label: '随意', value: '随意' }, { label: '巢威', value: '巢威' }, { label: '晓篪', value: '晓篪' }]}
+                    style={{ width: '100%' }}
+                    value={record.ekko}
+                    api={modifyCompany}
+                    refresh={() => { actionRef.current?.reload() }}
+                />
             }
         },
         {
@@ -385,6 +517,7 @@ export default () => {
             headerTitle={`The Current Dollar Rate is ${USDRate}`}
             cardBordered
             request={async (params = {}, sort, filter) => {
+                await getKindOfItemAndShipingRisk()
                 await getBrand()
                 const tempParams = { ...params, ...filter, ...sort, margin_rate: params.margin_rate ? (params.margin_rate / 100) : undefined, len: params.pageSize, page: params.current }
                 const res = await getCheckList(tempParams)
@@ -412,22 +545,23 @@ export default () => {
             search={{
                 labelWidth: 'auto',
             }}
-            form={{
-                // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-                syncToUrl: (values, type) => {
-                    if (type === 'get') {
-                        return {
-                            ...values,
-                            created_at: [values.startTime, values.endTime],
-                        };
-                    }
-                    return values;
-                },
-            }}
+            // form={{
+            //     // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+            //     syncToUrl: (values, type) => {
+            //         if (type === 'get') {
+            //             return {
+            //                 ...values,
+            //                 created_at: [values.startTime, values.endTime],
+            //             };
+            //         }
+            //         return values;
+            //     },
+            // }}
             pagination={{
                 pageSize: 30,
                 showQuickJumper: true,
                 pageSizeOptions: ['30', '50', '100', '200', '300', '500'],
+                showSizeChanger: true
                 // onChange: (page) => console.log(page),
             }}
             revalidateOnFocus={false}

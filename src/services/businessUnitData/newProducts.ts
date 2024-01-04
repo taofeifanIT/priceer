@@ -29,6 +29,11 @@ export type NewProductsItem = {
     width: number;
     height: number;
     fullfill_cost: number;
+    store_id: number;
+    invoice_item_name: string;
+    is_consistent: number; // 1: 一致 2: 不一致
+    purchase_quantity: number;
+    ekko: string;
 }
 
 // businessUnitData/getNewProduct
@@ -114,6 +119,30 @@ export async function editStore(params: { id: number, store_id: string }) {
 // businessUnitData/editPurchaseQuantity
 export async function editPurchaseQuantity(params: { id: number, purchase_unit: number }) {
     return request('/api/businessUnitData/editPurchaseQuantity', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// editInvoiceItemName
+export async function editInvoiceItemName(params: { id: number, invoice_item_name: string }) {
+    return request('/api/businessUnitData/editInvoiceItemName', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// updateSkuForNew
+export async function updateSkuForNew(params: { id: number, sku: string }) {
+    return request('/api/businessUnitData/updateSkuForNew', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// businessUnitData/modifyCompany
+export async function modifyCompany(params: { id: number, ekko: string }) {
+    return request('/api/businessUnitData/modifyCompany', {
         method: 'POST',
         data: params
     });

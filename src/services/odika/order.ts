@@ -50,3 +50,11 @@ export async function getList(params: { amazon_order_id?: number, order_item_id?
         data: params,
     });
 }
+
+
+// /shiprush/check_auto_order  no params  get
+export async function check_auto_order() {
+    return request('/api/shiprush/check_auto_order', {
+        method: 'GET',
+    });
+}

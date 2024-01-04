@@ -15,11 +15,13 @@ import {
     saveMemoImages,
     finishFail,
     editLpn,
-    editShipmentId
+    editShipmentId,
+    notReceived
 }
     from '@/services/removalOrder'
 import moment from 'moment';
 import { getToken } from '@/utils/token'
+import { useModel } from 'umi';
 import SetValueComponent from '@/components/SetValueComponent';
 
 export type TableListItem = {
@@ -61,6 +63,7 @@ export type TableListItem = {
     lpn: string,
     claim_reason: string,
     claim_date: string,
+    wait_status: number,
 }
 
 const ShipmentStatusGroup = [
@@ -253,6 +256,10 @@ const UploadCommonImage = (props: { record: TableListItem, refresh: () => void }
 export default () => {
     const actionRef: any = useRef<FormInstance>();
     const actionModelRef: any = useRef<FormInstance>();
+    // Operation Manager
+    const { initialState } = useModel('@@initialState');
+    const { currentUser } = initialState;
+    const isOperationManager = (currentUser?.authGroup.title === 'Operation Manager' || currentUser?.authGroup.title === 'Super Admin')
     const refresh = () => {
         actionRef.current.reload()
     }
@@ -371,6 +378,7 @@ export default () => {
             title: 'Shipment ID',
             dataIndex: 'shipment_id',
             width: 150,
+            hideInTable: true,
             search: false,
             render: (_, record) => {
                 return <SetValueComponent id={record.id} editKey={'shipment_id'} value={record.shipment_id} api={editShipmentId} refresh={refresh} />
@@ -453,6 +461,32 @@ export default () => {
             render: (_, record) => {
                 // 如果 shipment_status 为 2 
                 return <SetValueComponent id={record.id} editKey={'memo'} value={record.memo} api={editMemo} refresh={refresh} />
+            }
+        },
+        // wait_status
+        {
+            title: 'Private Memo',
+            dataIndex: 'wait_status',
+            width: 150,
+            valueType: 'select',
+            hideInTable: !isOperationManager,
+            search: isOperationManager,
+            valueEnum: {
+                0: { text: 'All', status: 'Default' },
+                1: { text: 'empty', status: 'Default' },
+                2: { text: 'waite for 90 days', status: 'Default' },
+            },
+            render: (_, record) => {
+                return <SetValueComponent
+                    id={record.id}
+                    type='select'
+                    options={[{ label: 'empty', value: 1 }, { label: 'waite for 90 days', value: 2 }]}
+                    editKey={'status'}
+                    value={record.wait_status}
+                    api={notReceived}
+                    refresh={refresh}
+                    style={{ width: '100%' }}
+                />
             }
         },
         {

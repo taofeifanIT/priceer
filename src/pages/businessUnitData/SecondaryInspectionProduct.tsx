@@ -1,16 +1,19 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef, useState } from 'react';
-import { listProduct, modifyParam, getCategoryAndRisk } from '@/services/businessUnitData/secondaryInspectionProduct'
+import { listProduct, modifyParam, getCategoryAndRisk, reject } from '@/services/businessUnitData/secondaryInspectionProduct'
 import type { SecondaryInspectionProductItem } from '@/services/businessUnitData/secondaryInspectionProduct'
 import SetValueComponent from '@/components/SetValueComponent';
-import { Table, Space } from 'antd';
+import { Space, Select, message, Popconfirm, Tooltip } from 'antd';
 import { exportExcelFile } from '@/utils/excelHelper';
 import { useModel } from 'umi';
+import { getBrandForNew } from '@/services/businessUnitData/newProducts'
+import { CheckOutlined } from '@ant-design/icons';
 
 export default () => {
     const { initialState } = useModel('@@initialState');
-    const { configInfo } = initialState || {}
+    const { configInfo, currentUser } = initialState || {}
+    const isProductDevelopment = (currentUser?.authGroup.title === 'product development' || currentUser?.authGroup.title === 'Super Admin')
     const actionRef = useRef<ActionType>();
     const [kindOfItemAndShipingRisk, setKindOfItemAndShipingRisk] = useState<{
         kindOfItem: string[],
@@ -19,13 +22,13 @@ export default () => {
             id: number,
             username: string
         }[]
-
     }>({
         kindOfItem: [],
         shipingRish: [],
         pm: []
     })
     const [selectedRows, setSelectedRows] = useState<SecondaryInspectionProductItem[]>([]); // 选中的行
+    const [brands, setBrands] = useState([])
     const getKindOfItemAndShipingRisk = async () => {
         if (kindOfItemAndShipingRisk.kindOfItem.length) return
         const res = await getCategoryAndRisk()
@@ -38,15 +41,124 @@ export default () => {
             })
         }
     }
+    const getBrand = async () => {
+        if (brands.length) return
+        let brandData: any = []
+        const { data, code } = await getBrandForNew()
+        if (code) {
+            brandData = data.map((item: any) => {
+                return {
+                    label: item,
+                    value: item
+                }
+            })
+        }
+        setBrands(brandData)
+    }
     const columns: ProColumns<SecondaryInspectionProductItem>[] = [
+        // purchase quantity
+        {
+            title: 'Purchase Quantity',
+            dataIndex: 'purchase_quantity',
+            key: 'purchase_quantity',
+            width: 140,
+            search: false,
+            render(_, entity, __, action) {
+                if (!entity.purchase_quantity) {
+                    return <SetValueComponent
+                        id={entity.id}
+                        editKey='value'
+                        type='number'
+                        style={{ width: '100%' }}
+                        value={entity.purchase_quantity}
+                        api={modifyParam}
+                        otherParams={{ name: 'purchase_quantity' }}
+                        refresh={() => action?.reload()}
+                    />
+                }
+                return <span>{entity.purchase_quantity}</span>
+            }
+        },
+        // Company
+        {
+            title: 'Company',
+            dataIndex: 'ekko',
+            key: 'ekko',
+            width: 90,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    type='select'
+                    options={[{ label: '随意', value: '随意' }, { label: '巢威', value: '巢威' }, { label: '晓篪', value: '晓篪' }]}
+                    style={{ width: '100%' }}
+                    value={entity.ekko}
+                    api={modifyParam}
+                    otherParams={{ name: 'ekko' }}
+                    refresh={() => action?.reload()}
+                />
+            }
+        },
+        // purchase_price
+        {
+            title: 'Purchase Price(CNY)',
+            dataIndex: 'purchase_price',
+            key: 'purchase_price',
+            width: 160,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    type='number'
+                    style={{ width: '100%' }}
+                    value={entity.purchase_price}
+                    api={modifyParam}
+                    otherParams={{ name: 'purchase_price' }}
+                    refresh={() => action?.reload()}
+                />
+            }
+        },
+        // lead_time
+        {
+            title: 'Lead Time',
+            dataIndex: 'lead_time',
+            key: 'lead_time',
+            width: 100,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    type='text'
+                    style={{ width: '100%' }}
+                    value={entity.lead_time}
+                    api={modifyParam}
+                    otherParams={{ name: 'lead_time' }}
+                    refresh={() => action?.reload()}
+                />
+            }
+        },
         {
             title: 'ITEM NAME/NUMBER',
             dataIndex: 'sku',
             key: 'sku',
-            width: 160,
+            width: 165,
             fixed: 'left',
             ellipsis: true,
             search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    style={{ width: '90%', marginLeft: '5px' }}
+                    value={entity.sku}
+                    api={modifyParam}
+                    otherParams={{ name: 'sku' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         {
             title: 'Display Name',
@@ -54,9 +166,22 @@ export default () => {
             width: 160,
             search: false,
         },
+        {
+            // is_consistent
+            title: 'Consistent',
+            dataIndex: 'is_consistent',
+            key: 'is_consistent',
+            valueType: 'select',
+            valueEnum: {
+                1: { text: '一致', status: 'Success' },
+                0: { text: '不一致', status: 'Error' },
+            },
+            width: 100,
+            search: false,
+        },
         // invoice_item_name
         {
-            title: 'Invoice Item Name',
+            title: 'INVOICE ITEM NAME',
             dataIndex: 'invoice_item_name',
             key: 'invoice_item_name',
             width: 160,
@@ -65,6 +190,7 @@ export default () => {
                 return <SetValueComponent
                     id={entity.id}
                     editKey='value'
+                    style={{ width: '100%' }}
                     value={entity.invoice_item_name}
                     api={modifyParam}
                     otherParams={{ name: 'invoice_item_name' }}
@@ -74,10 +200,10 @@ export default () => {
         },
         // SERIALIZED (CUSTOMIZED)
         {
-            title: 'Serialized',
+            title: 'SERIALIZED (CUSTOMIZED)',
             dataIndex: 'serialized',
             key: 'serialized',
-            width: 100,
+            width: 210,
             search: false,
             render(_, entity, __, action) {
                 return <SetValueComponent
@@ -93,20 +219,58 @@ export default () => {
                 />
             },
         },
+        {
+            // chinese_customs_clearance_name
+            title: 'CHINESE CUSTOMS CLEARANCE NAME',
+            dataIndex: 'chinese_customs_clearance_name',
+            key: 'chinese_customs_clearance_name',
+            width: 320,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    style={{ width: '100%' }}
+                    editKey='value'
+                    value={entity.chinese_customs_clearance_name}
+                    api={modifyParam}
+                    otherParams={{ name: 'chinese_customs_clearance_name' }}
+                    refresh={() => action?.reload()}
+                />
+            }
+        },
         // UPC CODE
         {
-            title: 'UPC',
+            title: 'UPC CODE',
             dataIndex: 'upc_us',
             key: 'upc_us',
-            width: 130,
+            width: 160,
             ellipsis: true,
             search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    style={{ marginLeft: '5px' }}
+                    editKey='value'
+                    value={entity.upc_us}
+                    api={modifyParam}
+                    otherParams={{ name: 'upc_us' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         // ASIN US
         {
             title: 'ASIN US',
             dataIndex: 'asin_us',
             key: 'asin_us',
+            width: 130,
+            copyable: true,
+        },
+        // ASIN CA
+        {
+            title: 'ASIN CA',
+            dataIndex: 'asin_ca',
+            key: 'asin_ca',
             width: 120,
             search: false,
         },
@@ -124,7 +288,6 @@ export default () => {
             dataIndex: 'username',
             key: 'username',
             width: 130,
-            search: false,
             render(_, entity, __, action) {
                 return <SetValueComponent
                     id={entity.id}
@@ -137,6 +300,45 @@ export default () => {
                     otherParams={{ name: 'add_id' }}
                     refresh={() => action?.reload()}
                 />
+            },
+            renderFormItem: (
+                _,
+                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                form,
+            ) => {
+                if (type === 'form') {
+                    return null;
+                }
+                const status = form.getFieldValue('brand');
+                if (status !== 'open') {
+                    return (
+                        // value 和 onchange 会通过 form 自动注入。
+                        <Select
+                            allowClear
+                            showSearch
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            options={kindOfItemAndShipingRisk.pm.map((item: any) => ({ label: item.username, value: item.username }))}
+                        />
+                    );
+                }
+                return defaultRender(_);
+            }
+        },
+        // status
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            width: 100,
+            hideInTable: true,
+            valueType: 'select',
+            valueEnum: {
+                // 2 已上传  1未上传
+                2: { text: 'Uploaded', status: 'Success' },
+                1: { text: 'Not Upload', status: 'Error' },
             }
         },
         // Purchase Description
@@ -154,39 +356,110 @@ export default () => {
             key: 'brand',
             width: 130,
             ellipsis: true,
-            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    type='select'
+                    style={{ width: '120px' }}
+                    options={brands}
+                    value={entity.brand}
+                    api={modifyParam}
+                    otherParams={{ name: 'brand' }}
+                    refresh={() => action?.reload()}
+                />
+            },
+            renderFormItem: (
+                _,
+                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                form,
+            ) => {
+                if (type === 'form') {
+                    return null;
+                }
+                const status = form.getFieldValue('brand');
+                if (status !== 'open') {
+                    return (
+                        // value 和 onchange 会通过 form 自动注入。
+                        <Select
+                            allowClear
+                            showSearch
+                            mode='multiple'
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            options={brands}
+                        />
+                    );
+                }
+                return defaultRender(_);
+            }
         },
         // Cn HS code
         {
-            title: 'CN HS Code',
+            title: 'Cn HS Code',
             dataIndex: 'cn_hs_code',
             key: 'cn_hs_code',
-            width: 100,
-            search: false
+            width: 130,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    style={{ width: '100%' }}
+                    editKey='value'
+                    value={entity.cn_hs_code}
+                    api={modifyParam}
+                    otherParams={{ name: 'cn_hs_code' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         // CNTax rebate rate
         {
-            title: 'CN Tax Rebate Rate',
+            title: 'CNTax rebate rate',
             dataIndex: 'cn_tax_rebate_rate',
             key: 'cn_tax_rebate_rate',
-            width: 150,
-            search: false
+            width: 170,
+            search: false,
         },
         // US HS Code{
         {
             title: 'US HS Code',
             dataIndex: 'us_hs_code',
             key: 'us_hs_code',
-            width: 100,
-            search: false
+            width: 200,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    style={{ width: '100%' }}
+                    value={entity.us_hs_code}
+                    api={modifyParam}
+                    otherParams={{ name: 'us_hs_code' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         // CANADA HTS CODE
         {
-            title: 'Canada HTS Code',
+            title: 'CANADA HTS CODE',
             dataIndex: 'canada_hts_code',
             key: 'canada_hts_code',
-            width: 140,
-            search: false
+            width: 150,
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    style={{ width: '100%' }}
+                    editKey='value'
+                    value={entity.canada_hts_code}
+                    api={modifyParam}
+                    otherParams={{ name: 'canada_hts_code' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         // COO
         {
@@ -194,27 +467,49 @@ export default () => {
             dataIndex: 'coo',
             key: 'coo',
             width: 100,
-            search: false
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    value={entity.coo}
+                    style={{ width: '100%' }}
+                    api={modifyParam}
+                    otherParams={{ name: 'coo' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         // US import tax rate
         {
-            title: 'US Import Tax Rate',
+            title: 'US import tax rate',
             dataIndex: 'us_import_tax_rate',
             key: 'us_import_tax_rate',
             width: 150,
-            search: false
+            search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    style={{ width: '100%' }}
+                    value={entity.us_import_tax_rate}
+                    api={modifyParam}
+                    otherParams={{ name: 'us_import_tax_rate' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         // CANADA import tax rate
         {
-            title: 'Canada Import Tax Rate',
+            title: 'CANADA import tax rate',
             dataIndex: 'canada_import_tax_rate',
             key: 'canada_import_tax_rate',
-            width: 175,
+            width: 180,
             search: false
         },
         // Kind of item
         {
-            title: 'Kind of Item',
+            title: 'Kind of item',
             dataIndex: 'king_of_item',
             key: 'king_of_item',
             width: 180,
@@ -229,37 +524,37 @@ export default () => {
                     value={entity.king_of_item}
                     api={modifyParam}
                     otherParams={{ name: 'king_of_item' }}
-                    refresh={() => action.reload()}
+                    refresh={() => action?.reload()}
                 />
             }
         },
         // AMAZON US Referral Fee
         {
-            title: 'Amazon US Referral Fee',
+            title: 'AMAZON US Referral Fee',
             dataIndex: 'amazon_us_referral_fee',
             key: 'amazon_us_referral_fee',
-            width: 180,
+            width: 185,
             search: false,
         },
         // AMAZON CAN Referral Fee
         {
-            title: 'Amazon CAN Referral Fee',
+            title: 'AMAZON CAN Referral Fee',
             dataIndex: 'amazon_can_referral_fee',
             key: 'amazon_can_referral_fee',
-            width: 190,
+            width: 195,
             search: false,
         },
         // AMAZON AU Referral Fee
         {
-            title: 'Amazon AU Referral Fee',
+            title: 'AMAZON AU Referral Fee',
             dataIndex: 'amazon_au_referral_fee',
             key: 'amazon_au_referral_fee',
-            width: 180,
+            width: 185,
             search: false,
         },
         // SHIPPING RISK
         {
-            title: 'Shipping Risk',
+            title: 'SHIPPING RISK',
             dataIndex: 'shipping_risk',
             key: 'shipping_risk',
             width: 180,
@@ -327,7 +622,7 @@ export default () => {
             search: false,
         },
         {
-            title: 'Currency',
+            title: 'Currency1',
             dataIndex: 'currency1',
             key: 'currency1',
             width: 100,
@@ -399,26 +694,26 @@ export default () => {
         },
         // AMAZON CA PRICE
         {
-            title: 'Amazon CA Price',
+            title: 'AMAZON CA PRICE',
             dataIndex: 'amazon_ca_price',
             key: 'amazon_ca_price',
-            width: 130,
+            width: 145,
             search: false,
         },
         // AMAZON AU PRICE
         {
-            title: 'Amazon AU Price',
+            title: 'AMAZON AU PRICE',
             dataIndex: 'amazon_au_price',
             key: 'amazon_au_price',
-            width: 135,
+            width: 145,
             search: false,
         },
         // STORE APPROVED TO SELL
         {
-            title: 'Store Approved to Sell',
-            dataIndex: 'storeName',
-            key: 'storeName',
-            width: 170,
+            title: 'STORE APPROVED TO SELL',
+            dataIndex: 'nick_name',
+            key: 'nick_name',
+            width: 210,
             search: false,
         },
         // CI Brand
@@ -432,26 +727,26 @@ export default () => {
         },
         // TAX SCHEDULE
         {
-            title: 'Tax Schedule',
+            title: 'TAX SCHEDULE',
             dataIndex: 'tax_schedule',
             key: 'tax_schedule',
-            width: 120,
+            width: 130,
             search: false,
         },
         // INCLUDE CHILDREN
         {
-            title: 'Include Children',
+            title: 'INCLUDE CHILDREN',
             dataIndex: 'include_children',
             key: 'include_children',
-            width: 140,
+            width: 155,
             search: false,
         },
         // SYNC TO CHANNELADVISOR
         {
-            title: 'Sync to ChannelAdvisor',
+            title: 'SYNC TO CHANNELADVISOR',
             dataIndex: 'sync_to_channeladvisor',
             key: 'sync_to_channeladvisor',
-            width: 180,
+            width: 210,
             search: false,
         },
         {
@@ -460,6 +755,17 @@ export default () => {
             key: 'member1',
             width: 100,
             search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    style={{ width: '100px' }}
+                    value={entity.member1}
+                    api={modifyParam}
+                    otherParams={{ name: 'member1' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         {
             title: 'Member2',
@@ -467,6 +773,17 @@ export default () => {
             key: 'member2',
             width: 100,
             search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    style={{ width: '100px' }}
+                    value={entity.member2}
+                    api={modifyParam}
+                    otherParams={{ name: 'member2' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
         {
             title: 'Member3',
@@ -474,17 +791,67 @@ export default () => {
             key: 'member3',
             width: 100,
             search: false,
+            render(_, entity, __, action) {
+                return <SetValueComponent
+                    id={entity.id}
+                    editKey='value'
+                    style={{ width: '100px' }}
+                    value={entity.member3}
+                    api={modifyParam}
+                    otherParams={{ name: 'member3' }}
+                    refresh={() => action?.reload()}
+                />
+            }
         },
     ];
+    if (isProductDevelopment) {
+        columns.push({
+            title: 'Action',
+            dataIndex: 'option',
+            valueType: 'option',
+            fixed: 'right',
+            align: 'center',
+            width: 100,
+            render: (_, entity, __, action) => {
+                return (
+                    <Space>
+                        {entity.status !== 1 && <Popconfirm
+                            title="Are you sure to reject?"
+                            onConfirm={async () => {
+                                const res = await reject({
+                                    id: entity.id
+                                })
+                                if (res.code === 1) {
+                                    action?.reload()
+                                } else {
+                                    message.error(res.msg)
+                                }
+                            }}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <a>Reject</a>
+                        </Popconfirm>}
+                    </Space>
+                )
+            }
+        })
+    }
     const downloadData = () => {
         const tempData = selectedRows.map(item => {
             return {
+                "Purchase Quantity": item.purchase_quantity,
+                "Company": item.ekko,
+                "Purchase Price(CNY)": item.purchase_price,
+                "Lead Time": item.lead_time,
                 "ITEM NAME/NUMBER": item.sku,
                 "Display Name": item.sku,
-                "Invoice Item Name": item.invoice_item_name,
-                "Serialized": item.serialized,
+                "INVOICE ITEM NAME": item.invoice_item_name,
+                "SERIALIZED (CUSTOMIZED)": item.serialized,
+                "CHINESE CUSTOMS CLEARANCE NAME": item.chinese_customs_clearance_name,
                 "UPC CODE": item.upc_us,
                 "ASIN US": item.asin_us,
+                "ASIN CA": item.asin_ca,
                 "ASIN AU": item.asin_au,
                 "Item PM": item.username,
                 "Purchase Description": item.title,
@@ -507,7 +874,7 @@ export default () => {
                 "Height": item.height,
                 "Width": item.width,
                 "Length": item.length,
-                "Currency": item.currency1,
+                "Currency1": item.currency1,
                 "Price1": item.sales_price_min,
                 "Price level 1": item.sales_price_type1,
                 "Currency2": item.currency2,
@@ -518,7 +885,7 @@ export default () => {
                 "FBA AU Fulfillment Fee": item.fba_au_fulfillment_fee,
                 "AMAZON CA PRICE": item.amazon_ca_price,
                 "AMAZON AU PRICE": item.amazon_au_price,
-                "STORE APPROVED TO SELL": item.storeName,
+                "STORE APPROVED TO SELL": item.nick_name,
                 "CI Brand": item.brand,
                 "TAX SCHEDULE": item.tax_schedule,
                 "INCLUDE CHILDREN": item.include_children,
@@ -537,11 +904,7 @@ export default () => {
             size='small'
             columns={columns}
             actionRef={actionRef}
-            // headerTitle={`The Current Dollar Rate is ${USDRate}`}
             rowSelection={{
-                // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
-                // 注释该行则默认不显示下拉选项
-                selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
                 selectedRowKeys: selectedRows.map(item => item.id),
                 onSelect: (record, selected) => {
                     if (selected) {
@@ -551,10 +914,23 @@ export default () => {
                     }
                 },
                 onSelectAll: (selected, rows, changeRows) => {
+                    // if (selected) {
+                    //     setSelectedRows([...selectedRows, ...changeRows])
+                    // } else {
+                    //     setSelectedRows(selectedRows.filter(item => !changeRows.includes(item)))
+                    // }
+                    // 不要有status为1的数据
                     if (selected) {
-                        setSelectedRows([...selectedRows, ...changeRows])
+                        setSelectedRows([...selectedRows, ...changeRows.filter(item => item.status !== 2)])
                     } else {
                         setSelectedRows(selectedRows.filter(item => !changeRows.includes(item)))
+                    }
+                },
+                renderCell: (_, record, __, originNode) => {
+                    if (record.status === 2) {
+                        return <Tooltip title='Uploaded'><CheckOutlined style={{ color: 'green' }} /></Tooltip>
+                    } else {
+                        return originNode
                     }
                 }
             }}
@@ -570,12 +946,14 @@ export default () => {
             cardBordered
             request={async (params = {}, sort, filter) => {
                 await getKindOfItemAndShipingRisk()
+                await getBrand()
                 const tempParams = { ...params, ...filter, len: params.pageSize, page: params.current }
                 const res = await listProduct(tempParams)
                 const { data, code } = res
                 const tempData = data.data.map((item: SecondaryInspectionProductItem) => {
                     return {
                         ...item,
+                        cn_tax_rebate_rate: 0.13,
                         storeName: configInfo.store.find((store: any) => store.id === item.store_id)?.name
                     }
                 })
@@ -590,28 +968,19 @@ export default () => {
             }}
             scroll={{ y: document.body.clientHeight - 260, x: columns.reduce((total: any, item) => total + (item.width || 0), 0) }}
             rowKey="id"
-            // search={{
-            //     labelWidth: 'auto',
-            // }}
-            search={false}
-            form={{
-                // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-                syncToUrl: (values, type) => {
-                    if (type === 'get') {
-                        return {
-                            ...values,
-                            created_at: [values.startTime, values.endTime],
-                        };
-                    }
-                    return values;
-                },
-            }}
             pagination={{
                 pageSize: 30,
                 showQuickJumper: true,
                 pageSizeOptions: ['30', '50', '100', '200', '300', '500'],
+                showSizeChanger: true
             }}
-            revalidateOnFocus={false}
+            options={{
+                density: false,
+                fullScreen: false,
+                reload: true,
+                setting: false,
+            }}
+            // revalidateOnFocus={false}
             dateFormatter="string"
         />
     );

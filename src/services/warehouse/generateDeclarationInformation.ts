@@ -7,7 +7,7 @@ export type tInfoByNSItems = {
     item_type: string;
     description: string;
     coo: string;
-    hts: string;
+    hts: string;// 前端自定义字段
     weight_in_lbs: string;
     qty: number;
     unit_price_usd: number;
@@ -24,9 +24,13 @@ export type tInfoByNSItems = {
     shipingFeeInItem: number; // 前端自定义字段
     premiumInItem: number; // 前端自定义字段
     declarationSum: number; // 前端自定义字段
+    baseQty: boolean | number; // 前端自定义字段
+    baseUnitPriceUsd: number; // 前端自定义字段
     unit: string; //unit
     cn_hs_code: string;
     brand: string;
+    ca_hs_code: string;
+    us_hs_code: string;
 }
 
 export type paramType = {
@@ -51,6 +55,7 @@ export type paramType = {
 
     }[],
     declarationTotal: number; // 前端自定义字段
+    printAll: boolean; // 前端自定义字段
 }
 
 
@@ -106,6 +111,16 @@ export async function del_hs_code(params: {
     id: number;
 }) {
     return request('/api/warehouse/del_hs_code', {
+        method: 'POST',
+        data: params
+    });
+}
+
+// index/sheet
+export async function sheet(params: {
+    html: any;
+}) {
+    return request('/api/warehouse/synthesize', {
         method: 'POST',
         data: params
     });

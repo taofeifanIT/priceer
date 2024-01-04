@@ -220,3 +220,11 @@ export async function getMskuList(params: { sku: string, store_id: number }) {
         data: params
     });
 }
+
+// removalOrder/notReditWaitStatuseceived
+export async function notReceived(params: { id: number, status: null | 'wait for 90 days' }) {
+    return request('/api/removalOrder/editWaitStatus', {
+        method: 'POST',
+        data: params
+    });
+}

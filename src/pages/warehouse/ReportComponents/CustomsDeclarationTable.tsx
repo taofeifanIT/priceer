@@ -10,7 +10,9 @@ import { message, Button } from "antd";
 import { DownloadOutlined } from '@ant-design/icons';
 import TextEditor from './TextEditor'
 import { exportExcel } from '@/utils/excelHelper'
-import { round, chain, subtract } from 'mathjs'
+import { round } from 'mathjs'
+import { checkDecimal } from '@/utils/utils'
+
 
 const cooMap: any = {
     "TW (TAIWAN PROVINCE OF CHINA)": "台湾",
@@ -84,6 +86,12 @@ export default (props: {
         return ''
     }
 
+    const getFreightCost = () => {
+        return parseFloat(params.shippingFee || "0")
+    }
+    const getPremium = () => {
+        return params.premium
+    }
     const exportExcelFile = () => {
         const excelHeader = [
             {
@@ -133,7 +141,7 @@ export default (props: {
                 chinese_customs_clearance_name: item.chinese_customs_clearance_name,
                 qty: item.unit === '千克' ? item.n_w_weight : item.qty,
                 unit: item.unit,
-                total_amount: chain(Number(item.total_amount)).add(item.shipingFeeInItem).add(item.premiumInItem).done(),
+                total_amount: item.declarationSum,
                 soldFor: getInvoiceTitle(template[params.templateNumber].overseasConsignor.name),
                 currency: item.currency,
                 salesOrder: params.soNumber
@@ -208,7 +216,7 @@ export default (props: {
                 <table border="1" style={{ width }} id='customsDeclaration'>
                     <thead>
                         <tr>
-                            <th colSpan={14} contentEditable>
+                            <th colSpan={14} contentEditable style={{ fontWeight: 600, fontSize: '18px' }}>
                                 中华人民共和国海关出口货物报关单
                             </th>
                         </tr>
@@ -226,24 +234,22 @@ export default (props: {
                             </th>
                         </tr>
                         <tr>
-                            <th colSpan={2} contentEditable>
+                            <th colSpan={2} contentEditable style={{ borderBottom: '1px solid white' }}>
                                 境内发货人
                                 <span style={{ marginLeft: '30px' }}>{template[params.templateNumber].overseasConsignor.phone}</span>
                                 <br />
-                                <span >{template[params.templateNumber].overseasConsignor.fax}</span>
+                                <span style={{ borderBottom: 'none' }}>{template[params.templateNumber].overseasConsignor.fax}</span>
                             </th>
-                            <th colSpan={5} contentEditable>出境关别</th>
-                            <th colSpan={4}>出口日期</th>
-                            <th contentEditable>申报日期</th>
-                            <th colSpan={2} contentEditable>备案号</th>
+                            <th colSpan={5} contentEditable style={{ borderBottom: '1px solid white' }}>出境关别</th>
+                            <th colSpan={4} style={{ borderBottom: '1px solid white' }}>出口日期</th>
+                            <th contentEditable style={{ borderBottom: '1px solid white' }}>申报日期</th>
+                            <th colSpan={2} contentEditable style={{ borderBottom: '1px solid white' }}>备案号</th>
                         </tr>
                         <tr>
                             <th colSpan={2} contentEditable>
                                 {template[params.templateNumber].overseasConsignor.name}
                             </th>
-                            <th colSpan={5} contentEditable>
-                                {/* 2244 */}
-                            </th>
+                            <th colSpan={5} contentEditable />
                             <th colSpan={4} style={{ textAlign: 'center' }} contentEditable>
                                 {/* 2023/8/29 */}
                                 {dayjs().format('YYYY/MM/DD')}
@@ -252,10 +258,10 @@ export default (props: {
                             <th colSpan={2} contentEditable>联系电话：{template[params.templateNumber].customsDeclaration.phone}</th>
                         </tr>
                         <tr>
-                            <th colSpan={2}>境外收货人</th>
-                            <th colSpan={5}>运输方式</th>
-                            <th colSpan={4}>运输工具名称及航次号</th>
-                            <th colSpan={3} >提运单号</th>
+                            <th colSpan={2} style={{ borderBottom: '1px solid white' }}>境外收货人</th>
+                            <th colSpan={5} style={{ borderBottom: '1px solid white' }}>运输方式</th>
+                            <th colSpan={4} style={{ borderBottom: '1px solid white' }}>运输工具名称及航次号</th>
+                            <th colSpan={3} style={{ borderBottom: '1px solid white' }}>提运单号</th>
                         </tr>
                         <tr>
                             <th colSpan={2} contentEditable>
@@ -268,15 +274,15 @@ export default (props: {
                             </th>
                         </tr>
                         <tr>
-                            <th colSpan={2} contentEditable>
+                            <th colSpan={2} contentEditable style={{ borderBottom: '1px solid white' }}>
                                 生产销售单位
                                 <span style={{ marginLeft: '30px' }}>{template[params.templateNumber].overseasConsignor.phone}</span>
                                 <br />
                                 <span >{template[params.templateNumber].overseasConsignor.fax}</span>
                             </th>
-                            <th colSpan={5}>监管方式</th>
-                            <th colSpan={4}>征免性质</th>
-                            <th colSpan={3} contentEditable>许可证号</th>
+                            <th colSpan={5} style={{ borderBottom: '1px solid white' }}>监管方式</th>
+                            <th colSpan={4} style={{ borderBottom: '1px solid white' }}>征免性质</th>
+                            <th colSpan={3} contentEditable style={{ borderBottom: '1px solid white' }}>许可证号</th>
                         </tr>
                         <tr>
                             <th colSpan={2} contentEditable>
@@ -287,11 +293,11 @@ export default (props: {
                             <th colSpan={3} contentEditable />
                         </tr>
                         <tr>
-                            <th colSpan={2} >合同协议号</th>
-                            <th colSpan={5}>贸易国（地区）</th>
-                            <th colSpan={4}>运抵国（地区）</th>
-                            <th colSpan={1}>指运港</th>
-                            <th colSpan={2}>离境口岸</th>
+                            <th colSpan={2} style={{ borderBottom: '1px solid white' }}>合同协议号</th>
+                            <th colSpan={5} style={{ borderBottom: '1px solid white' }}>贸易国（地区）</th>
+                            <th colSpan={4} style={{ borderBottom: '1px solid white' }}>运抵国（地区）</th>
+                            <th colSpan={1} style={{ borderBottom: '1px solid white' }}>指运港</th>
+                            <th colSpan={2} style={{ borderBottom: '1px solid white' }}>离境口岸</th>
                         </tr>
                         <tr>
                             <th colSpan={2}>{params.invoiceNumber}</th>
@@ -307,14 +313,14 @@ export default (props: {
                             <th colSpan={2} contentEditable>上海浦东机场</th>
                         </tr>
                         <tr>
-                            <th colSpan={2}>包装种类</th>
-                            <th colSpan={1}>件数</th>
-                            <th colSpan={4}>毛重（千克）</th>
-                            <th colSpan={3}>净重(千克)</th>
-                            <th colSpan={1}>成交方式</th>
-                            <th colSpan={1}>运费</th>
-                            <th colSpan={1}>保费</th>
-                            <th colSpan={1}>杂费</th>
+                            <th colSpan={2} style={{ borderBottom: '1px solid white' }}>包装种类</th>
+                            <th colSpan={1} style={{ borderBottom: '1px solid white' }}>件数</th>
+                            <th colSpan={4} style={{ borderBottom: '1px solid white' }}>毛重（千克）</th>
+                            <th colSpan={3} style={{ borderBottom: '1px solid white' }}>净重(千克)</th>
+                            <th colSpan={1} style={{ borderBottom: '1px solid white' }}>成交方式</th>
+                            <th colSpan={1} style={{ borderBottom: '1px solid white' }}>运费</th>
+                            <th colSpan={1} style={{ borderBottom: '1px solid white' }}>保费</th>
+                            <th colSpan={1} style={{ borderBottom: '1px solid white' }}>杂费</th>
                         </tr>
                         <tr>
                             <th colSpan={2} contentEditable>纸箱</th>
@@ -327,7 +333,7 @@ export default (props: {
                                 {params.soldFor}
                             </th>
                             {/* <th colSpan={1} >$ {(parseFloat(params.shippingFee) - params.premium).toFixed(2)}</th> */}
-                            <th colSpan={1} >$ {round(subtract(parseFloat(params.shippingFee), params.premium), 2)}</th>
+                            <th colSpan={1} >$ {(getFreightCost() - getPremium()).toFixed(2)}</th>
                             <th colSpan={1}>$ {params.premium.toFixed(2)}</th>
                             <th colSpan={1} >
                                 $ <span style={{ width: '100%' }} contentEditable />
@@ -358,7 +364,8 @@ export default (props: {
                             params.data.map((item: tInfoByNSItems, index) => {
                                 return <tr key={`customsDeclaration-${index}`} className='whole-node'>
                                     <td>{index + 1}</td>
-                                    <td>
+                                    <td
+                                    >
                                         <TextEditor
                                             value={item.cn_hs_code}
                                             onChange={(e) => {
@@ -384,7 +391,7 @@ export default (props: {
                                                     data
                                                 })
                                             }}
-                                        />
+                                        />&nbsp;
                                     </td>
                                     <td>
                                         <TextEditor
@@ -403,7 +410,8 @@ export default (props: {
                                         {getValueByUnit(item)}
                                     </td>
                                     <td>
-                                        <select
+                                        {item.unit}
+                                        {/* <select
                                             style={{
                                                 border: 'none',
                                             }}
@@ -423,20 +431,16 @@ export default (props: {
                                             <option value="双">双</option>
                                             <option value="台">台</option>
                                             <option value="只">只</option>
-                                        </select>
+                                        </select> */}
                                     </td>
                                     <td contentEditable>
                                         {item.blankSpaceBehindUnit}
                                     </td>
                                     <td>{item.n_w_weight}</td>
                                     <td style={{ textAlign: 'center' }}>
-                                        {/* {item.unit_price_usd} */}
-                                        {(item.declarationSum / item.qty).toFixed(2)}
+                                        {item.qty && (item.declarationSum / item.qty).toFixed(2)}
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
-                                        {/* {item.total_amount} */}
-                                        {/* {getCustomsDeclarationTotalAmount(item)} */}
-
                                         {item.declarationSum}
                                     </td>
                                     <td>
@@ -477,7 +481,7 @@ export default (props: {
                             <td contentEditable />
                             <td contentEditable />
                             <td contentEditable style={{ textAlign: 'center' }}>总计</td>
-                            <td contentEditable style={{ textAlign: 'center' }}>{getFixedNum(round(params.declarationTotal, 2))}</td>
+                            <td contentEditable style={{ textAlign: 'center' }}>{checkDecimal(round(params.declarationTotal, 2))}</td>
                             <td contentEditable />
                             <td contentEditable />
                             <td contentEditable />
@@ -493,7 +497,8 @@ export default (props: {
                     <tfoot className='whole-node'>
                         <tr>
                             <th colSpan={1} contentEditable>
-                                报关人员<br />
+                                报关人员
+                                <br />
                                 申报单位
                             </th>
                             <th colSpan={2} contentEditable>报关人员证号</th>

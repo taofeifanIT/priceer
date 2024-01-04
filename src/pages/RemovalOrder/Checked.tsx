@@ -396,7 +396,8 @@ export default () => {
     const downloadAllSKu = () => {
         return <>Action <a onClick={() => {
             const fonts = data.map((item) => {
-                return item.msku
+                // return item.msku
+                return item.sku ? item.sku : item.msku
             });
             exportPDFWithFont(fonts, { width: 66.675, height: 25.4 });
         }}><VerticalAlignBottomOutlined /></a></>
@@ -530,7 +531,7 @@ export default () => {
             render: (_, record) => {
                 return (<>
                     {record.msku && <a onClick={() => {
-                        exportPDFWithFont([record.msku], { width: 66.675, height: 25.4 });
+                        exportPDFWithFont([record.sku ? record.sku : record.msku], { width: 66.675, height: 25.4 });
                     }}>Print Barcode</a>}
                     {
                         record.id === 0 && <Popconfirm

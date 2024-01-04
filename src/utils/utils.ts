@@ -723,3 +723,18 @@ export const printAllReport = async (el: string, title: string) => {
         // }
     })
 }
+
+
+// 判断数字小数点后是否有两位，没有则补0
+export const checkDecimal = (num: number) => {
+    const str = num.toString()
+    const index = str.indexOf('.')
+    if (index !== -1) {
+        const decimal = str.substring(index + 1, str.length)
+        if (decimal.length < 2) {
+            return `${num}0`
+        }
+        return num
+    }
+    return `${num}.00`
+}

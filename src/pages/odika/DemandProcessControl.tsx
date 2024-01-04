@@ -1,6 +1,5 @@
-import { Button, Card, Table, Input, message, Typography, Segmented, DatePicker, InputNumber } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import React, { useState, useEffect } from 'react';
+import { Button, message, Typography, Segmented, DatePicker } from 'antd';
+import React, { useState, useRef } from 'react';
 import { getListForPlan, editPlan, editExpectTime, editSortV3 } from '@/services/odika/requirementList';
 import type { RequirementListItem } from '@/services/odika/requirementList';
 import { EditTwoTone } from '@ant-design/icons';
@@ -14,6 +13,8 @@ import weekYear from 'dayjs/plugin/weekYear'
 import getInfoComponent from './components/getInfoComponent'
 import { useModel } from 'umi';
 import { FormattedMessage, getLocale } from 'umi';
+import { ProTable } from '@ant-design/pro-components';
+import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import SetValueComponent from '@/components/SetValueComponent'
 
 
@@ -24,7 +25,6 @@ dayjs.extend(localeData)
 dayjs.extend(weekOfYear)
 dayjs.extend(weekYear)
 const { Text } = Typography;
-const { Search } = Input;
 
 const localFrontFromRequirementList = (key: string) => {
     return <FormattedMessage id={`pages.odika.RequirementList.${key}`} />
@@ -33,6 +33,7 @@ const localFrontFromRequirementList = (key: string) => {
 const localFront = (key: string) => {
     return <FormattedMessage id={`pages.odika.requirementSortList.${key}`} />
 }
+
 
 const TimeEditComponent = (props: { record: RequirementListItem, refresh: () => void }) => {
     const { record, refresh } = props
@@ -115,78 +116,17 @@ const getSegmentOptions = (record: RequirementListItem) => [
 ]
 
 const App: React.FC = () => {
-    const [dataSource, setDataSource] = useState<any>([]);
-    const [keyword, setKeyword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [tableParams, setTableParams] = useState({
-        pagination: {
-            current: 1,
-            pageSize: 30,
-            total: 0,
-        },
-    });
     const { initialState } = useModel('@@initialState');
     const { currentUser } = initialState || {};
+    const isDesignerManager = currentUser?.authGroup.title === 'design manager'
     const isDesigner = currentUser?.authGroup.title === 'Designer'
+    // const isRequirementsManager = currentUser?.authGroup.title === 'Requirements manager'
     const StatusWidth = getLocale() === 'zh-CN' ? 240 : 420
-    const onSearch = (value: string) => {
-        setKeyword(value)
-    };
-    const initData = () => {
-        setLoading(true);
-        getListForPlan({
-            keyword: keyword || undefined, ...{
-                len: tableParams.pagination?.pageSize,
-                page: tableParams.pagination?.current,
-                // priority: isDesigner ? 1 : undefined
-            }
-        }).then(res => {
-            if (res.code) {
-                const sourceData = res.data.data
-                // 数据拆分priority大于0的升序，等于0的跟在后面
-                // const tempData1 = sourceData.filter((item: any) => item.close_sort > 0).sort((a: any, b: any) => a.close_sort - b.close_sort)
-                // const tempData2 = sourceData.filter((item: any) => item.close_sort === 0)
-                // const newData = tempData1.concat(tempData2)
-                setDataSource(sourceData)
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: res.data.total,
-                        // 200 is mock data, you should read it from server
-                        // total: data.totalCount,
-                    },
-                });
-            } else {
-                throw res.msg
-            }
-        }).finally(() => {
-            setLoading(false);
-        }).catch(err => {
-            message.error(err)
-        })
-    }
-
-    const handleTableChange = (
-        pagination: any,
-        filters: Record<string, any>,
-        sorter: any,
-    ) => {
-        setTableParams({
-            pagination,
-            filters,
-            ...sorter,
-        });
-
-        // `dataSource` is useless since `pageSize` changed
-        if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-            setDataSource([]);
-        }
-    };
+    const actionTableRef = useRef<ActionType>();
     const editPlanStutas = (id: number, status: number) => {
         editPlan({ id, status }).then(res => {
             if (res.code) {
-                initData()
+                actionTableRef.current?.reload()
             } else {
                 throw res.msg
             }
@@ -194,20 +134,40 @@ const App: React.FC = () => {
             message.error(err)
         })
     }
-    const columns: ColumnsType<RequirementListItem> = [
+    const columns: ProColumns<RequirementListItem>[] = [
+        // {
+        //     title: <FormattedMessage id={`pages.odika.RequirementList.keyword`} />,
+        //     dataIndex: 'keyword',
+        //     key: 'keyword',
+        //     hideInTable: true,
+        // },
+        {
+            title: 'SKU',
+            dataIndex: 'sku',
+            key: 'sku',
+            hideInTable: true,
+        },
+        {
+            title: <FormattedMessage id='page.layouts.userLayout.username.placeholder' />,
+            dataIndex: 'username',
+            key: 'username',
+            hideInTable: true,
+        },
         {
             title: localFrontFromRequirementList('info'),
             dataIndex: 'info',
             key: 'info',
             width: 385,
-            render: (text: any, record: any) => getInfoComponent(record)
+            search: false,
+            render: (_, record) => getInfoComponent(record)
         },
         {
             title: localFrontFromRequirementList('CreateInfo'),
             dataIndex: 'creator',
             key: 'creator',
             width: 195,
-            render: (text: any, record: any) => {
+            search: false,
+            render: (_, record) => {
                 return <div style={{ 'width': 195 }}>
                     <div><Text type="secondary">{localFrontFromRequirementList('creator')}：</Text>{record.creator}</div>
                     <div><Text type="secondary">{localFrontFromRequirementList('creationTime')}：</Text>{record.createTime}</div>
@@ -218,9 +178,10 @@ const App: React.FC = () => {
             title: localFront('priority'),
             dataIndex: 'close_sort',
             key: 'close_sort',
-            width: 90,
+            width: 100,
             align: 'center',
-            render: (_, record) => {
+            search: false,
+            render: (_, record, __, action) => {
                 return record.close_sort === 0 ? null :
                     <SetValueComponent
                         type='number'
@@ -229,7 +190,7 @@ const App: React.FC = () => {
                         id={record.id}
                         api={editSortV3}
                         otherParams={{ is_lock: 1 }}
-                        refresh={initData}
+                        refresh={() => action?.reload()}
                         disabled={isDesigner}
                         numberStep={1}
                     />
@@ -240,20 +201,30 @@ const App: React.FC = () => {
             title: localFront('status'),
             dataIndex: 'status',
             key: 'status',
-            width: StatusWidth,
+            width: isDesignerManager ? StatusWidth : 180,
+            valueType: 'select',
+            valueEnum: {
+                'option-5': { text: localFrontFromRequirementList('PendingScheduling') },
+                'option-6': { text: localFrontFromRequirementList('InProduction') },
+                'option-7': { text: localFrontFromRequirementList('Completed') },
+                'option-10': { text: localFrontFromRequirementList('Canto') },
+                'option-11': { text: localFrontFromRequirementList('lastInstance') },
+            },
             render: (_, record) => {
                 // 如果是设计师，只能看查看状态不能修改
-                if (isDesigner) {
-                    return getSegmentOptions(record).find(item => item.value === record.status)?.label || null
+                if (isDesignerManager) {
+                    return <Segmented
+                        disabled={record.status === 10}
+                        size='large'
+                        value={record.status}
+                        onChange={(value: any) => {
+                            editPlanStutas(record.id, value)
+                        }}
+                        options={getSegmentOptions(record)}
+                    />
+
                 }
-                return <Segmented
-                    size='large'
-                    value={record.status}
-                    onChange={(value: any) => {
-                        editPlanStutas(record.id, value)
-                    }}
-                    options={getSegmentOptions(record)}
-                />
+                return getSegmentOptions(record).find(item => item.value === record.status)?.label || null
             }
         },
         {
@@ -261,20 +232,50 @@ const App: React.FC = () => {
             title: localFrontFromRequirementList('EstimatedCompletionTime'),
             dataIndex: 'expectTime',
             key: 'expectTime',
-            width: 200,
-            render: (_, record) => {
-                if (isDesigner) return record.expectTime
-                return <TimeEditComponent record={record} refresh={initData} />
+            width: 220,
+            search: false,
+            render: (_, record, __, action) => {
+                if (isDesignerManager) return <TimeEditComponent record={record} refresh={() => action?.reload()} />
+                return record.expectTime
             }
+        },
+        {
+            // reason_canto
+            title: localFront('reason_canto'),
+            dataIndex: 'reason_canto',
+            key: 'reason_canto',
+            width: 130,
+            search: false,
+            render: (_, record) => {
+                if (record.status === 10) {
+                    return <span style={{ color: 'green' }}>
+                        {/* Have been accepted */}
+                        <FormattedMessage id='pages.odika.requirementSortList.acceptanceResultforaccepted' />
+                    </span>
+                }
+                if (record.reason_canto) {
+                    return <span style={{ color: 'red' }}>
+                        {record.reason_canto}
+                    </span>
+                }
+                return ''
+            }
+
         },
         {
             title: <FormattedMessage id='pages.odika.RequirementList.operation' />,
             dataIndex: 'action',
             key: 'action',
-            width: 80,
+            width: 100,
             align: 'center',
             fixed: 'right',
+            search: false,
             render: (_, record) => {
+                // if (isRequirementsManager && record.status === 7) {
+                //     return <Button type="link" onClick={() => {
+                //         window.open(`/odika/ViewDesign?id=${record.id}&check=true&type=3`)
+                //     }}><FormattedMessage id='pages.odika.requirementSortList.check' /></Button>
+                // }
                 return <>
                     <Button type="link" onClick={() => {
                         window.open(`/odika/ViewDesign?id=${record.id}`)
@@ -283,25 +284,36 @@ const App: React.FC = () => {
             }
         }
     ]
-    useEffect(() => {
-        initData()
-    }, [keyword, JSON.stringify(tableParams)])
     return (
-        <Card
+        <ProTable<RequirementListItem>
+            rowKey="id"
+            actionRef={actionTableRef}
+            columns={columns}
+            request={async (params = {}) => {
+                const tempParams = {
+                    ...params,
+                    status: params.status ? params.status.split('-')[1] : undefined,
+                    len: params.pageSize,
+                    page: params.current
+                };
+                const res = await getListForPlan(tempParams)
+                const { data } = res;
+                return {
+                    data: data.data,
+                    success: res.code === 1,
+                    total: data.total,
+                };
+            }}
             size='small'
-            title={<Search placeholder="input search text" onSearch={onSearch} style={{ width: 200, marginLeft: '10px' }} />}
-            extra={<Button type="primary" onClick={initData}><FormattedMessage id='pages.layouts.Refresh' /></Button>}
-        >
-            <Table
-                loading={loading}
-                rowKey="id"
-                scroll={{ x: columns.reduce((a, b) => a + Number(b.width), 0) }}
-                columns={columns}
-                pagination={tableParams.pagination}
-                dataSource={dataSource}
-                onChange={handleTableChange}
-            />
-        </Card>
+            options={{
+                density: false,
+                fullScreen: false,
+                setting: false,
+            }}
+            pagination={{
+                pageSize: 10,
+            }}
+        />
     );
 };
 

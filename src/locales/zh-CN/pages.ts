@@ -1,12 +1,25 @@
 export default {
+  'page.layouts.userLayout.username.placeholder': '用户名',
   // ----------odika requirementSortList
   'pages.odika.requirementSortList.priority': '优先级',
   'pages.odika.requirementSortList.status': '状态',
   'pages.odika.requirementSortList.locked': '已锁定',
   'pages.odika.requirementSortList.lock': '锁定',
   'pages.odika.requirementSortList.check': '审核',
+  'pages.odika.requirementSortList.reason_canto': '验收结果',
+  'pages.odika.requirementSortList.acceptanceResultforaccepted': '验收通过',
   // ----------odika RequirementList
   // 替换Listing页面模版
+  'pages.odika.RequirementList.sceneMemoLine1': '(Web 2928:1200 & Mobile 1200:900)',
+  'pages.odika.RequirementList.sceneMemoLine2': '横幅高度预留:130px(仅限pc)',
+  'pages.odika.RequirementList.isRead': '是否已读',
+  'pages.odika.RequirementList.read': '已读',
+  'pages.odika.RequirementList.unRead': '未读',
+  'pages.odika.RequirementList.Canto': '图片完成',
+  'pages.odika.RequirementList.designInstance': '设计部门审核不通过',
+  'pages.odika.RequirementList.lastInstance': 'MKT图片审核不通过',
+  'pages.odika.RequirementList.firstInstance': 'MKT需求审核不通过',
+  'pages.odika.RequirementList.keyword': '关键词',
   'pages.odika.RequirementList.replaceContentTemplate': '替换Listing内容模版',
   'pages.odika.RequirementList.replacePageTemplate': '替换Listing页面模版',
   'pages.odika.RequirementList.viewPageTemplate': 'Listing页面模板',
@@ -25,9 +38,11 @@ export default {
   'pages.odika.RequirementList.All': '全部',
   'pages.odika.RequirementList.InEditing': '编辑中',
   'pages.odika.RequirementList.PendingSorting': '待排序',
-  'pages.odika.RequirementList.PendingReview': '待审核',
+  'pages.odika.RequirementList.PendingReview': '设计部门审核',
+  'pages.odika.RequirementList.qualityAudit': '图片质量审核',
   'pages.odika.RequirementList.Review': '审核',
   'pages.odika.RequirementList.PendingScheduling': '待排期',
+  'pages.odika.RequirementList.RequirementsAudit': '需求审核',
   'pages.odika.RequirementList.FailTheAudit': '审核不通过',
   'pages.odika.RequirementList.InProduction': '制作中',
   'pages.odika.RequirementList.Completed': '已完成',
@@ -58,8 +73,12 @@ export default {
   'pages.odika.RequirementList.pass': '通过',
   'pages.odika.RequirementList.fail': '不通过',
   'pages.odika.RequirementList.remark': '备注',
+  'pages.odika.RequirementList.failTheAudit': '审核不通过',
+  'pages.odika.RequirementList.pictureQualityAudit': '等待图片质量审核',
   // -----------odika viewDesign--------------
   // 场景轮播图
+  // Dismiss history
+  'pages.odika.ViewDesign.Dismiss': '驳回历史',
   'pages.odika.ViewDesign.sceneRotograph': '场景轮播图',
   'pages.odika.ViewDesign.addNewSellingPoint': '添加新卖点图',
   'pages.odika.ViewDesign.pictureRequirement': '画面要求',

@@ -122,7 +122,6 @@ const AddProduct = (props: { reload: () => void }) => {
                                     >
                                         <Input style={{ width: 400 }} />
                                     </Form.Item>
-
                                     <MinusCircleOutlined onClick={() => remove(field.name)} />
                                 </Space>
                             ))}
@@ -271,7 +270,7 @@ export default () => {
             ellipsis: true,
             renderFormItem: (
                 _,
-                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                { type, defaultRender },
                 form,
             ) => {
                 if (type === 'form') {
@@ -399,7 +398,16 @@ export default () => {
             key: 'comments',
             search: false,
             width: 150,
-            render: (_, record) => [<InputMemoComponent key='memo' id={record.id} editKey='memo' value={record.comments} api={editMemoForNew} refresh={() => actionRef.current?.reload()} />],
+            render: (_, record) => [
+                <InputMemoComponent
+                    key='memo'
+                    id={record.id}
+                    editKey='memo'
+                    value={record.comments}
+                    api={editMemoForNew}
+                    refresh={() => actionRef.current?.reload()}
+                />
+            ],
         },
         // first_memo
         {
@@ -426,7 +434,11 @@ export default () => {
             align: 'center',
             width: 100,
             search: false,
-            render: (_, record) => [<span key='created_at'>{dayjs(record.created_at).format('YYYY-MM-DD')}</span>],
+            render: (_, record) => [
+                <span key='created_at'>
+                    {dayjs(record.created_at).format('YYYY-MM-DD')}
+                </span>
+            ],
         },
         // 
         {

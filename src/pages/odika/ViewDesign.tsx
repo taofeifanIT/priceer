@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getQueryVariable } from '@/utils/utils'
-import { getDesignDetail, checkDesign, checkImage } from '@/services/odika/requirementList';
+import { getDesignDetail, checkDesign } from '@/services/odika/requirementList';
 import type { saveDesignParams } from '@/services/odika/requirementList';
 import { FormattedMessage } from 'umi';
 import { message, Space, Typography, Image, Empty, Tag, Button, Affix, Drawer, Form, Input, Radio } from 'antd';
@@ -16,11 +16,12 @@ const tagStyle: React.CSSProperties = {
     marginBottom: '5px',
 }
 
-const CheckForm = (props: { check?: string }) => {
-    const { check } = props;
+const CheckForm = (props: { check?: string, record?: saveDesignParams }) => {
+    const { check, record } = props;
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const fromStatus = Form.useWatch('status', form);
     const showDrawer = () => {
         setOpen(true);
     };
@@ -29,19 +30,41 @@ const CheckForm = (props: { check?: string }) => {
         setOpen(false);
     };
 
+    const getReasonValue = () => {
+        if (!record) {
+            return ''
+        }
+        switch (getQueryVariable('type')) {
+            case '1':
+                return record.reason_require
+                break;
+            case '2':
+                return record.reason
+                break;
+            case '4':
+                return record.reason_require
+                break;
+            case '3':
+                return record.reason_canto
+                break;
+            default:
+                return ''
+                break;
+        }
+    }
+
+
     const finish = () => {
         form.validateFields().then(values => {
             setLoading(true)
-            const state = getQueryVariable('state')
+            const type = getQueryVariable('type')
             const params = {
                 id: parseInt(getQueryVariable('id')),
-                status: state ? undefined : values.status,
-                reason: values.reason,
-                state: state ? parseInt(state) : undefined,
-                type: parseInt(state)
+                status: values.status,
+                reason: values.reason || undefined,
+                type: type
             }
-            const api: any = state ? checkImage : checkDesign
-            api(params).then((res: any) => {
+            checkDesign(params).then((res: any) => {
                 if (res.code) {
                     message.success('Audit completed！')
                 } else {
@@ -73,7 +96,12 @@ const CheckForm = (props: { check?: string }) => {
                     </Space>
                 }
             >
-                <Form layout="vertical" form={form}>
+                <Form
+                    layout="vertical"
+                    form={form}
+                    initialValues={{
+                        // reason: getReasonValue()
+                    }}>
                     <Form.Item
                         name="status"
                         label={<FormattedMessage id='pages.odika.RequirementList.result' />}
@@ -88,16 +116,20 @@ const CheckForm = (props: { check?: string }) => {
                             </Radio>
                         </Radio.Group>
                     </Form.Item>
-                    <Form.Item
-                        name="reason"
-                        label={<FormattedMessage id='pages.odika.RequirementList.remark' />}
-                        rules={[{ required: false, message: 'Please enter reason' }]}
-                    >
-                        <Input.TextArea
-                            style={{ width: '100%' }}
-                            placeholder="Please enter reason"
-                        />
-                    </Form.Item>
+                    {
+                        fromStatus === '0' && <Form.Item
+                            name="reason"
+                            label={<FormattedMessage id='pages.odika.RequirementList.remark' />}
+                        // rules={[{ required: fromStatus === '0', message: 'Please enter reason' }]}
+                        >
+                            <Input.TextArea
+                                style={{ width: '100%' }}
+                                placeholder="Please enter reason"
+                            />
+                        </Form.Item>
+                    }
+                    <span><FormattedMessage id='pages.odika.ViewDesign.Dismiss' /></span>
+                    <Input.TextArea value={getReasonValue()} disabled rows={5} />
                 </Form>
             </Drawer>
         </>
@@ -338,7 +370,11 @@ export default () => {
                     : null}
             {checkAPlus(designDetail?.aPlus) ? (<>
                 <Title level={5} style={{ 'marginTop': '20px' }}>{designDetail?.aPlus.type}&nbsp;&nbsp;<FormattedMessage id='pages.odika.RequirementList.template' /></Title>
-                <Title level={5} style={{ 'marginTop': '20px' }}><FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' /> (2928:1200px)</Title>
+                <Title level={5} style={{ 'marginTop': '20px' }}>
+                    <FormattedMessage id='pages.odika.ViewDesign.sceneRotograph' />
+                    <FormattedMessage id='pages.odika.RequirementList.sceneMemoLine1' />&nbsp;&nbsp;
+                    <FormattedMessage id='pages.odika.RequirementList.sceneMemoLine2' />
+                </Title>
                 <div style={{ 'marginBottom': '20px', 'verticalAlign': 'textTop' }}>
                     {designDetail?.aPlus.aplusScene?.map((item, index) => {
                         return <div style={{ 'display': 'inline-block', verticalAlign: 'top', marginRight: index !== designDetail?.aPlus.aplusScene?.length ? 10 : 0 }} key={index}>
@@ -403,6 +439,6 @@ export default () => {
                 </div></>) : null}
         </div>
         {/* 放一个按钮固定在右下角 */}
-        <CheckForm check={check} />
+        <CheckForm check={check} record={designDetail} />
     </>)
 }

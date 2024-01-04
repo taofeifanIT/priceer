@@ -9,7 +9,7 @@ export type ResaleListItem = {
     category: string;
     cn_hs_code: string;
     us_hs_code: string;
-    us_tax_rate: number;
+    us_tax_rate: string;
     ca_tax_rate: number;
     jp_tax_rate: number;
     uk_tax_rate: number;
@@ -23,9 +23,9 @@ export type ResaleListItem = {
     store_risk: string;
     shipping_risk: string;
     last_purchase_price: number;
-    sales_price: number;
-    platform_fee: number;
-    ship_fee: number;
+    sales_price: string;
+    platform_fee: string;
+    ship_fee: string;
     height: number;
     length: number;
     width: number;
@@ -39,12 +39,13 @@ export type ResaleListItem = {
     exchange_rate: number;
     memo: string;
     unitCost: number; // 前端新增字段
-    person_sales_price: number;
+    person_sales_price: string;
     sales_target: number;
     status: number;
-    tax_rate: number;
+    tax_rate: string;
     us_sales_target_modify_time: string;
     is_timeout: number;
+    reason: string;
 }
 
 export async function getResaleList(params?: any) {
