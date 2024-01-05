@@ -52,6 +52,14 @@ export function getMenu(params: any[]): any {
                 headerRender: false,
             }
         }
+        if (item.external_open) {
+            routeObj = {
+                ...routeObj,
+                target: '_blank',
+                menuRender: false,
+                headerRender: false,
+            }
+        }
         if (!routeObj.routes.length) {
             delete routeObj.routes;
         } else {

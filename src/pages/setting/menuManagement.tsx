@@ -25,7 +25,7 @@ function getIcons(
   params: number,
 ): {
   iconName: string;
-  iconComponent: Object;
+  iconComponent: object;
 }[] {
   const iconData = Object.keys(Icons).map((key) => {
     const AntIcon = Icons[key];
@@ -61,6 +61,7 @@ function IconSelect(props: {
           const tempIcon = Item.iconComponent;
           return (
             <div
+              // eslint-disable-next-line react/no-array-index-key
               key={'card' + key}
               className={styles.cardIcon}
               onClick={() => getCurrtIcon(Item.iconName)}
@@ -195,7 +196,7 @@ function FromComponet(props: any) {
       >
         <Form.Item
           name="name"
-          label="menu name"
+          label="Menu Name"
           rules={[
             {
               required: true,
@@ -206,7 +207,7 @@ function FromComponet(props: any) {
         </Form.Item>
         <Form.Item
           name="pid"
-          label="forder"
+          label="Forder"
           rules={[
             {
               required: true,
@@ -217,7 +218,7 @@ function FromComponet(props: any) {
         </Form.Item>
         <Form.Item
           name="title"
-          label="component"
+          label="Component"
           rules={[
             {
               required: true,
@@ -228,7 +229,7 @@ function FromComponet(props: any) {
         </Form.Item>
         <Form.Item
           name="component"
-          label="path"
+          label="Path"
           rules={[
             {
               required: true,
@@ -239,7 +240,7 @@ function FromComponet(props: any) {
         </Form.Item>
         <Form.Item
           name="is_show"
-          label="is show"
+          label="Is Show"
           rules={[
             {
               required: true,
@@ -261,7 +262,19 @@ function FromComponet(props: any) {
           <InputNumber min={0} max={100} />
         </Form.Item>
         <Form.Item
-          label="icon"
+          name="external_open"
+          label="External Open"
+          rules={[
+            {
+              required: true,
+            },
+          ]}
+          valuePropName={'checked'}
+        >
+          <Switch checkedChildren="open" unCheckedChildren="close" />
+        </Form.Item>
+        <Form.Item
+          label="Icon"
           rules={[
             {
               required: true,
@@ -386,7 +399,7 @@ const AddModal = React.memo((props: {
 //   );
 // }
 
-function TreeData(props: any) {
+function TreeData() {
   const columns = [
     {
       title: 'name',
@@ -553,6 +566,7 @@ function TreeData(props: any) {
             .validateFields()
             .then((value: any) => {
               value.is_show = value.is_show ? 1 : 0;
+              value.external_open = value.external_open ? 1 : 0;
               value.pid = value.pid.pop();
               let api: any = addRule;
 
@@ -563,7 +577,7 @@ function TreeData(props: any) {
 
               operation(api, value);
             })
-            .catch((errorInfo: Object) => {
+            .catch((errorInfo: object) => {
               setConfirmLoading(false);
               console.log(errorInfo);
             }); // setVisible(false)

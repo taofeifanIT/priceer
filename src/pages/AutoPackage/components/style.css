@@ -1,0 +1,28 @@
+.clickDiv {
+  padding: 0.5rem;
+  border: 1rem dashed #000;
+  border-radius: 10%;
+  animation: border-flow 2.5s linear infinite;
+}
+
+@keyframes border-flow {
+  /* 让边框像呼吸灯一下若隐若现 */
+  0% {
+    border-color: #000;
+  }
+  50% {
+    border-color: #fff;
+  }
+  100% {
+    border-color: #000;
+  }
+}
+
+@font-face {
+  font-family: 'odikafont';
+  src: url('/package/fonts/Roboto-Regular.ttf');
+}
+
+* {
+  font-family: 'odikafont';
+}

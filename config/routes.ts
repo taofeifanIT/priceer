@@ -239,6 +239,12 @@ export default [
         path: '/odika/InventoryWarning',
         name: 'InventoryWarning',
         component: './odika/InventoryWarning',
+      },
+      // AutoPackage
+      {
+        path: '/odika/AutoPackage',
+        name: 'AutoPackage',
+        component: './AutoPackage',
       }
     ]
   },

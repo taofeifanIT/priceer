@@ -3,7 +3,6 @@ import { ProTable } from '@ant-design/pro-components';
 import { useRef } from 'react';
 import { sku } from '@/services/odika/inventoryWarning';
 import { Tooltip } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
 
 export default () => {
     const actionRef = useRef<ActionType>();
