@@ -26,7 +26,7 @@ import { getToken } from '@/utils/token';
 import { exportExcel, exportExcelFile } from '@/utils/excelHelper';
 import { statusConfig } from './config';
 import { getCategoryAndRisk } from '@/services/businessUnitData/secondaryInspectionProduct'
-import { modifyConsistent } from '@/services/businessUnitData/checkProduct'
+import { modifyConsistent, modifyParamForNew } from '@/services/businessUnitData/checkProduct'
 
 
 const DownloadTemplate = () => {
@@ -714,7 +714,7 @@ export default () => {
             hideInTable: true,
             renderFormItem: (
                 _,
-                { type, defaultRender, formItemProps, fieldProps },
+                { type, defaultRender },
                 form,
             ) => {
                 if (type === 'form') {
@@ -790,6 +790,18 @@ export default () => {
                     );
                 }
                 return defaultRender(_);
+            },
+            render: (_, record) => {
+                return <SetValueComponent
+                    style={{ width: '120px' }}
+                    id={record.id}
+                    type='select'
+                    options={brands}
+                    editKey='value'
+                    otherParams={{ name: 'brand' }}
+                    value={record.brand}
+                    api={modifyParamForNew}
+                    refresh={() => { actionRef.current?.reload() }} />
             }
         },
         // BSR

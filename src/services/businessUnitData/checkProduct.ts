@@ -47,3 +47,16 @@ export async function modifyConsistent(params?: {
         data: params
     });
 }
+
+// modifyParamForNew
+// businessUnitData/modifyParamForNew
+export async function modifyParamForNew(params: {
+    id: number,
+    name: string,
+    value: string
+}) {
+    return request('/api/businessUnitData/modifyParamForNew', {
+        method: 'POST',
+        data: params
+    });
+}

@@ -1,7 +1,7 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useRef, useState, useEffect } from 'react';
-import { getCheckList, updateStatus, modifyConsistent } from '@/services/businessUnitData/checkProduct'
+import { getCheckList, updateStatus, modifyConsistent, modifyParamForNew } from '@/services/businessUnitData/checkProduct'
 import type { NewProductsItem } from '@/services/businessUnitData/newProducts'
 import { message, Space, Popconfirm, Button, Select, InputNumber } from 'antd';
 import { getBrandForNew, editStore, editInvoiceItemName, modifyCompany } from '@/services/businessUnitData/newProducts'
@@ -163,7 +163,7 @@ export default () => {
             hideInTable: true,
             renderFormItem: (
                 _,
-                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                { type, defaultRender },
                 form,
             ) => {
                 if (type === 'form') {
@@ -220,7 +220,7 @@ export default () => {
             ellipsis: true,
             renderFormItem: (
                 _,
-                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                { type, defaultRender },
                 form,
             ) => {
                 if (type === 'form') {
@@ -243,6 +243,21 @@ export default () => {
                     );
                 }
                 return defaultRender(_);
+            },
+            render: (_, record) => {
+                if (!isOperationManager && !isPm) {
+                    return <span>{record.brand}</span>
+                }
+                return <SetValueComponent
+                    style={{ width: '120px' }}
+                    id={record.id}
+                    type='select'
+                    options={brands}
+                    editKey='value'
+                    otherParams={{ name: 'brand' }}
+                    value={record.brand}
+                    api={modifyParamForNew}
+                    refresh={() => { actionRef.current?.reload() }} />
             }
         },
         {

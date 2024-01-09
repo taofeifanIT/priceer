@@ -27,6 +27,13 @@ export default defineConfig({
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,
   },
+  //tabs多页签
+  // keepalive: [/./],
+  // tabsLayout: {
+  //   hasDropdown: true, //有右侧下拉菜单
+  //   hasFixedHeader: true, //吸顶效果
+  // },
+
   dynamicImport: {
     loading: '@ant-design/pro-layout/es/PageLoading',
   },
