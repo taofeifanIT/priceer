@@ -1,11 +1,14 @@
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { sku } from '@/services/odika/inventoryWarning';
-import { Tooltip } from 'antd';
+import { Tooltip, Button } from 'antd';
+import ReactHTMLTableToExcel from 'react-html-table-to-excel'
 
 export default () => {
     const actionRef = useRef<ActionType>();
+    const [exportData, setExportData] = useState([])
+    const [exportLoaing, setExportLoading] = useState(false)
     const columns: ProColumns<any>[] = [
         // "fba_qty": 202,
         // 		"pj_la_qty": 172,
@@ -15,6 +18,8 @@ export default () => {
             title: 'SKU',
             dataIndex: 'sku',
             ellipsis: true,
+            copyable: true,
+            width: 180,
             align: 'center'
         },
         {
@@ -54,13 +59,13 @@ export default () => {
             title: 'QTY',
             children: [
                 {
-                    title: 'FBA',
+                    title: 'FBA(NS)',
                     dataIndex: 'fba_qty',
                     ellipsis: true,
                     align: 'center'
                 },
                 {
-                    title: 'Warehouse Total',
+                    title: 'WH TOTAL',
                     dataIndex: 'wareHouseTotal',
                     ellipsis: true,
                     align: 'center'
@@ -72,7 +77,7 @@ export default () => {
                     align: 'center'
                 },
                 {
-                    title: 'PJ LA(Warehouse)',
+                    title: 'PJ LA(WH)',
                     dataIndex: 'warehouse_pj_la_qty',
                     ellipsis: true,
                     align: 'center'
@@ -84,7 +89,7 @@ export default () => {
                     align: 'center'
                 },
                 {
-                    title: 'WYD LA(Warehouse)',
+                    title: 'WYD LA(WH)',
                     dataIndex: 'warehouse_wyd_la_qty',
                     ellipsis: true,
                     align: 'center'
@@ -96,7 +101,7 @@ export default () => {
                     align: 'center'
                 },
                 {
-                    title: 'WYD ATL(Warehouse)',
+                    title: 'WYD ATL(WH)',
                     dataIndex: 'warehouse_wyd_atl_qty',
                     ellipsis: true,
                     align: 'center'
@@ -104,7 +109,41 @@ export default () => {
             ]
         },
     ];
+
+    const getAlldata = () => {
+        const page = 1
+        const len = 1000
+        const tempParams = { len, page }
+        setExportLoading(true)
+        sku(tempParams).then(res => {
+            const { data, code } = res
+            if (code) {
+                const tempData = data.data.map((item: any) => {
+                    return {
+                        ...item,
+                        wareHouseTotal: (item.warehouse_pj_la_qty || 0) + (item.warehouse_wyd_la_qty || 0) + (item.warehouse_wyd_atl_qty || 0)
+                    }
+                })
+                setExportData(tempData)
+            }
+        }).finally(() => {
+            setExportLoading(false)
+            setTimeout(() => {
+                document.getElementById('test-table-xls-button3')?.click()
+            });
+        })
+    }
     return (<>
+        <div style={{ display: 'none' }}>
+            <ReactHTMLTableToExcel
+                id="test-table-xls-button3"
+                className="ant-btn ant-btn-default"
+                table="customsDeclaration"
+                filename="Inventory_data"
+                sheet="tablexls"
+                format="xlsx"
+                buttonText="Customs Declaration Excel" />
+        </div>
         <ProTable<any>
             size='small'
             columns={columns}
@@ -147,6 +186,54 @@ export default () => {
             }}
             revalidateOnFocus={false}
             dateFormatter="string"
+            toolBarRender={() => [
+                <Button key="3" type="primary" onClick={getAlldata} loading={exportLoaing}>
+                    Export
+                </Button>,
+            ]}
         />
+        <table id="customsDeclaration" style={{ display: 'none' }} border="1">
+            <thead>
+                {/* 和ant 的table格式一样 */}
+                <tr>
+                    <th rowSpan={2}>SKU</th>
+                    <th rowSpan={2}>Shopify QTY</th>
+                    <th colSpan={2}>Amazon</th>
+                    <th colSpan={8}>QTY</th>
+                </tr>
+                <tr>
+                    <th>FBA QTY</th>
+                    <th>FBM QTY</th>
+                    <th>FBA(NS)</th>
+                    <th>WH TOTAL</th>
+                    <th>PJ LA(NS)</th>
+                    <th>PJ LA(WH)</th>
+                    <th>WYD LA(NS)</th>
+                    <th>WYD LA(WH)</th>
+                    <th>WYD ATL(NS)</th>
+                    <th>WYD ATL(WH)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    exportData.map((item: any) => {
+                        return <tr key={item.id}>
+                            <td>{item.sku}</td>
+                            <td>{item.shopify}</td>
+                            <td>{item.amazon_fba_qty}</td>
+                            <td>{item.amazon_fbm_qty}</td>
+                            <td>{item.fba_qty}</td>
+                            <td>{item.wareHouseTotal}</td>
+                            <td>{item.pj_la_qty}</td>
+                            <td>{item.warehouse_pj_la_qty}</td>
+                            <td>{item.wyd_la_qty}</td>
+                            <td>{item.warehouse_wyd_la_qty}</td>
+                            <td>{item.wyd_atl_qty}</td>
+                            <td>{item.warehouse_wyd_atl_qty}</td>
+                        </tr>
+                    })
+                }
+            </tbody>
+        </table>
     </>);
 };

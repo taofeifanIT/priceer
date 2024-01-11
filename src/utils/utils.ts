@@ -746,3 +746,5 @@ export const checkDecimal = (num: number) => {
     }
     return `${num}.00`
 }
+
+

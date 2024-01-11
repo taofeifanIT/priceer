@@ -1,5 +1,5 @@
 import XLSX from 'xlsx';
-
+// import XLSXD from 'xlsx-style';
 
 
 
@@ -25,9 +25,6 @@ export function exportExcelFile(headers: any[], data: any[], fileName = 'demo.xl
  * @param {*} data
  * @param {*} fileName
  */
-
-
-
 const exportExcel = (headers: any, data: any, fileName: any = 'demo.xlsx') => {
   const _headers = headers
     .map((item: { key: any; title: any; }, i: number) =>
@@ -138,5 +135,7 @@ const exportTablesExcel = (tableIds: string[], fileName = 'demo.xlsx') => {
   });
   XLSX.writeFile(wb, fileName);
 }
+
+
 
 export { exportExcel, exportTableExcel, exportTablesExcel };

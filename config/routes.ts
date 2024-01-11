@@ -254,6 +254,12 @@ export default [
     component: './warehouse/ClearanceOfGoods',
   },
   {
+    // QualityInspectionData
+    path: '/warehouse/QualityInspectionData',
+    name: 'QualityInspectionData',
+    component: './warehouse/QualityInspectionData',
+  },
+  {
     // selfDefinedReport
     path: '/selfDefinedReport',
     name: 'selfDefinedReport',

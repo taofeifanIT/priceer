@@ -527,7 +527,7 @@ const App: React.FC = () => {
                 sheet="tablexls"
                 buttonText="Merchandise Invoice Excel" />}
             {/* <Button onClick={() => {
-                downLoadAllTable()
+                testHtml2Excel()
             }
             }>Download All Table</Button> */}
             <Popover content={nsLink ? <div>

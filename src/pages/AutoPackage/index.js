@@ -12,7 +12,7 @@ const { Option } = Select;
 
 const boxTypes = [
     '中封箱-特殊',
-    '中封箱-b',
+    '中封箱',
     '侧封箱',
     '天地箱'
 ]
@@ -23,7 +23,7 @@ function App() {
     const [boxSizeInfo, setBoxSizeInfo] = useState({});
     const [way, setWay] = useState('');
     const [barcodeFrontLine1, setBarcodeFrontLine1] = useState('SHWYWL');
-    const [barcodeFrontLine2, setBarcodeFrontLine2] = useState('SHWYWL 123');
+    const [barcodeFrontLine2, setBarcodeFrontLine2] = useState('');
     const [skuImage, setSkuImage] = useState('');
     const [box, setBox] = useState(null);
 
@@ -198,18 +198,24 @@ function App() {
                 <span>
                     <label>产品型号：</label>
                     <Select
-                        style={{ width: 200 }}
+                        style={{ width: 230 }}
                         onChange={value => {
                             setBoxSizeInfo(getBoxSizeBySku(value))
                             const boxType = skus.find(item => item.Name === value)
                             const tempBoxType = boxType["Package Box Type"]
                             if (!tempBoxType) {
-                                alert('该sku没有箱型')
+                                message.warning('该sku没有箱型')
+                                return
+                            }
+                            // 如果选择的sku，boxtypes中没有，就提示，系统没有预设该sku的箱型
+                            if (!boxTypes.includes(tempBoxType)) {
+                                message.warning('系统没有预设该sku的箱型')
+                                return
                             }
                             setBoxType(boxType["Package Box Type"])
                         }}
                         showSearch>
-                        {skus.map(item => <Option value={item.Name} key={item.Name}>{item.Name}</Option>)}
+                        {skus.map(item => <Option value={item.Name} key={item.Name}>{item.Name}-{(item['Package Box Type'] || <span style={{ color: 'red' }}>Not yet</span>)}</Option>)}
                     </Select>
                 </span>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -222,7 +228,7 @@ function App() {
                             setBoxType(value)
                         }}
                     >
-                        {boxTypes.map(item => <Option value={item} key={item} disabled={item === "中封箱-a"}>{item}</Option>)}
+                        {boxTypes.map(item => <Option value={item} key={item}>{item}</Option>)}
                     </Select>
                 </span>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
