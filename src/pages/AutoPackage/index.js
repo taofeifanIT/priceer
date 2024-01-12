@@ -45,16 +45,12 @@ function App() {
         return isJpgOrPng
     }
 
-    const handleChange = (info) => {
-        if (info.file.status === 'done') {
-            alert('上传成功!')
-            // setSkuImage("http://api-rp.itmars.net/storage/"+info.file.response.data.file_name)
-            // 获取文件的base64
-            const reader = new FileReader();
-            reader.readAsDataURL(info.file.originFileObj);
-            reader.onload = function (e) {
-                setSkuImage(e.target.result)
-            }
+    const handleChange = (e) => {
+        const file = e.target.files[0]
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = function (e) {
+            setSkuImage(e.target.result)
         }
     }
 
@@ -153,38 +149,15 @@ function App() {
         setBox(dom)
     }
 
-    // const uploadComponent = () => {
-    //     return <Upload
-    //         name="file"
-    //         listType="picture-card"
-    //         className="avatar-uploader"
-    //         showUploadList={false}
-    //         action={`http://api-rp.itmars.net/design/uploadImage`}
-    //         beforeUpload={beforeUpload}
-    //         onChange={handleChange}
-    //     >
-    //         {skuImage ? <img src={skuImage} alt="avatar" style={{ height: '100%' }} /> : <div>
-    //             <PlusOutlined />
-    //             <div style={{ marginTop: 8 }}>Upload</div>
-    //         </div>}
-    //     </Upload>
-    // }
-
     // 重写一个上传图片的组件，上传的图片不需要传到服务器，只需要获取图片的base64
     const uploadComponent = () => {
-        return <Upload
+        return <div
             name="file"
-            listType="picture-card"
             className="avatar-uploader"
-            showUploadList={false}
-            beforeUpload={beforeUpload}
-            onChange={handleChange}
         >
-            {skuImage ? <img src={skuImage} alt="avatar" style={{ height: '100%' }} /> : <div>
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
-            </div>}
-        </Upload>
+            <input type="file" accept="image/*" onChange={handleChange} /><br />
+            {skuImage ? <img src={skuImage} alt="avatar" style={{ maxHeight: '200px', marginTop: '10px' }} /> : null}
+        </div>
     }
 
     useEffect(() => {
@@ -283,8 +256,12 @@ function App() {
                     下载PDF
                 </Button>
                 <div style={{ marginTop: '30px' }}>
-                    产品图片：
-                    {uploadComponent(1)}
+                    <Space>
+                        <div>
+                            产品图片：
+                            {uploadComponent(1)}
+                        </div>
+                    </Space>
                 </div>
                 <div />
             </div>

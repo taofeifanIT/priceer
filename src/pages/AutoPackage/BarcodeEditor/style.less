@@ -1,0 +1,30 @@
+.barcodeEditor {
+  position: fixed;
+  bottom: 0;
+  z-index: 999;
+  padding: 0.5vh 1vh;
+  font-size: calc(1vh + 1vmin);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5%;
+}
+.barcodeEditor input {
+  // width: calc(100% - 100px);
+  height: 2.4vh;
+  vertical-align: top;
+}
+.barcodeEditor input::-webkit-inner-spin-button {
+  width: calc(2vh + 1vmin);
+  height: calc(2vh + 1vmin);
+}
+
+.barcodeEditorBtn {
+  display: inline-block;
+  width: scale(1.5);
+  height: 2.1vh;
+  font-size: calc(1vh + 1vmin);
+  // 让字体内容水平居中与button
+  line-height: 2.1vh;
+  text-align: start;
+  vertical-align: top;
+}

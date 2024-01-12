@@ -55,66 +55,25 @@ const StyleDiv = styled.div`
 
 // 需要编辑的样式
 const stylesProperties = {
-  'width': {
-    type: 'number',
-    step: 1,
-    unit: 'px',
-  },
+  // 'width': {
+  //   type: 'number',
+  //   step: 1,
+  //   unit: 'px',
+  // },
   'height': {
     type: 'number',
     step: 1,
     unit: 'px',
-  },
-  'color': {
-    type: 'text',
   },
   'font-size': {
     type: 'number',
     step: 1,
     unit: 'px',
   },
-  'font-weight': {
-    type: 'number',
-  },
-  'font-family': {
-    type: 'text',
-  },
-  'line-height': {
-    type: 'number',
-    step: 0.1,
-  },
-  'letter-spacing': {
-    type: 'number',
-    step: 0.1,
-  },
   'text-align': {
-    type: 'select',
+    type: 'text',
     options: ['left', 'center', 'right'],
   },
-  'position': {
-    type: 'select',
-    options: ['relative', 'absolute', 'fixed'],
-  },
-  'left': {
-    type: 'number',
-    step: 1,
-    unit: 'px',
-  },
-  'right': {
-    type: 'number',
-    step: 1,
-    unit: 'px',
-  },
-  'top': {
-    type: 'number',
-    step: 1,
-    unit: 'px',
-  },
-  'bottom': {
-    type: 'number',
-    step: 1,
-    unit: 'px',
-  }
 }
 
 const StyleEditor = ({ domId, styleObj }) => {
@@ -161,10 +120,16 @@ const StyleEditor = ({ domId, styleObj }) => {
                 <li key={property} className='style-editor-li'>
                   <label className='style-editor-lable'>{property}:</label>
                   <input
-                    type="text"
+                    type={stylesProperties[property].type}
                     className='style-editor-input'
-                    value={styles[property]}
-                    onChange={(e) => handleStyleChange(property, e.target.value)}
+                    value={styles[property].replace('px', '')}
+                    onChange={(e) => {
+                      handleStyleChange(property, e.target.value + 'px');
+                      // 如果是Height  则把width也改变
+                      if (property === 'height') {
+                        handleStyleChange('width', '');
+                      }
+                    }}
                   />
                 </li>
               ))}

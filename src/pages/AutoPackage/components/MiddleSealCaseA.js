@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Barcode from '../Barcode';
 import './style.css'
 import StyleTrimmer from '../StyleTrimmer';
 import { Address as address } from './basicInfo'
-
+import BarcodeEditor from '../BarcodeEditor';
 
 const cmToPx = (val) => {
   const ONECM = 28.1641143234;
@@ -59,6 +59,8 @@ const Package = (props) => {
 
   const [currentEditId, setCurrentEditId] = React.useState(null)
   const [style, setStyle] = React.useState({});
+  const [barcodeHeight, setBarcodeHeight] = useState(cmToPx(height / 7));
+  const [barcodeDegreeOfThickness, setBarcodeDegreeOfThickness] = useState((cmToPx(height / 12) / 14));
 
   const handleKeyDown = (e, domId) => {
     // 添加选中样式
@@ -88,8 +90,8 @@ const Package = (props) => {
     value={sku}
     renderer='img'
     displayValue={false}
-    height={cmToPx(height / 7)}
-    width={cmToPx(height / 12) / 14}
+    height={barcodeHeight}
+    width={barcodeDegreeOfThickness}
   />
 
   // 监听鼠标事件
@@ -361,6 +363,13 @@ const Package = (props) => {
   ]
 
   return (<>
+    <BarcodeEditor
+      key='barcodeEditor'
+      barcodeHeight={barcodeHeight}
+      barcodeDegreeOfThickness={barcodeDegreeOfThickness}
+      setBarcodeHeight={setBarcodeHeight}
+      setBarcodeDegreeOfThickness={setBarcodeDegreeOfThickness}
+    />
     <StyleTrimmer domId={currentEditId} styleObj={style} />
     <div className='box' id='box'
       style={{

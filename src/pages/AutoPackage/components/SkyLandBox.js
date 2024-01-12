@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Barcode from '../Barcode';
 import './style.css'
 import StyleTrimmer from '../StyleTrimmer';
 import { Address as address } from './basicInfo'
+import BarcodeEditor from '../BarcodeEditor';
 
 const cmToPx = (val) => {
   const ONECM = 28.1541143234;
@@ -56,6 +57,15 @@ const Package = (props) => {
   const FrontSize = getFontSize()
   const [currentEditId, setCurrentEditId] = React.useState(null)
   const [style, setStyle] = React.useState({});
+  const [barcodeHeight, setBarcodeHeight] = useState(cmToPx(height / 6));
+  const [barcodeDegreeOfThickness, setBarcodeDegreeOfThickness] = useState((cmToPx(height / 12) / 17));
+
+  const myBarcode = <Barcode
+    value={sku}
+    displayValue={false}
+    height={barcodeHeight}
+    width={barcodeDegreeOfThickness}
+  />
 
   const handleKeyDown = (domId) => {
     // 添加选中样式
@@ -118,12 +128,7 @@ const Package = (props) => {
           }}>
           <span>{logistics.line1}</span>
           <div>
-            <Barcode
-              value={sku}
-              displayValue={false}
-              height={cmToPx(height / 6)}
-              width={cmToPx(height / 12) / 17}
-            />
+            {myBarcode}
           </div>
           <span>{sku}</span><br />
           <span>
@@ -174,12 +179,7 @@ const Package = (props) => {
       >
         <span>{logistics.line1}</span>
         <div>
-          <Barcode
-            value={sku}
-            displayValue={false}
-            height={cmToPx(height / 6)}
-            width={cmToPx(height / 12) / 17}
-          />
+          {myBarcode}
         </div>
         <span>{sku}</span><br />
         <span>{logistics.line2}</span>
@@ -204,12 +204,7 @@ const Package = (props) => {
       >
         <span>{logistics.line1}</span><br />
         <span>{sku}</span>
-        <Barcode
-          value={sku}
-          displayValue={false}
-          height={cmToPx(height / 6)}
-          width={cmToPx(height / 12) / 17}
-        />
+        {myBarcode}
         <span>{logistics.line2}</span>
       </div>
     </>
@@ -292,12 +287,7 @@ const Package = (props) => {
         }}>
         <span>SJW YWL</span><br />
         <div>
-          <Barcode
-            value={sku}
-            displayValue={false}
-            height={cmToPx(height / 6)}
-            width={cmToPx(height / 12) / 17}
-          />
+          {myBarcode}
         </div>
         <span>{sku}</span><br />
         <span>SHW WL-051</span>
@@ -384,6 +374,13 @@ const Package = (props) => {
   }
 
   return (<>
+    <BarcodeEditor
+      key='barcodeEditor'
+      barcodeHeight={barcodeHeight}
+      barcodeDegreeOfThickness={barcodeDegreeOfThickness}
+      setBarcodeHeight={setBarcodeHeight}
+      setBarcodeDegreeOfThickness={setBarcodeDegreeOfThickness}
+    />
     <StyleTrimmer domId={currentEditId} styleObj={style} />
     <div
       id='box'

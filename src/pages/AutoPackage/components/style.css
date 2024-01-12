@@ -26,3 +26,14 @@
 * {
   font-family: 'odikafont';
 }
+
+.barcodeEditor {
+  position: fixed;
+  bottom: 0;
+  z-index: 999;
+  font-size: calc(1vh + 1vmin);
+}
+.barcodeEditor input {
+  width: calc(100% - 100px);
+  height: 2vh;
+}

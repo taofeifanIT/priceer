@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Barcode from '../Barcode';
 import './style.css'
 import StyleTrimmer from '../StyleTrimmer';
 import { Address as address } from './basicInfo'
-
+import BarcodeEditor from '../BarcodeEditor';
 
 const cmToPx = (val) => {
   const ONECM = 28.1641143234;
@@ -58,6 +58,9 @@ const Package = (props) => {
 
   const [currentEditId, setCurrentEditId] = React.useState(null)
   const [style, setStyle] = React.useState({});
+  const [barcodeHeight, setBarcodeHeight] = useState(cmToPx(height / 4));
+  const [barcodeDegreeOfThickness, setBarcodeDegreeOfThickness] = useState((cmToPx(height / 12) / 15));
+
   const handleKeyDown = (e, domId) => {
     // 添加选中样式
     const dom = document.getElementById(domId)
@@ -86,8 +89,8 @@ const Package = (props) => {
     value={sku}
     renderer='img'
     displayValue={false}
-    height={cmToPx(height / 4)}
-    width={cmToPx(height / 12) / 15}
+    height={barcodeHeight}
+    width={barcodeDegreeOfThickness}
   />
 
   // 监听鼠标事件
@@ -106,79 +109,6 @@ const Package = (props) => {
     }
   }
 
-
-  // 监听键盘事件
-  // document.onkeydown = (e) => {
-  //   if(currentEditId){
-  //     // 移动选中的box-plank  通过 awsd键和上下左右键
-  //     const dom = document.getElementById(currentEditId)
-  //     const { left, right,top,bottom } = dom.style
-
-  //     // 转译去除单位
-  //     let x = (left || right).replace(/[^0-9.]/ig,"")
-  //     let y = (top || bottom).replace(/[^0-9.]/ig,"")
-  //     let newX = x
-  //     let newY = y
-
-  //     // 有的是left 有的是right，有的是top 有的是bottom，所以要判断加减符号
-  //     let leftSymbol = left && -0.1
-  //     let rightSymbol = right && 0.1
-  //     let topSymbol = top && 0.1
-  //     let bottomSymbol = bottom && -0.1
-  //     switch (e.key) {
-  //       case 'ArrowUp':
-  //         newY = `${parseFloat(y) + topSymbol}cm`
-  //         break;
-  //       case 'ArrowDown':
-  //         newY = `${parseFloat(y) + bottomSymbol}cm`
-  //         break;
-  //       case 'ArrowLeft':
-  //         newX = `${parseFloat(x) + leftSymbol}cm`
-  //         break;
-  //       case 'ArrowRight':
-  //         newX = `${parseFloat(x) + rightSymbol}cm`
-  //         break;
-  //       // awsd
-  //       case 'w':
-  //         newY = `${parseFloat(y) + 0.1}cm`
-  //         break;
-  //       case 's':
-  //         newY = `${parseFloat(y) - 0.1}cm`
-  //         break;
-  //       case 'a':
-  //         newX = `${parseFloat(x) - 0.1}cm`
-  //         break;
-  //       case 'd':
-  //         newX = `${parseFloat(x) + 0.1}cm`
-  //         break;
-  //       default:
-  //         return;
-  //     }
-  //     // dom.style.left = newX
-  //     // dom.style.bottom = newY
-  //     // 判断是left还是right，top还是bottom
-  //     if(left){
-  //       dom.style.left = newX
-  //     }
-  //     if(right){
-  //       dom.style.right = newX
-  //     }
-  //     if(top){
-  //       dom.style.top = newY
-  //     }
-  //     if(bottom){
-  //       dom.style.bottom = newY
-  //     }
-  //     // 保存当前的样式
-  //     const computedStyles = window.getComputedStyle(dom);
-  //     const stylesObject = {};
-  //     for (let i = 0; i < computedStyles.length; i++) {
-  //       const propertyName = computedStyles[i];
-  //       stylesObject[propertyName] = computedStyles.getPropertyValue(propertyName);
-  //     }
-  //     setStyle(stylesObject)
-  //   }
-  // }
 
 
   // 1 2
@@ -225,26 +155,20 @@ const Package = (props) => {
   // 2 2
   const getRowTwoColTwoContent = () => {
     return <>
-      <div
+      <img
         id='two-two-one'
         className='box-content'
+        alt=''
+        src='/package/caution.png'
         style={{
+          height: `${height * 0.4}cm`,
           position: 'absolute',
-          fontWeight: 'bold',
-          left: `${length * 0.04}cm`,
           top: '50%',
           transform: 'translateY(-50%)',
+          left: `${length * 0.04}cm`,
         }}
         onClick={(e => handleKeyDown(e, 'two-two-one'))}
-      >
-        <img
-          alt=''
-          src='/package/caution.png'
-          style={{
-            height: `${height * 0.4}cm`,
-          }}
-        />
-      </div>
+      />
       <div
         id='two-two-two'
         className='box-content'
@@ -474,6 +398,13 @@ const Package = (props) => {
   ]
 
   return (<>
+    <BarcodeEditor
+      key='barcodeEditor'
+      barcodeHeight={barcodeHeight}
+      barcodeDegreeOfThickness={barcodeDegreeOfThickness}
+      setBarcodeHeight={setBarcodeHeight}
+      setBarcodeDegreeOfThickness={setBarcodeDegreeOfThickness}
+    />
     <StyleTrimmer domId={currentEditId} styleObj={style} />
     <div className='box' id='box'
       style={{

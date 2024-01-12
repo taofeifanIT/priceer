@@ -9,7 +9,6 @@ import { template } from './ReportComponents/reportConfig'
 import { round, chain, multiply, divide, subtract, add } from 'mathjs'
 import { UploadOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'
-import { exportTablesExcel } from '@/utils/excelHelper'
 import ReactHTMLTableToExcel from 'react-html-table-to-excel'
 
 
@@ -18,11 +17,6 @@ let customsDeclarationDom: any = null
 // let customsManifestDom: any = null
 
 
-const tableDom = {
-    merchandiseTable: null,
-    customsManifestTable: null,
-    customsDeclarationTable: null,
-}
 
 const App: React.FC = () => {
     const [tabIndex, setTabIndex] = useState('generateDeclarationInformationTable');
@@ -358,12 +352,6 @@ const App: React.FC = () => {
         })
     }
 
-    const downLoadAllTable = () => {
-        exportTablesExcel(
-            ['generateDeclarationInformationTable'],
-            'test.xlsx'
-        )
-    }
 
     const checkItem: MenuProps['items'] = [
         {

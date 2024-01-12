@@ -10,10 +10,6 @@ export default () => {
     const [exportData, setExportData] = useState([])
     const [exportLoaing, setExportLoading] = useState(false)
     const columns: ProColumns<any>[] = [
-        // "fba_qty": 202,
-        // 		"pj_la_qty": 172,
-        // 		"wyd_la_qty": null,
-        // 		"wyd_atl_qty": 100,
         {
             title: 'SKU',
             dataIndex: 'sku',
@@ -153,9 +149,6 @@ export default () => {
                 const tempParams = { ...params, ...filter, len: params.pageSize, page: params.current }
                 const res = await sku(tempParams)
                 const { data, code } = res
-                // "warehouse_pj_la_qty": null,
-                // "warehouse_wyd_la_qty": null,
-                // "warehouse_wyd_atl_qty": 100,
                 const tempData = data.data.map((item: any) => {
                     return {
                         ...item,
