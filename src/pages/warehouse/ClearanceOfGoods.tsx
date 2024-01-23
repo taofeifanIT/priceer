@@ -9,7 +9,6 @@ import { template } from './ReportComponents/reportConfig'
 import { round, chain, multiply, divide, subtract, add } from 'mathjs'
 import { UploadOutlined } from '@ant-design/icons';
 import { getToken } from '@/utils/token'
-import ReactHTMLTableToExcel from 'react-html-table-to-excel'
 
 
 let merchandiseDom: any = null
@@ -37,6 +36,8 @@ const App: React.FC = () => {
         totalAmountAll: 0,
         declarationTotal: 0,
         printAll: false,
+        miscellaneousFee: 0,
+        ultimateDestinationCn: '',
     });
     const [printDoms, setPrintDoms] = useState<any>({
         generateDeclarationInformationTable: true,
@@ -351,7 +352,28 @@ const App: React.FC = () => {
             setLoading(false)
         })
     }
-
+    const downloadTest = () => {
+        // const gateWayLink = 'http://localhost:3333/test/v1/getClearanceExcel'
+        const gateWayLink = 'https://api.itmars.ca/test/v1/getClearanceExcel'
+        fetch(gateWayLink, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify({
+                generateDeclarationInformationParams,
+                template: template[generateDeclarationInformationParams.templateNumber],
+            }),
+        }).then((res) => res.blob()).then((res) => {
+            const blob = new Blob([res])
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `${generateDeclarationInformationParams.soNumber}-${new Date().getTime()}.xlsx`
+            a.click()
+            window.URL.revokeObjectURL(url)
+        })
+    }
 
     const checkItem: MenuProps['items'] = [
         {
@@ -418,13 +440,6 @@ const App: React.FC = () => {
                     options={[
                         {
                             label: 'Warehouse',
-                            // options: template.map((item, index) => {
-                            //     return {
-                            //         label: item.tempLateName,
-                            //         value: index,
-                            //     }
-                            // })
-                            // options 取前18个
                             options: template.slice(0, 18).map((item, index) => {
                                 return {
                                     label: item.tempLateName,
@@ -443,10 +458,6 @@ const App: React.FC = () => {
                         }
                     ]}
                 />
-                {/* {template.map((item, index) => {
-                        return <Select.Option value={index} key={`template-${index + 1}`}>{item.tempLateName}</Select.Option>
-                    })}
-                </Select> */}
             </span>
             <span>
                 SO Number：
@@ -492,32 +503,10 @@ const App: React.FC = () => {
                 }}>
                 Download All
             </Dropdown.Button>
-            {tabIndex === 'customsDeclaration' && <ReactHTMLTableToExcel
-                id="test-table-xls-button3"
-                className="ant-btn ant-btn-default"
-                table="customsDeclaration"
-                filename="Customs_declaration"
-                sheet="tablexls"
-                format="xlsx"
-                buttonText="Customs Declaration Excel" />}
-            {tabIndex === 'customsManifestTable' && <ReactHTMLTableToExcel
-                id="test-table-xls-button2"
-                className="ant-btn ant-btn-default"
-                table="customsManifestTable"
-                filename="Customs_manifest"
-                sheet="tablexls"
-                buttonText="Customs Manifest Excel" />}
-            {tabIndex === 'generateDeclarationInformationTable' && <ReactHTMLTableToExcel
-                id="test-table-xls-button"
-                className="ant-btn ant-btn-default"
-                table="generateDeclarationInformationTable"
-                filename="Merchandise_invoice"
-                sheet="tablexls"
-                buttonText="Merchandise Invoice Excel" />}
-            {/* <Button onClick={() => {
-                testHtml2Excel()
+            <Button onClick={() => {
+                downloadTest()
             }
-            }>Download All Table</Button> */}
+            }>Export Excel</Button>
             <Popover content={nsLink ? <div>
                 <a
                     href={nsLink}

@@ -1,4 +1,4 @@
-export const statusConfig = {
+export const statusConfig: any = {
     1: { text: 'Asin Received' },
     2: {
         text: 'Script Completed',

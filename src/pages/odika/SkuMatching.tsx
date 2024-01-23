@@ -30,7 +30,7 @@ const EditModal = forwardRef((props: { refresh: () => void }, ref) => {
         setVisible(false)
     }
     const handleOk = () => {
-        form.validateFields().then((values) => {
+        form.validateFields().then((values: any) => {
             setConfirmLoading(true)
             const tempMatch = matchList.ns_sku?.find((item) => item.sku === fromSku) || { internal_id: '' }
             const params = {

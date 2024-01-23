@@ -25,85 +25,75 @@ export default () => {
             align: 'center'
         },
         {
-            title: 'Amazon',
-            children: [
-                {
-                    title: 'FBA QTY',
-                    dataIndex: 'amazon_fba_qty',
-                    ellipsis: true,
-                    align: 'center',
-                    render: (text, record) => {
-                        return <Tooltip title={record?.amazon_fba_sku}>
-                            <span>{text}</span>
-                        </Tooltip>
-                    }
-                },
-                {
-                    title: 'FBM QTY',
-                    dataIndex: 'amazon_fbm_qty',
-                    ellipsis: true,
-                    align: 'center',
-                    render: (text, record) => {
-                        return <Tooltip title={record?.amazon_fbm_sku}>
-                            <span>{text}</span>
-                        </Tooltip>
-                    }
-                },
-            ]
+            title: 'FBA QTY',
+            dataIndex: 'amazon_fba_qty',
+            ellipsis: true,
+            align: 'center',
+            render: (text, record) => {
+                return <Tooltip title={record?.amazon_fba_sku}>
+                    <span>{text}</span>
+                </Tooltip>
+            }
         },
         {
-            title: 'QTY',
-            children: [
-                {
-                    title: 'FBA(NS)',
-                    dataIndex: 'fba_qty',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'WH TOTAL',
-                    dataIndex: 'wareHouseTotal',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'PJ LA(NS)',
-                    dataIndex: 'pj_la_qty',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'PJ LA(WH)',
-                    dataIndex: 'warehouse_pj_la_qty',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'WYD LA(NS)',
-                    dataIndex: 'wyd_la_qty',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'WYD LA(WH)',
-                    dataIndex: 'warehouse_wyd_la_qty',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'WYD ATL(NS)',
-                    dataIndex: 'wyd_atl_qty',
-                    ellipsis: true,
-                    align: 'center'
-                },
-                {
-                    title: 'WYD ATL(WH)',
-                    dataIndex: 'warehouse_wyd_atl_qty',
-                    ellipsis: true,
-                    align: 'center'
-                }
-            ]
+            title: 'FBA(NS)',
+            dataIndex: 'fba_qty',
+            ellipsis: true,
+            align: 'center'
         },
+        {
+            title: 'FBM QTY',
+            dataIndex: 'amazon_fbm_qty',
+            ellipsis: true,
+            align: 'center',
+            render: (text, record) => {
+                return <Tooltip title={record?.amazon_fbm_sku}>
+                    <span>{text}</span>
+                </Tooltip>
+            }
+        },
+        {
+            title: 'WH TOTAL',
+            dataIndex: 'wareHouseTotal',
+            ellipsis: true,
+            align: 'center'
+        },
+        {
+            title: 'PJ LA(NS)',
+            dataIndex: 'pj_la_qty',
+            ellipsis: true,
+            align: 'center'
+        },
+        {
+            title: 'PJ LA(WH)',
+            dataIndex: 'warehouse_pj_la_qty',
+            ellipsis: true,
+            align: 'center'
+        },
+        {
+            title: 'WYD LA(NS)',
+            dataIndex: 'wyd_la_qty',
+            ellipsis: true,
+            align: 'center'
+        },
+        {
+            title: 'WYD LA(WH)',
+            dataIndex: 'warehouse_wyd_la_qty',
+            ellipsis: true,
+            align: 'center'
+        },
+        {
+            title: 'WYD ATL(NS)',
+            dataIndex: 'wyd_atl_qty',
+            ellipsis: true,
+            align: 'center'
+        },
+        {
+            title: 'WYD ATL(WH)',
+            dataIndex: 'warehouse_wyd_atl_qty',
+            ellipsis: true,
+            align: 'center'
+        }
     ];
 
     const getAlldata = () => {
@@ -188,16 +178,18 @@ export default () => {
         <table id="customsDeclaration" style={{ display: 'none' }} border="1">
             <thead>
                 {/* 和ant 的table格式一样 */}
-                <tr>
+                {/* <tr>
                     <th rowSpan={2}>SKU</th>
                     <th rowSpan={2}>Shopify QTY</th>
                     <th colSpan={2}>Amazon</th>
                     <th colSpan={8}>QTY</th>
-                </tr>
+                </tr> */}
                 <tr>
+                    <th>SKU</th>
+                    <th>Shopify QTY</th>
                     <th>FBA QTY</th>
-                    <th>FBM QTY</th>
                     <th>FBA(NS)</th>
+                    <th>FBM QTY</th>
                     <th>WH TOTAL</th>
                     <th>PJ LA(NS)</th>
                     <th>PJ LA(WH)</th>
@@ -214,8 +206,8 @@ export default () => {
                             <td>{item.sku}</td>
                             <td>{item.shopify}</td>
                             <td>{item.amazon_fba_qty}</td>
-                            <td>{item.amazon_fbm_qty}</td>
                             <td>{item.fba_qty}</td>
+                            <td>{item.amazon_fbm_qty}</td>
                             <td>{item.wareHouseTotal}</td>
                             <td>{item.pj_la_qty}</td>
                             <td>{item.warehouse_pj_la_qty}</td>

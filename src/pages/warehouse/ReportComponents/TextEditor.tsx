@@ -46,6 +46,11 @@ class TextEditor extends React.Component {
                 onInput={this.onChange}
                 onBlur={this.onBlur}
                 className="editable"
+                style={{
+                    display: 'inline-block', width: width || '100%',
+                    WebkitUserModify: 'read-write-plaintext-only',
+                    // zhi
+                }}
                 placeholder="Optional Notes..."
             />
         )

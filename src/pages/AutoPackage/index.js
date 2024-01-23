@@ -90,7 +90,9 @@ function App() {
         html2canvas(box, {
             allowTaint: true,
             useCORS: true,
-            scale: 2,
+            scale: 1,
+            // 透明背景
+            backgroundColor: 'transparent',
         }).then((canvas) => {
             //  根据canvas大小生成pdf
             const imgData = canvas.toDataURL('image/png');

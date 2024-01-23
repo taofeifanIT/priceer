@@ -11,46 +11,9 @@ import { DownloadOutlined } from '@ant-design/icons';
 import TextEditor from './TextEditor'
 import { exportExcel } from '@/utils/excelHelper'
 import { round } from 'mathjs'
-import { checkDecimal } from '@/utils/utils'
+import { checkDecimal, cooMap } from '@/utils/utils'
 
 
-const cooMap: any = {
-    "TW (TAIWAN PROVINCE OF CHINA)": "台湾",
-    "MX": "墨西哥",
-    "CN": "中国",
-    "TH": "泰国",
-    "PL": "波兰",
-    "JP": "日本",
-    "SI": "斯洛文尼亚",
-    "US": "美国",
-    "CA": "加拿大",
-    "KR": "韩国",
-    "VN": "越南",
-    "LK": "斯里兰卡",
-    "DE": "德国",
-    "MY": "马来西亚",
-    "Mexico": "墨西哥",
-    "IT": "意大利",
-    "SG": "新加坡",
-    "Lao": "老挝",
-    "Laos": "老挝",
-    "MAS": "马来西亚",
-    "TW": "台湾",
-    "UK": "英国",
-    "EE": "爱沙尼亚",
-    "BE": "比利时",
-    "SE": "瑞典",
-    "RO": "罗马尼亚",
-    "IE": "爱尔兰",
-    "POL": "波兰",
-    "SWE": "瑞典",
-    "PH": "菲律宾",
-    "AU": "澳大利亚",
-    "ID": "印度",
-    "NL": "荷兰",
-    "IN": "印度",
-    "FI": "芬兰",
-}
 
 export default (props: {
     params: paramType,
@@ -58,20 +21,10 @@ export default (props: {
     width?: number,
 }) => {
     const { params, setParams, width = 1600 } = props;
-    const [ultimateDestinationCn, setUltimateDestinationCn] = useState('')
-    // 传入一个数字，如果有小数点只保留两位小数点，不用四舍五入
-    const getFixedNum = (num: number) => {
-        const str = num + ''
-        const index = str.indexOf('.')
-        if (index === -1) {
-            return num
-        }
-        return parseFloat(str.slice(0, index + 3))
-    }
     const getGwWeightSum = () => {
         return params.data.reduce((sum, item) => {
             return sum + parseFloat(item.g_w_weight)
-        }, 0).toFixed(0)
+        }, 0).toFixed(2)
     }
     const getNwWeightSum = () => {
         return params.data.reduce((sum, item) => {
@@ -167,7 +120,10 @@ export default (props: {
         }
         axios.post(chatGTPUrl, data).then((res) => {
             if (res.status === 200) {
-                setUltimateDestinationCn(res.data)
+                setParams({
+                    ...params,
+                    ultimateDestinationCn: res.data
+                })
             } else {
                 message.error('翻译失败')
             }
@@ -199,7 +155,7 @@ export default (props: {
     }
     useEffect(() => {
         translate()
-    }, [params.ultimateDestination])
+    }, [])
     return (
         <>
             <Button
@@ -302,13 +258,13 @@ export default (props: {
                         <tr>
                             <th colSpan={2}>{params.invoiceNumber}</th>
                             <th colSpan={5} contentEditable>
-                                {ultimateDestinationCn}
+                                {params.ultimateDestinationCn}
                             </th>
                             <th colSpan={4} contentEditable>
-                                {ultimateDestinationCn}
+                                {params.ultimateDestinationCn}
                             </th>
                             <th colSpan={1} contentEditable>
-                                {ultimateDestinationCn}
+                                {params.ultimateDestinationCn}
                             </th>
                             <th colSpan={2} contentEditable>上海浦东机场</th>
                         </tr>
@@ -336,7 +292,16 @@ export default (props: {
                             <th colSpan={1} >$ {(getFreightCost() - getPremium()).toFixed(2)}</th>
                             <th colSpan={1}>$ {params.premium.toFixed(2)}</th>
                             <th colSpan={1} >
-                                $ <span style={{ width: '100%' }} contentEditable />
+                                $ <TextEditor
+                                    value={params.miscellaneousFee}
+                                    width={100}
+                                    onChange={(e: { value: any; }) => {
+                                        setParams({
+                                            ...params,
+                                            miscellaneousFee: e.value
+                                        })
+                                    }}
+                                />
                             </th>
                         </tr>
                         <tr>
@@ -364,8 +329,7 @@ export default (props: {
                             params.data.map((item: tInfoByNSItems, index) => {
                                 return <tr key={`customsDeclaration-${index}`} className='whole-node'>
                                     <td>{index + 1}</td>
-                                    <td
-                                    >
+                                    <td>
                                         <TextEditor
                                             value={item.cn_hs_code}
                                             onChange={(e) => {
@@ -411,27 +375,6 @@ export default (props: {
                                     </td>
                                     <td>
                                         {item.unit}
-                                        {/* <select
-                                            style={{
-                                                border: 'none',
-                                            }}
-                                            value={item.unit} onChange={(e) => {
-                                                const data = [...params.data];
-                                                data[index].unit = e.target.value;
-                                                if (e.target.value === '千克') {
-                                                    data[index].blankSpaceBehindUnit = item.qty + ''
-                                                }
-                                                setParams({
-                                                    ...params,
-                                                    data
-                                                })
-                                            }}>
-                                            <option value="个">个</option>
-                                            <option value="千克">千克</option>
-                                            <option value="双">双</option>
-                                            <option value="台">台</option>
-                                            <option value="只">只</option>
-                                        </select> */}
                                     </td>
                                     <td contentEditable>
                                         {item.blankSpaceBehindUnit}
@@ -460,7 +403,7 @@ export default (props: {
                                         {cooMap[item.coo]}
                                     </td>
                                     <td contentEditable>
-                                        {ultimateDestinationCn}
+                                        {params.ultimateDestinationCn}
                                     </td>
                                     <td contentEditable>松江</td>
                                     <td contentEditable>照章征免</td>

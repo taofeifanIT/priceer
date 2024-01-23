@@ -194,7 +194,7 @@ const PmSelfCheck = (props: { id: number, status: number, reload: () => void, re
         cancelText="No"
         disabled={status === recordValue}
         okButtonProps={{ loading }}>
-        <Button disabled={status === recordValue} type={buttonType} size='small' loading={loading}>{text}</Button>
+        <Button type={buttonType} size='small' disabled={status === recordValue} loading={loading}>{text}</Button>
     </Popconfirm>
 }
 
@@ -920,6 +920,19 @@ export default () => {
             width: 140,
             render: (_, record) => [<SetValueComponent key={'purchase_quantity'} id={record.id} editKey='purchase_quantity' value={record.purchase_quantity} api={editPurchaseQuantity} refresh={() => actionRef.current?.reload()} type='number' />],
         },
+        {
+            title: 'PM Status',
+            key: 'first_status',
+            dataIndex: 'first_status',
+            width: 100,
+            valueType: 'select',
+            search: false,
+            valueEnum: {
+                //  1 Approved 2 Rejected
+                1: { text: 'Approved', status: 'Success' },
+                2: { text: 'Rejected', status: 'Error' },
+            },
+        },
         // first_memo
         {
             title: 'PM Memo',
@@ -928,6 +941,18 @@ export default () => {
             search: false,
             width: 200,
             ellipsis: true,
+        },
+        {
+            title: 'Operation Status',
+            dataIndex: 'second_status',
+            key: 'second_status',
+            width: 150,
+            search: false,
+            valueEnum: {
+                //  1 Approved 2 Rejected
+                1: { text: 'Approved', status: 'Success' },
+                2: { text: 'Rejected', status: 'Error' },
+            },
         },
         // second_memo
         {
@@ -952,12 +977,20 @@ export default () => {
             title: 'Action',
             key: 'option',
             valueType: 'option',
-            width: 160,
+            width: 140,
+            ellipsis: true,
             align: 'center',
             render: (_, record) => {
-                if ([3, 4, 5].includes(record.status)) {
-                    return null
+                if ([1, 4, 6, 7, 8].includes(record.status)) {
+                    return statusConfig[record.status].text
                 }
+                // is_consistent 
+                if (record.is_consistent === null) {
+                    // 请选择Consistent 用英文提示
+                    return <span style={{ color: '#f5ab50' }}>Please select Consistent</span>
+                }
+
+                // 2345
                 return <Space>
                     <PmSelfCheck id={record.id} status={record.status} recordValue={3} reload={() => actionRef.current?.reload()} text='Denied' buttonType='default' />
                     <PmSelfCheck id={record.id} status={record.status} recordValue={4} purchase_price={record.purchase_price} reload={() => actionRef.current?.reload()} text='Submit' />

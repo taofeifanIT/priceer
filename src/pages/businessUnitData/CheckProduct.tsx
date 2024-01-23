@@ -365,11 +365,17 @@ export default () => {
             width: 180,
             search: false,
             render(_, record) {
-                if (isPm && record.is_consistent !== null) {
+                if (record.is_consistent === null) {
+                    // 请选择Consistent 用英文提示
+                    return <span style={{ color: '#f5ab50' }}>Please select Consistent</span>
+                }
+                if (isPm && record.is_consistent !== null && record.first_status === null) {
                     return <Space>
                         <EditStatusComponent id={record.id} value={record.first_status} type={1} refresh={() => { actionRef.current?.reload() }} targetValue={1} />
                         <EditStatusComponent id={record.id} value={record.first_status} type={1} refresh={() => { actionRef.current?.reload() }} targetValue={2} />
                     </Space>
+                } else if (record.first_status === 1) {
+                    return <span>Approved</span>
                 } else {
                     return <span>{options[record.first_status]}</span>
                 }
@@ -409,11 +415,13 @@ export default () => {
             width: 180,
             search: false,
             render(_, record) {
-                if ((isOperationManager || isPm) && record.is_consistent !== null) {
+                if ((isOperationManager || isPm) && record.is_consistent !== null && record.second_status === null) {
                     return <Space>
                         <EditStatusComponent id={record.id} value={record.second_status} type={2} refresh={() => { actionRef.current?.reload() }} targetValue={1} />
                         <EditStatusComponent id={record.id} value={record.second_status} type={2} refresh={() => { actionRef.current?.reload() }} targetValue={2} />
                     </Space>
+                } else if (record.second_status === 1) {
+                    return <span>Approved</span>
                 }
                 return <span>{options[record.second_status]}</span>
             }

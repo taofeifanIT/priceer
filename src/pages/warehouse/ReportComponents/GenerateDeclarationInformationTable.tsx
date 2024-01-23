@@ -180,12 +180,18 @@ export default (props: {
                 <tr>
                     <th style={{ width: 120, borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>AWB/BL#:</th>
                     <th style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }} colSpan={6}>
-                        <input style={{ border: 'none', width: '100%', textAlign: 'center' }} value={params.deliveryNumbers} onChange={(e) => {
-                            setParams({
-                                ...params,
-                                deliveryNumbers: e.target.value
-                            })
-                        }} />
+                        <TextEditor
+                            value={params.deliveryNumbers}
+                            onChange={(e) => {
+                                setParams({
+                                    ...params,
+                                    deliveryNumbers: e.value
+                                })
+                            }}
+                            style={{
+                                display: 'inline-block',
+                            }}
+                        />
                     </th>
                     <th style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>Date:</th>
                     <th contentEditable style={{ borderBottom: '1px solid #c8e7a7' }}>
@@ -288,13 +294,15 @@ export default (props: {
                     <th style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>Air</th>
                     {/* Invoice Number */}
                     <th colSpan={3} style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
-                        <input value={params.invoiceNumber} style={{ textAlign: 'center', border: 'none', width: '100%' }} onChange={e => {
-                            // setInvoiceNumber(e.target.value)
-                            setParams({
-                                ...params,
-                                invoiceNumber: e.target.value
-                            })
-                        }} />
+                        <TextEditor
+                            value={params.invoiceNumber}
+                            onChange={(e) => {
+                                setParams({
+                                    ...params,
+                                    invoiceNumber: e.value
+                                })
+                            }}
+                        />
                     </th>
                 </tr>
                 <tr>
@@ -386,7 +394,17 @@ export default (props: {
                                 }}
                             />
                         </td>
-                        <td contentEditable style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
+                        <td
+                            contentEditable
+                            style={{
+                                borderBottom: '1px solid #c8e7a7',
+                                borderRight: '1px solid #c8e7a7',
+                                maxWidth: 200,
+                                minWidth: 166,
+                                // 超过自动换行
+                                wordBreak: 'break-all',
+                                wordWrap: 'break-word',
+                            }}>
                             {item.description}
                         </td>
                         <td style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>

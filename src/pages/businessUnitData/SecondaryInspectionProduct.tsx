@@ -371,7 +371,7 @@ export default () => {
             },
             renderFormItem: (
                 _,
-                { type, defaultRender, formItemProps, fieldProps, ...rest },
+                { type, defaultRender, formItemProps, fieldProps },
                 form,
             ) => {
                 if (type === 'form') {
@@ -423,7 +423,7 @@ export default () => {
             width: 170,
             search: false,
         },
-        // US HS Code{
+        // US HS Code
         {
             title: 'US HS Code',
             dataIndex: 'us_hs_code',

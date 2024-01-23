@@ -283,7 +283,7 @@ export const exportPDFWithFont = async (fonts: string[], size: { width: number, 
     }
 }
 
-export const handlePrint = (id: any, num: number) => {
+export const handlePrint = (id: any) => {
     // 先用html2canvas将页面整个转为一张截图，再打印，防止出现echarts无法打印
     const dom = document.getElementById(id) as any;
     html2canvas(dom, {
@@ -510,122 +510,7 @@ export const downloadPdfAcross = (el: string, title: string) => {
     })
 }
 
-// const getLengthwaysPdfObj = async (el) => {
-//     const PDF = new jsPDF('', 'pt', 'a4')
-//     return new Promise((resolve) => {
-//         const xOffset = window.pageXOffset
-//         const A4_WIDTH = 592.28
-//         const A4_HEIGHT = 841.89
-//         const printDom = document.getElementById(el)
-//         const pageHeight = printDom.offsetWidth / A4_WIDTH * A4_HEIGHT
-//         let wholeNodes = document.querySelectorAll('.whole-node')
-//         for (let i = 0; i < wholeNodes.length; i++) {
-//             const topPageNum = Math.ceil((wholeNodes[i].offsetTop) / pageHeight)
-//             const bottomPageNum = Math.ceil((wholeNodes[i].offsetTop + wholeNodes[i].offsetHeight) / pageHeight)
-//             if (topPageNum !== bottomPageNum) {
-//                 let divParent = wholeNodes[i].parentNode
-//                 let newBlock = document.createElement('div')
-//                 newBlock.className = 'emptyDiv'
-//                 newBlock.style.background = '#fff'
-//                 let _H = topPageNum * pageHeight - wholeNodes[i].offsetTop
-//                 newBlock.style.height = _H + 30 + 'px'
-//                 divParent.insertBefore(newBlock, wholeNodes[i])
-//                 wholeNodes = document.querySelectorAll('.whole-node')
-//             }
-//         }
-//         html2canvas(printDom, { height: printDom.offsetHeight, width: printDom.offsetWidth, scrollX: -xOffset, allowTaint: true, scale: 2 }).then(canvas => {
-//             const emptyDivs = document.querySelectorAll('.emptyDiv')
-//             for (let i = 0; i < emptyDivs.length; i++) {
-//                 emptyDivs[i].parentNode.removeChild(emptyDivs[i])
-//             }
-//             const contentWidth = canvas.width
-//             const contentHeight = canvas.height
-//             const pageHeight = contentWidth / A4_WIDTH * A4_HEIGHT
-//             let leftHeight = contentHeight
-//             let position = 0
-//             const imgWidth = A4_WIDTH
-//             const imgHeight = A4_WIDTH / contentWidth * contentHeight
-//             const pageData = canvas.toDataURL('image/jpeg', 1.0)
-//             if (leftHeight <= pageHeight + 10) {
-//                 PDF.addImage(pageData, 'JPEG', 0, 0, imgWidth + 3, imgHeight)
-//             } else {
-//                 while (leftHeight > 0) {
-//                     PDF.addImage(pageData, 'JPEG', 0, position, imgWidth + 3, imgHeight)
-//                     console.log('position', position);
-//                     leftHeight -= pageHeight
-//                     position -= A4_HEIGHT
-//                     if (leftHeight > 0) {
-//                         PDF.addPage()
-//                     }
-//                 }
-//             }
-//             resolve({
-//                 PDF,
-//                 position,
-//             })
-//         })
-//     })
-// }
 
-
-// const getAcrossPdfObj = async (el) => {
-//     const PDF = new jsPDF('l', 'pt', 'a4')
-//     return new Promise((resolve) => {
-//         const xOffset = window.pageXOffset
-//         // 避免笔下误 灯下黑 统一写
-//         const A4_WIDTH = 841.89
-//         const A4_HEIGHT = 592.28
-//         const printDom = document.getElementById(el)
-//         const pageHeight = printDom.offsetWidth / A4_WIDTH * A4_HEIGHT
-//         let wholeNodes = document.querySelectorAll('.whole-node')
-//         for (let i = 0; i < wholeNodes.length; i++) {
-//             const topPageNum = Math.ceil((wholeNodes[i].offsetTop) / pageHeight)
-//             const bottomPageNum = Math.ceil((wholeNodes[i].offsetTop + wholeNodes[i].offsetHeight) / pageHeight)
-//             if (topPageNum !== bottomPageNum) {
-//                 let divParent = wholeNodes[i].parentNode
-//                 let newBlock = document.createElement('div')
-//                 newBlock.className = 'emptyDiv'
-//                 newBlock.style.background = '#fff'
-//                 let _H = topPageNum * pageHeight - wholeNodes[i].offsetTop
-//                 newBlock.style.height = _H + 30 + 'px'
-//                 divParent.insertBefore(newBlock, wholeNodes[i])
-//                 wholeNodes = document.querySelectorAll('.whole-node')
-//             }
-
-//         }
-//         html2canvas(printDom, { height: printDom.offsetHeight, width: printDom.offsetWidth, scrollX: -xOffset, allowTaint: true, scale: 2 }).then(canvas => {
-//             const emptyDivs = document.querySelectorAll('.emptyDiv')
-//             for (let i = 0; i < emptyDivs.length; i++) {
-//                 emptyDivs[i].parentNode.removeChild(emptyDivs[i])
-//             }
-//             const contentWidth = canvas.width
-//             const contentHeight = canvas.height
-//             const pageHeight = contentWidth / A4_WIDTH * A4_HEIGHT
-//             let leftHeight = contentHeight
-//             let position = 0
-//             const imgWidth = A4_WIDTH
-//             const imgHeight = A4_WIDTH / contentWidth * contentHeight
-//             const pageData = canvas.toDataURL('image/jpeg', 1.0)
-//             if (leftHeight <= pageHeight) {
-//                 PDF.addImage(pageData, 'JPEG', 0, 0, imgWidth + 3, imgHeight)
-//             } else {
-//                 while (leftHeight > 0) {
-//                     PDF.addImage(pageData, 'JPEG', 0, position, imgWidth + 3, imgHeight)
-//                     leftHeight -= pageHeight
-//                     position -= A4_HEIGHT
-//                     if (leftHeight > 0) {
-//                         PDF.addPage()
-//                     }
-//                 }
-//             }
-//             resolve({
-//                 PDF,
-//                 position,
-
-//             })
-//         })
-//     })
-// }
 export const printAllReport = async (el: string, title: string) => {
     // ['generateDeclarationInformationTable', 'customsManifestTable', 'customsDeclaration']
     // 如果这个页面有左右移动,canvas 也要做响应的移动，不然会出现canvas 内容不全
@@ -748,3 +633,40 @@ export const checkDecimal = (num: number) => {
 }
 
 
+export const cooMap: any = {
+    "TW (TAIWAN PROVINCE OF CHINA)": "台湾",
+    "MX": "墨西哥",
+    "CN": "中国",
+    "TH": "泰国",
+    "PL": "波兰",
+    "JP": "日本",
+    "SI": "斯洛文尼亚",
+    "US": "美国",
+    "CA": "加拿大",
+    "KR": "韩国",
+    "VN": "越南",
+    "LK": "斯里兰卡",
+    "DE": "德国",
+    "MY": "马来西亚",
+    "Mexico": "墨西哥",
+    "IT": "意大利",
+    "SG": "新加坡",
+    "Lao": "老挝",
+    "Laos": "老挝",
+    "MAS": "马来西亚",
+    "TW": "台湾",
+    "UK": "英国",
+    "EE": "爱沙尼亚",
+    "BE": "比利时",
+    "SE": "瑞典",
+    "RO": "罗马尼亚",
+    "IE": "爱尔兰",
+    "POL": "波兰",
+    "SWE": "瑞典",
+    "PH": "菲律宾",
+    "AU": "澳大利亚",
+    "ID": "印度",
+    "NL": "荷兰",
+    "IN": "印度",
+    "FI": "芬兰",
+}

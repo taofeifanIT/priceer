@@ -245,7 +245,13 @@ export default [
         path: '/odika/AutoPackage',
         name: 'AutoPackage',
         component: './AutoPackage',
-      }
+      },
+      // ComboSku
+      {
+        path: '/odika/ComboSku',
+        name: 'ComboSku',
+        component: './odika/ComboSku',
+      },
     ]
   },
   {

@@ -2,6 +2,7 @@ import { request } from 'umi';
 
 // shipment/getInfoByNS
 export type tInfoByNSItems = {
+    customsDeclarationQty: any;
     line: number;
     item: string;
     item_type: string;
@@ -56,6 +57,8 @@ export type paramType = {
     }[],
     declarationTotal: number; // 前端自定义字段
     printAll: boolean; // 前端自定义字段
+    miscellaneousFee: number; // 前端自定义字段  杂费
+    ultimateDestinationCn: string; // 前端自定义字段
 }
 
 

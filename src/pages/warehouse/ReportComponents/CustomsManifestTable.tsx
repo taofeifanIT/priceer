@@ -159,15 +159,6 @@ export default (props: {
                             </div>
                         </td>
                         <td>
-                            {/* {item.chinese_customs_clearance_name} */}
-                            {/* <input style={{ height: 24, textAlign: 'center', border: 'none' }} value={item.chinese_customs_clearance_name} onChange={(e) => {
-                                const data = [...params.data];
-                                data[index].chinese_customs_clearance_name = e.target.value;
-                                setParams({
-                                    ...params,
-                                    data
-                                })
-                            }} /> */}
                             <div style={{ width: '200px' }}>
                                 <TextEditor
                                     value={item.chinese_customs_clearance_name}
@@ -188,6 +179,7 @@ export default (props: {
                             <TextEditor
                                 style={{ display: 'inline-block' }}
                                 value={item.qty}
+                                width={30}
                                 onChange={(e) => {
                                     const data = [...params.data];
                                     data[index].qty = e.value;
