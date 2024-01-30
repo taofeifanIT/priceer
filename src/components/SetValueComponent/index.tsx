@@ -15,7 +15,8 @@ const SetValueComponent = (props: {
     disabled?: boolean,
     prefix?: string
     options?: { label: string, value: string | number }[]
-    style?: React.CSSProperties
+    style?: React.CSSProperties,
+    showValue?: string | number
 }) => {
     const {
         id,
@@ -28,7 +29,8 @@ const SetValueComponent = (props: {
         otherParams = {},
         disabled = false,
         options = [],
-        style = {}
+        style = {},
+        showValue
     } = props
     const [paramValue, setParamValue] = useState(value)
     const [spinning, setSpinning] = useState(false)
@@ -101,7 +103,8 @@ const SetValueComponent = (props: {
                     />
                     :
                     <>
-                        {value}
+                        {/* {value} */}
+                        {showValue ? showValue : value}
                         <EditTwoTone onClick={() => {
                             setNumberIsEdit(true)
                             setTimeout(() => {

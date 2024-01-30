@@ -155,7 +155,8 @@ export default (props: {
     }
     useEffect(() => {
         translate()
-    }, [])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.ultimateDestination])
     return (
         <>
             <Button

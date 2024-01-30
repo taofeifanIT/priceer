@@ -29,6 +29,7 @@ const App: React.FC = () => {
         soldFor: template[0].termSale[0],
         premium: 0,
         countrtOfOrigin: template[0].countryOrigin[0],
+        carrier: template[0].carrier[0],
         ultimateDestination: template[0].ultimateDestination[0],
         data: [],
         hsCode: [],
@@ -435,6 +436,7 @@ const App: React.FC = () => {
                         ultimateDestination: template[e].ultimateDestination[0],
                         soldFor: template[e].termSale[0],
                         templateNumber: e,
+                        carrier: template[e].carrier[0],
                     })
                 }}
                     options={[

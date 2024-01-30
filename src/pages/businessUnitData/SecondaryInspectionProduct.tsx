@@ -9,6 +9,7 @@ import { exportExcelFile } from '@/utils/excelHelper';
 import { useModel } from 'umi';
 import { getBrandForNew } from '@/services/businessUnitData/newProducts'
 import { CheckOutlined } from '@ant-design/icons';
+import { round, evaluate } from 'mathjs'
 
 export default () => {
     const { initialState } = useModel('@@initialState');
@@ -102,22 +103,15 @@ export default () => {
         },
         // purchase_price
         {
-            title: 'Purchase Price(CNY)',
+            title: '含税采购价',
             dataIndex: 'purchase_price',
             key: 'purchase_price',
             width: 160,
             search: false,
-            render(_, entity, __, action) {
-                return <SetValueComponent
-                    id={entity.id}
-                    editKey='value'
-                    type='number'
-                    style={{ width: '100%' }}
-                    value={entity.purchase_price}
-                    api={modifyParam}
-                    otherParams={{ name: 'purchase_price' }}
-                    refresh={() => action?.reload()}
-                />
+            render(_, entity) {
+                return <Tooltip title={`${entity.basePurchasePrice} * 1.13`}>
+                    <span>{entity.purchase_price}</span>
+                </Tooltip>
             }
         },
         // lead_time
@@ -842,7 +836,7 @@ export default () => {
             return {
                 "Purchase Quantity": item.purchase_quantity,
                 "Company": item.ekko,
-                "Purchase Price(CNY)": item.purchase_price,
+                "含税采购价": item.purchase_price,
                 "Lead Time": item.lead_time,
                 "ITEM NAME/NUMBER": item.sku,
                 "Display Name": item.sku,
@@ -954,6 +948,9 @@ export default () => {
                     return {
                         ...item,
                         cn_tax_rebate_rate: 0.13,
+                        // purchase_price: item.purchase_price ? item.purchase_price * 1.13 : 0,  四舍五入取整
+                        basePurchasePrice: item.purchase_price,
+                        purchase_price: item.purchase_price ? round(evaluate(`${item.purchase_price} * 1.13`), 0) : 0,
                         storeName: configInfo.store.find((store: any) => store.id === item.store_id)?.name
                     }
                 })

@@ -347,6 +347,9 @@ export default () => {
         expandable={{
           expandedRowRender,
           expandedRowKeys,
+          onExpandedRowsChange: (expandedRows) => {
+            setExpandedRowKeys(expandedRows as number[]);
+          },
         }}
         search={{
           labelWidth: 'auto',

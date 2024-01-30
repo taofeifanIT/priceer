@@ -504,13 +504,31 @@ export default () => {
                 // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
                 // defaultSelectedRowKeys: [1],
                 selectedRowKeys: selectedRows.map(item => item.id),
-                onChange: (RowKeys, rows) => {
-                    if (!rows.length) {
-                        setSelectedRows([])
-                        return
+                // onChange: (RowKeys, rows) => {
+                //     if (!rows.length) {
+                //         setSelectedRows([])
+                //         return
+                //     }
+                //     setSelectedRows(selectedRows.concat(rows.filter(item => !selectedRows.includes(item))));
+                // },
+                onSelect: (record, selected) => {
+                    if (selected) {
+                        setSelectedRows([...selectedRows, record])
+                    } else {
+                        setSelectedRows(selectedRows.filter(item => item.id !== record.id))
                     }
-                    setSelectedRows(selectedRows.concat(rows.filter(item => !selectedRows.includes(item))));
                 },
+                onSelectAll: (selected, toChangeRow, changeRows) => {
+                    if (selected) {
+                        setSelectedRows([...selectedRows, ...changeRows])
+                    } else {
+                        if (toChangeRow.length === 0) {
+                            setSelectedRows([])
+                        } else {
+                            setSelectedRows(selectedRows.filter(item => !changeRows.includes(item)))
+                        }
+                    }
+                }
             }}
             id='id'
             actionRef={actionRef}

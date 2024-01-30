@@ -56,6 +56,7 @@ export type SecondaryInspectionProductItem = {
     lead_time: string;
     purchase_price: string;
     ekko: string;
+    basePurchasePrice: string; // 前端添加字段
 }
 
 // businessUnitData/listProduct

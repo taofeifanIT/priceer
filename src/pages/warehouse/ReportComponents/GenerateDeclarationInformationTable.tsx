@@ -284,12 +284,21 @@ export default (props: {
                     <th style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
                         {template[params.templateNumber].termsFreight[0]}
                     </th>
-                    <th colSpan={3} contentEditable style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
+                    <th colSpan={3} style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
                         {/* {template[params.templateNumber].countryOrigin[0]} */}
                         {params.countrtOfOrigin}
                     </th>
-                    <th contentEditable style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
-                        {template[params.templateNumber].carrier[0]}
+                    <th style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
+                        {/* {template[params.templateNumber].carrier[0]} */}
+                        <TextEditor
+                            value={params.carrier}
+                            onChange={(e) => {
+                                setParams({
+                                    ...params,
+                                    carrier: e.value
+                                })
+                            }}
+                        />
                     </th>
                     <th style={{ fontWeight: 'bold', borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>Air</th>
                     {/* Invoice Number */}
@@ -318,7 +327,7 @@ export default (props: {
                         params.numberOfCases
                     }</th>
                     <th colSpan={1} style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
-                        <TextEditor
+                        {/* <TextEditor
                             value={params.soldFor}
                             onChange={(e) => {
                                 setParams({
@@ -327,21 +336,21 @@ export default (props: {
                                 })
 
                             }}
-                        />
+                        /> */}
+                        {params.soldFor}
                     </th>
                     {/* Ultimate Destination */}
                     <th colSpan={1} style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>
-                        {/* {template[params.templateNumber].ultimateDestination[0]} */}
-                        <TextEditor
+                        {template[params.templateNumber].ultimateDestination[0]}
+                        {/* <TextEditor
                             value={params.ultimateDestination}
-                            onChange={(e) => {
+                            onBlur={(e) => {
                                 setParams({
                                     ...params,
                                     ultimateDestination: e.value
                                 })
-
                             }}
-                        />
+                        /> */}
                     </th>
                     {/* SO Number */}
                     <th colSpan={2} style={{ borderBottom: '1px solid #c8e7a7', borderRight: '1px solid #c8e7a7' }}>

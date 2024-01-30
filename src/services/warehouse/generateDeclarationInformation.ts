@@ -45,6 +45,7 @@ export type paramType = {
     soldFor: string
     ultimateDestination: string
     countrtOfOrigin: string
+    carrier: string
     totalInvoiceValue: number
     totalAmountAll: number
     data: tInfoByNSItems[]

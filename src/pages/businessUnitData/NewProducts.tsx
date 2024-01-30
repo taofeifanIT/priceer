@@ -989,8 +989,6 @@ export default () => {
                     // 请选择Consistent 用英文提示
                     return <span style={{ color: '#f5ab50' }}>Please select Consistent</span>
                 }
-
-                // 2345
                 return <Space>
                     <PmSelfCheck id={record.id} status={record.status} recordValue={3} reload={() => actionRef.current?.reload()} text='Denied' buttonType='default' />
                     <PmSelfCheck id={record.id} status={record.status} recordValue={4} purchase_price={record.purchase_price} reload={() => actionRef.current?.reload()} text='Submit' />
